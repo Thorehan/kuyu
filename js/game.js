@@ -14,7 +14,7 @@
 
   // ---------- kayıt ----------
   var KEY = 'kuyu.v2';
-  var save = { best: {}, last: 1, mute: false, endless: { score: 0, meters: 0, combo: 0 }, maxLevel: 1 };
+  var save = { best: {}, last: 1, mute: false, endless: { score: 0, meters: 0, combo: 0 }, maxLevel: 1, profile: null };
   try { var raw = localStorage.getItem(KEY); if (raw) save = Object.assign(save, JSON.parse(raw)); } catch (e) {}
   function persist() { try { localStorage.setItem(KEY, JSON.stringify(save)); } catch (e) {} }
 
@@ -61,7 +61,7 @@
   }
 
   // ---------- durum ----------
-  var mode = 'level', levelNo = 1, def, sim, deaths = 0, cam = 0, shake = 0, parts = [], floaters = [], trail = [];
+  var mode = 'level', levelNo = 1, def, sim = null, paused = true, deaths = 0, cam = 0, shake = 0, parts = [], floaters = [], trail = [];
   var winT = null, deadT = null, resultShown = false;
   var aim = { x: 0, y: -1 };
   var canvas = $('oyun'), ctx = canvas.getContext('2d');
@@ -115,7 +115,6 @@
     $('atlaBtn').hidden = false;
     $('puan').hidden = true; $('noktalar').hidden = false;
     $('baslik').textContent = levelNo + '. ' + def.name;
-    setUrl('bolum=' + levelNo);
     reset();
   }
   function startEndless() {
@@ -126,7 +125,6 @@
     $('atlaBtn').hidden = true;
     $('puan').hidden = false; $('noktalar').hidden = true;
     $('baslik').textContent = 'Sonsuz Kuyu';
-    setUrl('mod=sonsuz');
     reset();
   }
   function reset() {
@@ -134,13 +132,11 @@
     sim = E.createSim(def);
     parts = []; floaters = []; trail = []; winT = null; deadT = null; resultShown = false; lastHud = '';
     $('katman').hidden = true;
-    $('menu').hidden = true;
+    paused = false; acc = 0; lastT = 0;
+    if (window.KuyuScreens) window.KuyuScreens.showGame();
     layout();
     cam = camTarget();
     updateHud(true);
-  }
-  function setUrl(q) {
-    try { history.replaceState(null, '', location.pathname + '?' + q); } catch (e) {}
   }
 
   function camTarget() {
@@ -492,6 +488,8 @@
   // ---------- döngü ----------
   var acc = 0, lastT = 0;
   function frame(t) {
+    requestAnimationFrame(frame);
+    if (paused || !sim) { lastT = 0; return; }
     var dt = Math.min(0.05, (t - (lastT || t)) / 1000); lastT = t;
     if (sim.status === 'play') {
       acc += dt;
@@ -515,7 +513,6 @@
     cam += (target - cam) * Math.min(1, dt * (sim.status === 'dead' ? 2 : 7));
     render(t, dt);
     updateHud();
-    requestAnimationFrame(frame);
   }
 
   // ---------- sonuçlar ----------
@@ -570,44 +567,19 @@
       '<div class="dugmeler"><button type="button" id="menuDonBtn">Menü</button>' +
       '<button type="button" class="ana" id="yenidenBtn">Yeniden dene</button></div>';
     $('katman').hidden = false;
-    $('menuDonBtn').onclick = function () { openMenu(false); };
+    $('menuDonBtn').onclick = function () { goHome(); };
     $('yenidenBtn').onclick = function () { reset(); };
     $('yenidenBtn').focus({ preventScroll: true });
   }
 
-  // ---------- menü ----------
-  function openMenu(first) {
-    $('menuKapat').hidden = !!first;
-    var cont = save.last || 1;
-    $('devamYazi').textContent = cont > 1 ? 'Bölüm ' + cont + ' ile devam' : "Bölüm 1'den başla";
-    var rec = save.endless || {};
-    $('sonsuzRekor').textContent = rec.score ? 'Rekor ' + rec.score + ' · ' + rec.meters + ' m' : '';
-    var upto = Math.max(18, Math.ceil((save.maxLevel + 6) / 3) * 3);
-    var h = '';
-    for (var n = 1; n <= upto; n++) {
-      var b = save.best[n], d = levelDef(n).name;
-      var dots = '';
-      for (var k = 0; k < 3; k++) dots += '<i class="' + (b && k < b.ff ? 'var' : '') + '"></i>';
-      dots += '<i class="m' + (b && b.perfect ? ' var' : '') + '"></i><i class="m' + (b && b.flow ? ' var' : '') + '"></i>';
-      h += '<button type="button" data-n="' + n + '"' + (mode === 'level' && n === levelNo ? ' aria-current="true"' : '') + '>' +
-        '<span class="no">Bölüm ' + n + (b && b.done ? ' ✓' : '') + '</span><b>' + d + '</b><span class="rozet">' + dots + '</span></button>';
-    }
-    $('liste').innerHTML = h;
-    $('menu').hidden = false;
+  // ---------- ekranlar ----------
+  // Menü, açılış ve giriş js/screens.js içinde. Oyun ana menüye dönünce durur (su da durur).
+  function goHome() {
+    paused = true;
+    if (sim) E.release(sim);
+    if (window.KuyuScreens) window.KuyuScreens.home();
   }
-  $('liste').addEventListener('click', function (e) {
-    var b = e.target.closest('button[data-n]'); if (!b) return;
-    startLevel(+b.dataset.n);
-  });
-  $('gitForm').addEventListener('submit', function (e) {
-    e.preventDefault();
-    var n = parseInt($('gitNo').value, 10);
-    if (n > 0) startLevel(n);
-  });
-  $('devamBtn').onclick = function () { startLevel(save.last || 1); };
-  $('sonsuzBtn').onclick = function () { ac(); startEndless(); };
-  $('menuKapat').onclick = function () { $('menu').hidden = true; };
-  $('menuBtn').onclick = function () { openMenu(false); };
+  $('menuBtn').onclick = function () { goHome(); };
   $('atlaBtn').onclick = function () { if (mode === 'level') startLevel(levelNo + 1); };
   $('sesBtn').onclick = function () { save.mute = !save.mute; persist(); setMuteIcon(); };
   setMuteIcon();
@@ -639,8 +611,9 @@
   canvas.addEventListener('contextmenu', function (e) { e.preventDefault(); });
   window.addEventListener('keydown', function (e) {
     if (e.target && e.target.tagName === 'INPUT') return;
+    if (paused) return;
     if (e.key === 'r' || e.key === 'R') reset();
-    else if (e.key === 'Escape') { if (!$('menu').hidden && !$('menuKapat').hidden) $('menu').hidden = true; else openMenu(false); }
+    else if (e.key === 'Escape') goHome();
     else if (e.key === 'Enter' && !$('katman').hidden) { if (mode === 'level') startLevel(levelNo + 1); else reset(); }
   });
   var rt = null;
@@ -649,10 +622,19 @@
   // test ve hata ayıklama için salt okunur erişim
   window.KuyuDebug = { state: function () { return { sim: sim, cam: cam, K: K, mode: mode, level: levelNo }; } };
 
-  // ---------- başlat ----------
-  var q = new URLSearchParams(location.search);
-  if (q.get('mod') === 'sonsuz') startEndless();
-  else if (q.get('bolum')) startLevel(parseInt(q.get('bolum'), 10));
-  else { startLevel(save.last || 1); openMenu(true); }
+  // Ekran yöneticisinin kullandığı arayüz
+  window.KuyuGame = {
+    startLevel: function (n) { ac(); startLevel(n); },
+    startEndless: function () { ac(); startEndless(); },
+    pause: function () { paused = true; },
+    save: function () { return save; },
+    persist: persist,
+    levelDef: levelDef,
+    handCount: HAND.length,
+    toggleMute: function () { save.mute = !save.mute; persist(); setMuteIcon(); return save.mute; },
+    unlockAudio: function () { ac(); },
+    sfx: SFX
+  };
+
   requestAnimationFrame(frame);
 })();

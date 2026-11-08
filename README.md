@@ -1,10 +1,19 @@
 # Kuyu
 
-**Funday Morning Games** · 2D mobil oyun · prototip v0.2
+**Funday Morning Games** · 2D mobil oyun · prototip v0.3
 
 Derin bir kuyunun dibindesin. Ekrana bas, kanca o yöne fırlasın; basılı tut, ipe sarıl; bırak, savrul. Halkadan halkaya, ahşaptan ahşaba tırmanıp kuyudan çık.
 
 **Canlı sürüm:** https://thorehan.github.io/kuyu/
+
+## Açılış ve menü
+Pofi ile aynı akış:
+1. **Açılış:** Funday Morning logosu ve yükleme çubuğu (en az 2,2 sn, yazı tipleri ve logo yüklenene kadar).
+2. **Giriş:** Yalnızca ilk açılışta. Oyuncu adı ve "Misafir olarak oyna". Google ve Apple düğmeleri şimdilik "yakında" der. İlerleme bu cihazda saklanır.
+3. **Tanıtım:** "Funday Morning sunar", ardından kahraman dipten kanca atıp halkaya çekilir ve gün ışığına fırlar; "Kuyu" yazısı belirir. Dokununca geçilir.
+4. **Ana menü:** Kuyunun içinde ipte sallanan kahraman ve ateşböcekleri. "Oyna" kalınan bölümden devam eder. "Sonsuz Kuyu" kartı rekoru, "Bölümler" kartı geçilen bölüm ve hedef sayısını gösterir. Sağ üstte Ayarlar: ses, oyuncu adı, hesap bilgisi, nasıl oynanır, tanıtımı yeniden izle.
+
+Oyundaki menü düğmesi ana menüye döner; oyun (ve su) orada bekler. `?bolum=N` ya da `?mod=sonsuz` bağlantısı açılıştan sonra tanıtımı atlayıp doğrudan oyuna girer.
 
 ## Oynanış
 - **Bas ve tut:** Kanca parmağının yönüne fırlar. Halka ya da ahşaba saplanırsa seni oraya çeker. Kutu gibi hafif şeyleri sana çeker. Taş kancayı tutmaz.
@@ -64,12 +73,15 @@ Bot oyunun kendi fizik motoruyla oynar:
 ## Proje yapısı
 | Dosya | İçerik |
 |---|---|
-| `index.html` | Sayfa ve menü |
-| `css/kuyu.css` | Görünüm |
+| `index.html` | Sayfa: oyun, açılış, giriş, tanıtım, ana menü, bölümler, ayarlar |
+| `css/kuyu.css` | Oyun ekranının görünümü |
+| `css/ekranlar.css` | Açılış, giriş, tanıtım ve menü görünümü |
 | `js/engine.js` | Kanca fiziği, tutunma gücü, akış ve puan (tarayıcı + Node) |
 | `js/levels.js` | El yapımı 6 bölüm |
 | `js/gen.js` | Bölüm 7+ ve sonsuz kuyu üretici |
-| `js/game.js` | Ekranlar, çizim, ses, girdi, kayıt |
+| `js/game.js` | Oyun ekranı: çizim, ses, girdi, kayıt |
+| `js/screens.js` | Açılış, giriş, tanıtım, ana menü, bölümler, ayarlar ve arka plan sahnesi |
+| `assets/funday-morning-logo.webp` | Şirket logosu (Pofi ile aynı) |
 | `tools/bot.js` | Doğrulama botu |
 
 Düz JavaScript, derleme adımı yok. Kayıt tarayıcıda `kuyu.v2` anahtarıyla tutulur.

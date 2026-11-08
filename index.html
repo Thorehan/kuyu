@@ -11,9 +11,10 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&family=Figtree:wght@400;600&display=swap">
 <link rel="stylesheet" href="css/kuyu.css">
+<link rel="stylesheet" href="css/ekranlar.css">
 </head>
 <body>
-<div class="app">
+<div class="app" id="oyunEkrani" hidden>
   <div class="serit">
     <div class="bilgi"><b id="baslik">Kuyu</b><span id="altbaslik"></span></div>
     <div class="noktalar" id="noktalar" aria-label="Toplanan ateşböceği"></div>
@@ -35,35 +36,104 @@
   <p class="ipucu" id="ipucu"></p>
 </div>
 
-<div class="menu" id="menu" hidden>
-  <div class="menu-ic">
-    <div class="menu-ust">
-      <h1 class="marka">Kuyu<small>Funday Morning Games</small></h1>
-      <button type="button" id="menuKapat" hidden>Kapat</button>
+<!-- Açılış: Funday Morning logosu ve yükleme -->
+<section class="ekran marka-ekran" id="ekAcilis">
+  <img id="acilisLogo" class="marka-logo" src="assets/funday-morning-logo.webp" alt="Funday Morning Games">
+  <div class="yukleme" aria-hidden="true"><div id="yuklemeDolgu"></div></div>
+  <div class="yukleme-not" id="yuklemeNot">Yükleniyor…</div>
+  <div class="ek-surum">Kuyu v0.3</div>
+</section>
+
+<!-- Giriş: yalnızca ilk açılışta -->
+<section class="ekran marka-ekran" id="ekGiris" hidden>
+  <img class="marka-logo kucuk" src="assets/funday-morning-logo.webp" alt="Funday Morning Games">
+  <form class="giris-kart" id="girisForm">
+    <h2>Hoş geldin!</h2>
+    <p>İlerlemen ve rekorların bu cihazda saklanır.</p>
+    <label class="alan"><span>Oyuncu adın</span><input id="oyuncuAd" maxlength="16" placeholder="Tırmanıcı" autocomplete="nickname"></label>
+    <button type="submit" class="ana buyuk">Misafir olarak oyna</button>
+    <div class="veya"><span>veya</span></div>
+    <button type="button" class="sosyal" data-saglayici="Google">Google ile devam et</button>
+    <button type="button" class="sosyal" data-saglayici="Apple">Apple ile devam et</button>
+  </form>
+</section>
+
+<!-- Tanıtım: "Funday Morning sunar" → kancayla fırlayan kahraman → oyun adı -->
+<section class="ekran tanitim" id="ekTanitim" hidden>
+  <canvas id="tanitimSahne" aria-hidden="true"></canvas>
+  <div class="sunar" id="sunar"><img src="assets/funday-morning-logo.webp" alt="Funday Morning Games"><span>sunar</span></div>
+  <div class="tanitim-baslik">
+    <h1>Kuyu</h1>
+    <span class="alt-hap">KANCAYLA TIRMAN</span>
+    <div class="dokun">Başlamak için dokun</div>
+  </div>
+  <div class="tanitim-imza">© 2026 Funday Morning Games</div>
+</section>
+
+<!-- Ana menü -->
+<section class="ekran ana-ekran" id="ekAna" hidden>
+  <canvas id="anaSahne" aria-hidden="true"></canvas>
+  <div class="ana-ust">
+    <div class="selam"><span>Merhaba,</span><b id="selamAd">Tırmanıcı</b></div>
+    <button type="button" class="yuvarlak" id="ayarBtn" aria-label="Ayarlar" title="Ayarlar">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 8.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7z" fill="none" stroke="currentColor" stroke-width="2"/><path d="M19.4 13.5l1.6 1.2-1.8 3.1-1.9-.7a7.6 7.6 0 0 1-2 1.2l-.3 2h-3.6l-.3-2a7.6 7.6 0 0 1-2-1.2l-1.9.7-1.8-3.1 1.6-1.2a7.7 7.7 0 0 1 0-2.4L2.9 9.3l1.8-3.1 1.9.7a7.6 7.6 0 0 1 2-1.2l.3-2h3.6l.3 2a7.6 7.6 0 0 1 2 1.2l1.9-.7 1.8 3.1-1.6 1.2a7.7 7.7 0 0 1 0 2.4z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+    </button>
+  </div>
+  <div class="ana-logo"><h1>Kuyu</h1><span>Kancayla tırman, gün ışığına çık</span></div>
+  <div class="ana-alt">
+    <button type="button" class="oyna" id="oynaBtn">
+      <span>Oyna</span>
+      <span class="bolum-rozet"><small>BÖLÜM</small><b id="oynaNo">1</b></span>
+    </button>
+    <div class="ana-kartlar">
+      <button type="button" class="ana-kart sonsuz" id="sonsuzBtn"><b>Sonsuz Kuyu</b><span id="sonsuzRekor">Bölüm yok, su yükselir</span></button>
+      <button type="button" class="ana-kart" id="bolumlerBtn"><b>Bölümler</b><span id="madalyaSay">Hepsi açık</span></button>
     </div>
-    <div class="modlar">
-      <button type="button" class="mod" id="devamBtn"><b>Bölümler</b><span id="devamYazi">Bölüm 1'den başla</span></button>
-      <button type="button" class="mod sonsuz" id="sonsuzBtn"><b>Sonsuz Kuyu</b><span>Su yükselir, bölüm yok. Ne kadar yükseğe?</span><em id="sonsuzRekor"></em></button>
-    </div>
-    <ol class="nasil">
-      <li><b>Bas ve tut:</b> kanca o yöne fırlar, ipe sarılırsın. <b>Bırak:</b> ipten kopar, savrulursun.</li>
-      <li><b>Akış:</b> ip tam sarılmadan bırak, havadayken sıradakine tutun. Zincir uzadıkça puan artar.</li>
-      <li>Asılı kalmak bedava değil: elin yorulur ve kayarsın.</li>
-    </ol>
-    <h3>Bölüme git</h3>
+  </div>
+</section>
+
+<!-- Bölümler -->
+<section class="ekran sayfa-ekran" id="ekBolumler" hidden>
+  <div class="sayfa-ust"><button type="button" class="yuvarlak geri" data-geri aria-label="Ana menüye dön"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M12.5 4l-6 6 6 6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button><h2>Bölümler</h2></div>
+  <div class="sayfa-ic">
     <form class="git" id="gitForm">
       <input id="gitNo" type="number" inputmode="numeric" min="1" step="1" placeholder="Bölüm numarası" aria-label="Bölüm numarası">
       <button type="submit" class="ana">Git</button>
     </form>
     <div class="liste" id="liste"></div>
-    <p class="not">Bütün bölümler açık ve bölüm sayısının sonu yok: 6. bölümden sonrası her seferinde aynı şekilde üretilir. Her bölümde üç hedef var: üç ateşböceği, kusursuz (fazla atış yok) ve akış.</p>
-    <p class="surum">Kuyu v0.2 · prototip</p>
+    <button type="button" id="dahaBtn">Daha fazla bölüm göster</button>
+    <p class="not">Bütün bölümler açık ve sonu yok: 6. bölümden sonrası numarasından üretilir. Her bölümde üç hedef var: üç ateşböceği, kusursuz (fazla atış yok) ve akış.</p>
   </div>
-</div>
+</section>
+
+<!-- Ayarlar -->
+<section class="ekran sayfa-ekran" id="ekAyarlar" hidden>
+  <div class="sayfa-ust"><button type="button" class="yuvarlak geri" data-geri aria-label="Ana menüye dön"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M12.5 4l-6 6 6 6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button><h2>Ayarlar</h2></div>
+  <div class="sayfa-ic">
+    <div class="ayar-satir"><div><b>Ses</b><span>Kanca, akış ve ateşböceği sesleri</span></div><button type="button" class="anahtar" id="sesAnahtar" role="switch" aria-checked="true"><i></i></button></div>
+    <form class="ayar-satir ad-satir" id="adForm">
+      <label for="adDegis"><b>Oyuncu adı</b></label>
+      <div class="git"><input id="adDegis" maxlength="16" autocomplete="nickname"><button type="submit">Kaydet</button></div>
+    </form>
+    <div class="ayar-satir"><div><b>Hesap</b><span id="hesapYazi">Misafir · ilerleme bu cihazda</span></div></div>
+    <h3>Nasıl oynanır</h3>
+    <ol class="nasil">
+      <li><b>Bas ve tut:</b> kanca o yöne fırlar, ipe sarılırsın. <b>Bırak:</b> ipten kopar, savrulursun.</li>
+      <li><b>Akış:</b> ip tam sarılmadan bırak, havadayken sıradakine tutun. Zincir uzadıkça puan artar.</li>
+      <li>Asılı kalmak bedava değil: elin yorulur ve kayarsın.</li>
+      <li>Kanca ahşaba ve halkaya saplanır, taştan seker. Diken ve su öldürür.</li>
+    </ol>
+    <button type="button" id="tanitimBtn">Tanıtımı yeniden izle</button>
+    <p class="surum">Kuyu v0.3 · prototip · Funday Morning Games</p>
+  </div>
+</section>
+
+<div class="bildirim" id="bildirim" role="status" hidden></div>
 
 <script src="js/engine.js"></script>
 <script src="js/levels.js"></script>
 <script src="js/gen.js"></script>
 <script src="js/game.js"></script>
+<script src="js/screens.js"></script>
 </body>
 </html>

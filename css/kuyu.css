@@ -95,25 +95,8 @@ canvas#oyun {
 .madalya.var svg { opacity: 1; }
 .kart .dugmeler { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
 
-/* menü */
-.menu {
-  position: fixed; inset: 0; z-index: 10; background: rgba(9,14,15,.96); overflow-y: auto;
-  padding-block: calc(24px + env(safe-area-inset-top, 0px)) calc(24px + env(safe-area-inset-bottom, 0px));
-  padding-left: max(16px, env(safe-area-inset-left, 0px));
-  padding-right: max(16px, env(safe-area-inset-right, 0px));
-}
-.menu-ic { max-width: 440px; margin: 0 auto; display: flex; flex-direction: column; gap: 16px; }
-.menu-ust { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
-.marka { font-family: var(--font-oyun); font-weight: 800; font-size: 44px; line-height: .9; color: var(--gok); margin: 0; }
-.marka small { display: block; font-family: var(--font-metin); font-weight: 400; font-size: 13px; color: var(--soluk); margin-top: 6px; letter-spacing: .02em; }
-.modlar { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-.mod { flex-direction: column; align-items: flex-start; gap: 4px; padding: 14px; min-height: 110px; text-align: left; border-radius: 14px; }
-.mod b { font-family: var(--font-oyun); font-weight: 800; font-size: 21px; line-height: 1.05; }
-.mod span { color: var(--soluk); font-size: 13px; }
-.mod.sonsuz { background: linear-gradient(160deg, #1d3a3d, #16262a); border-color: #2f5a5c; }
-.mod.sonsuz b { color: var(--gok); }
-.mod em { font-style: normal; color: var(--atesbocegi); font-variant-numeric: tabular-nums; font-size: 13px; }
-.menu h3 { margin: 4px 0 0; font-family: var(--font-oyun); font-weight: 600; font-size: 19px; }
+/* ortak liste parçaları */
+.sayfa-ic h3 { margin: 4px 0 0; font-family: var(--font-oyun); font-weight: 600; font-size: 19px; }
 .git { display: flex; gap: 8px; }
 .git input {
   flex: 1; min-width: 0; min-height: 44px; border-radius: 10px; border: 1px solid var(--kenar);

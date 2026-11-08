@@ -189,17 +189,91 @@
     s.events.push({ type: 'attach', x: x, y: y, what: what });
   }
 
+  // ---------- tek el nişan yardımı ----------
+  // Telefonda oyuncu hedefe dokunmaz: başparmağın ekranın neresine bastığı yalnızca yönü seçer.
+  //   f = dokunuşun ekran genişliğindeki yeri (0 sol kenar, 1 sağ kenar)
+  //   sol taraf sol yukarı, orta düz yukarı, sağ taraf sağ yukarı.
+  // O yönde menzilde ve görüşte olan tutunma noktaları (halka, kova, ahşap, kutu) arasından en uygunu seçilir.
+  // Dokunuş bir hedefin hemen üstündeyse (tablet, fare) doğrudan o hedef alınır.
+  function currentIgnore(s) {
+    if (s.rope && s.rope.kind === 'anchor') return s.rope.ref;
+    if (s.lastAnchor) {
+      var dl = dist(s.p.x, s.p.y, s.lastAnchor.x, s.lastAnchor.y);
+      if (dl < 48 || (s.t - s.lastAnchorT < 0.45 && dl < 110)) return s.lastAnchor.ref;
+    }
+    return null;
+  }
+
+  function candidates(s) {
+    var p = s.p, R = CFG.HOOK_MAX - 4, out = [], i;
+    function add(x, y, kind, ref) { var d = dist(p.x, p.y, x, y); if (d <= R && d > 18) out.push({ x: x, y: y, kind: kind, ref: ref, d: d }); }
+    for (i = 0; i < s.rings.length; i++) { var rg = s.rings[i]; if (Math.abs(rg.y - p.y) <= R) add(rg.x, rg.y, 'ring', rg); }
+    if (s.goal) add(s.goal.x, s.goal.y, 'goal', 'goal');
+    for (i = 0; i < s.boxes.length; i++) add(s.boxes[i].x, s.boxes[i].y, 'box', s.boxes[i]);
+    for (i = 0; i < s.rects.length; i++) {
+      var r = s.rects[i];
+      if (r.type !== 'w' || r.y > p.y + R || r.y + r.h < p.y - R) continue;
+      // ahşabın oyuncuya bakan yüzünde, biraz yukarıda bir nokta
+      var px = Math.max(r.x, Math.min(p.x, r.x + r.w));
+      var py = Math.max(r.y + 4, Math.min(p.y - 90, r.y + r.h - 4));
+      add(px, py, 'wood', r);
+    }
+    return out;
+  }
+
+  // Bu noktaya atılan kanca gerçekten oraya mı takılır?
+  function reachable(s, c, ignore) {
+    var p = s.p, dx = c.x - p.x, dy = c.y - p.y, d = Math.sqrt(dx * dx + dy * dy);
+    var hit = hookRay(s, p.x, p.y, p.x + dx / d * (d + 6), p.y + dy / d * (d + 6), ignore);
+    if (!hit) return false;
+    if (c.kind === 'goal') return hit.kind === 'goal';
+    return (hit.ring || hit.rect || hit.box) === c.ref;
+  }
+
+  function aim(s, f, tapX, tapY) {
+    var p = s.p, ignore = currentIgnore(s), list = candidates(s), i, c;
+    // hassas dokunuş: hedefin üstüne basıldıysa onu al
+    if (tapX != null) {
+      var near = null;
+      for (i = 0; i < list.length; i++) {
+        c = list[i];
+        if (c.ref === ignore) continue;
+        var dt = dist(tapX, tapY, c.x, c.y);
+        if (dt < 40 && (!near || dt < near.dt) && reachable(s, c, ignore)) near = { c: c, dt: dt };
+      }
+      if (near) return { x: near.c.x, y: near.c.y, kind: near.c.kind, assisted: true };
+    }
+    var th = (-150 + Math.max(0, Math.min(1, f)) * 120) * Math.PI / 180;
+    var dirX = Math.cos(th), dirY = Math.sin(th);
+    var side = f < 0.42 ? -1 : f > 0.58 ? 1 : 0;
+    var best = null;
+    for (var pass = 0; pass < 2 && !best; pass++) {
+      var maxAng = pass === 0 ? 70 : 115;
+      for (i = 0; i < list.length; i++) {
+        c = list[i];
+        if (c.ref === ignore) continue;
+        var dx = c.x - p.x, dy = c.y - p.y;
+        if (side < 0 && dx > 15) continue;
+        if (side > 0 && dx < -15) continue;
+        var cos = (dx * dirX + dy * dirY) / c.d;
+        var ang = Math.acos(Math.max(-1, Math.min(1, cos))) * 180 / Math.PI;
+        if (ang > maxAng) continue;
+        var score = ang + c.d * 0.04 - (p.y - c.y) * 0.03;
+        if (best && score >= best.score) continue;
+        if (!reachable(s, c, ignore)) continue;
+        best = { x: c.x, y: c.y, kind: c.kind, score: score, assisted: true };
+      }
+    }
+    if (best) return best;
+    return { x: p.x + dirX * CFG.HOOK_MAX, y: p.y + dirY * CFG.HOOK_MAX, kind: 'none', assisted: false };
+  }
+
   // ---------- girdi ----------
   function press(s, tx, ty) {
     if (s.status !== 'play') return;
     s.pressed = true;
     // Tutunduğun ya da az önce bıraktığın noktaya yeni atış takılmasın (zincirlerken ipin yolu üstünde kalır).
-    var ignore = null;
-    if (s.rope && s.rope.kind === 'anchor') ignore = s.rope.ref;
-    else if (s.lastAnchor) {
-      var dl = dist(s.p.x, s.p.y, s.lastAnchor.x, s.lastAnchor.y);
-      if (dl < 48 || (s.t - s.lastAnchorT < 0.45 && dl < 110)) ignore = s.lastAnchor.ref;
-    }
+    var ignore = currentIgnore(s);
     if (s.rope) detach(s, 'repress');
     var dx = tx - s.p.x, dy = ty - s.p.y, d = Math.sqrt(dx * dx + dy * dy);
     if (d < 4) { dx = 0; dy = -1; d = 1; }
@@ -347,7 +421,7 @@
 
   var api = {
     CFG: CFG, createSim: createSim, step: step, press: press, release: release,
-    fireflyCount: fireflyCount, hookRay: hookRay, meters: meters, score: score, segRect: segRect
+    fireflyCount: fireflyCount, hookRay: hookRay, meters: meters, score: score, segRect: segRect, aim: aim
   };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.KuyuEngine = api;

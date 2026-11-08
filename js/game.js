@@ -596,10 +596,14 @@
     if (sim.status !== 'play') return;
     active = ev.pointerId;
     try { canvas.setPointerCapture(ev.pointerId); } catch (e) {}
-    var w = toWorld(ev);
-    var dx = w.x - sim.p.x, dy = w.y - sim.p.y, d = Math.sqrt(dx * dx + dy * dy) || 1;
+    // Tek el: dokunuşun ekrandaki yatay yeri yönü seçer (sol / orta / sağ), nişan yardımı hedefi bulur.
+    // Hedefin tam üstüne basılırsa (tablet, fare) doğrudan o hedef alınır.
+    var w = toWorld(ev), r = canvas.getBoundingClientRect();
+    var f = (ev.clientX - r.left) / Math.max(1, r.width);
+    var tgt = E.aim(sim, f, w.x, w.y);
+    var dx = tgt.x - sim.p.x, dy = tgt.y - sim.p.y, d = Math.sqrt(dx * dx + dy * dy) || 1;
     aim = { x: dx / d, y: dy / d };
-    E.press(sim, w.x, w.y);
+    E.press(sim, tgt.x, tgt.y);
   });
   function up(ev) {
     if (ev.pointerId !== active) return;

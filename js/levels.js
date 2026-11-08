@@ -13,7 +13,7 @@
   var LEVELS = [
     {
       id: 1, name: 'İlk Halka', par: 6, flow: 4, grip: 3.0, H: 1100,
-      hint: 'Ekrana bas: kanca o yöne fırlar. Basılı tut: ipe sarılırsın. Bırak: düşersin. Halkadan halkaya tırman, en üstteki kovayı yakala.',
+      hint: 'Tek elle oyna: ekranın sağına bas, kanca sağ yukarıdaki halkaya; soluna bas, sol yukarıdakine atılır. Basılı tut: ipe sarıl. Bırak: savrul. En üstteki kovayı yakala.',
       start: [180, 1040], goal: [180, 50],
       rects: [[16, 1060, 328, 40, 's']],
       rings: [[180, 860], [110, 680], [250, 500], [150, 330], [220, 180]],

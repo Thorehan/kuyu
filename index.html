@@ -16,8 +16,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&family=Figtree:wght@400;600&display=swap">
-<link rel="stylesheet" href="css/kuyu.css?v=0.14">
-<link rel="stylesheet" href="css/ekranlar.css?v=0.14">
+<link rel="stylesheet" href="css/kuyu.css?v=0.15">
+<link rel="stylesheet" href="css/ekranlar.css?v=0.15">
 </head>
 <body>
 <div class="app" id="oyunEkrani" hidden>
@@ -69,7 +69,7 @@
   <img id="acilisLogo" class="marka-logo" src="assets/funday-morning-logo.webp" alt="Funday Morning Games">
   <div class="yukleme" aria-hidden="true"><div id="yuklemeDolgu"></div></div>
   <div class="yukleme-not" id="yuklemeNot">Yükleniyor…</div>
-  <div class="ek-surum">Kuyu v0.14</div>
+  <div class="ek-surum">Kuyu v0.15</div>
 </section>
 
 <!-- Giriş: yalnızca ilk açılışta -->
@@ -119,7 +119,7 @@
     </button>
     <div class="ana-kartlar">
       <button type="button" class="ana-kart sonsuz" id="sonsuzBtn"><b>Sonsuz Kuyu</b><span id="sonsuzRekor">Bölüm yok, su yükselir</span></button>
-      <button type="button" class="ana-kart" id="bolumlerBtn"><b>Bölümler</b><span id="madalyaSay">Hepsi açık</span></button>
+      <button type="button" class="ana-kart gunluk" id="gunlukBtn"><b>Günlük Kuyu</b><span id="gunlukBilgi">Bugünün kuyusu hazır</span><span class="seri" id="gunlukSeri" hidden></span></button>
     </div>
   </div>
 </section>
@@ -162,6 +162,13 @@
         <div><small>Toplam ödül</small><b id="pOdul">0</b></div>
         <div><small>En iyi bölüm ödülü</small><b id="pEnIyiOdul">0</b></div>
       </div>
+      <h3>Günlük Kuyu</h3>
+      <div class="profil-izgara">
+        <div><small>Bugünün en iyisi</small><b id="pGunluk">0</b></div>
+        <div><small>Seri</small><b id="pSeri">0 gün</b></div>
+        <div><small>En uzun seri</small><b id="pMaxSeri">0 gün</b></div>
+        <div><small>Bugünkü deneme</small><b id="pDeneme">0</b></div>
+      </div>
       <h3>Sonsuz Kuyu</h3>
       <div class="profil-izgara">
         <div><small>Rekor puan</small><b id="pRekor">0</b></div>
@@ -197,7 +204,7 @@
     <div class="ayar-satir" id="tamEkranSatir"><div><b>Tam ekran</b><span id="tamEkranYazi">Tarayıcı çubukları gizlenir. Ana ekrana eklersen oyun kendiliğinden tam ekran açılır.</span></div><button type="button" id="tamEkranBtn">Aç</button></div>
     <button type="button" id="tanitimBtn">Tanıtımı yeniden izle</button>
     <button type="button" id="ipucuSifirBtn">Tanıtım kartlarını yeniden göster</button>
-    <p class="surum">Kuyu v0.14 · prototip · Funday Morning Games</p>
+    <p class="surum">Kuyu v0.15 · prototip · Funday Morning Games</p>
   </div>
 </section>
 
@@ -211,10 +218,10 @@
 
 <div class="bildirim" id="bildirim" role="status" hidden></div>
 
-<script src="js/engine.js?v=0.14"></script>
-<script src="js/levels.js?v=0.14"></script>
-<script src="js/gen.js?v=0.14"></script>
-<script src="js/game.js?v=0.14"></script>
-<script src="js/screens.js?v=0.14"></script>
+<script src="js/engine.js?v=0.15"></script>
+<script src="js/levels.js?v=0.15"></script>
+<script src="js/gen.js?v=0.15"></script>
+<script src="js/game.js?v=0.15"></script>
+<script src="js/screens.js?v=0.15"></script>
 </body>
 </html>

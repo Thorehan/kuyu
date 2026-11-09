@@ -115,8 +115,31 @@
     }
   }
 
+  // ---------- Günlük Kuyu ----------
+  // Tohum günün tarihinden üretilir: o gün herkes aynı kuyuyu oynar. Online skor tablosunun zemini.
+  // Gün sınırı herkes için İstanbul saati (UTC+3, yaz saati yok): yeni kuyu Türkiye'de gece yarısı gelir.
+  var dailyKey = null;
+  var GUN_KAYMA = 3 * 3600 * 1000; // UTC+3
+  function todayKey() { return new Date(Date.now() + GUN_KAYMA).toISOString().slice(0, 10); }
+  function prevKey(key) { var d = new Date(key + 'T12:00:00Z'); d.setUTCDate(d.getUTCDate() - 1); return d.toISOString().slice(0, 10); }
+  function dailySeed(key) {
+    var str = 'kuyu-gunluk-' + key, h = 2166136261 >>> 0;
+    for (var i = 0; i < str.length; i++) { h ^= str.charCodeAt(i); h = Math.imul(h, 16777619) >>> 0; }
+    return h;
+  }
+  function msToNextDay() { var n = new Date(Date.now() + GUN_KAYMA), t = Date.UTC(n.getUTCFullYear(), n.getUTCMonth(), n.getUTCDate() + 1); return t - n.getTime(); }
+  function dailyInfo() {
+    var key = todayKey(), d = save.daily || {}, st = save.streak || {};
+    var today = d.date === key ? d : null;
+    // seri canlı mı: bugün ya da dün oynandıysa
+    var alive = st.last === key || st.last === prevKey(key);
+    return { key: key, best: today ? today.best : 0, meters: today ? today.meters : 0, tries: today ? today.tries : 0,
+      streak: alive ? (st.count || 0) : 0, maxStreak: st.max || 0, playedToday: st.last === key };
+  }
+
   // ---------- akış ----------
   function startLevel(n) {
+    dailyKey = null;
     mode = 'level';
     levelNo = Math.max(1, Math.floor(n) || 1);
     def = levelDef(levelNo);
@@ -127,17 +150,18 @@
     $('baslik').textContent = levelNo + '. ' + def.name;
     reset();
   }
-  function startEndless() {
+  function startEndless(daily) {
     mode = 'endless';
-    def = GEN.createEndless((Date.now() ^ (Math.random() * 1e9)) >>> 0);
+    dailyKey = daily ? todayKey() : null;
     deaths = 0;
-    $('ipucu').textContent = def.hint;
     $('puan').hidden = false;
-    $('baslik').textContent = 'Sonsuz Kuyu';
+    $('baslik').textContent = dailyKey ? 'Günlük Kuyu' : 'Sonsuz Kuyu';
     reset();
+    $('ipucu').textContent = dailyKey ? 'Bugünün kuyusu herkes için aynı. İstediğin kadar dene; günün en iyi puanın ve serin sayılır.' : def.hint;
   }
+  function newEndlessDef() { return GEN.createEndless(dailyKey ? dailySeed(dailyKey) : (Date.now() ^ (Math.random() * 1e9)) >>> 0); }
   function reset() {
-    if (mode === 'endless') def = GEN.createEndless((Date.now() ^ (Math.random() * 1e9)) >>> 0);
+    if (mode === 'endless') def = newEndlessDef();
     sim = E.createSim(def);
     parts = []; floaters = []; trail = []; winT = null; deadT = null; resultShown = false; lastHud = '';
     $('katman').hidden = true;
@@ -738,14 +762,34 @@
   }
   function showEndlessResult() {
     resultShown = true;
-    var raw = E.score(sim), mult = E.speedMult(sim), sc = E.finalScore(sim), m = E.meters(sim), rec = save.endless || {};
+    var raw = E.score(sim), mult = E.speedMult(sim), sc = E.finalScore(sim), m = E.meters(sim);
     var speed = E.speedMs(sim.maxSpeed);
-    var isRecord = sc > (rec.score || 0), recM = m > (rec.meters || 0), recC = sim.maxCombo > (rec.combo || 0);
-    save.endless = { score: Math.max(rec.score || 0, sc), meters: Math.max(rec.meters || 0, m), combo: Math.max(rec.combo || 0, sim.maxCombo) };
+    var isRecord, recM, recC = false, title, sub, recLine;
+    if (dailyKey) {
+      // Günlük: günün en iyisi, deneme sayısı, seri
+      var d = save.daily && save.daily.date === dailyKey ? save.daily : { date: dailyKey, best: 0, meters: 0, tries: 0 };
+      isRecord = sc > d.best; recM = m > d.meters;
+      d.tries = (d.tries || 0) + 1; d.best = Math.max(d.best, sc); d.meters = Math.max(d.meters, m);
+      save.daily = d;
+      var st = save.streak || { last: null, count: 0, max: 0 };
+      if (st.last !== dailyKey) { st.count = st.last === prevKey(dailyKey) ? (st.count || 0) + 1 : 1; st.last = dailyKey; st.max = Math.max(st.max || 0, st.count); }
+      save.streak = st;
+      var left = msToNextDay(), hh = Math.floor(left / 3600000), mm = Math.floor(left % 3600000 / 60000);
+      title = isRecord && d.tries > 1 ? 'Günün rekoru!' : isRecord ? 'Bugünün ilk puanı' : 'Su yetişti';
+      sub = 'Günlük Kuyu · ' + new Date(dailyKey + 'T12:00:00Z').toLocaleDateString('tr-TR', { day: 'numeric', month: 'long' }) + ' · ' + d.tries + '. deneme';
+      recLine = 'Bugünün en iyisi ' + d.best + ' puan · seri ' + st.count + ' gün · yeni kuyu ' + hh + ' sa ' + mm + ' dk sonra';
+    } else {
+      var rec = save.endless || {};
+      isRecord = sc > (rec.score || 0); recM = m > (rec.meters || 0); recC = sim.maxCombo > (rec.combo || 0);
+      save.endless = { score: Math.max(rec.score || 0, sc), meters: Math.max(rec.meters || 0, m), combo: Math.max(rec.combo || 0, sim.maxCombo) };
+      title = isRecord ? 'Yeni rekor!' : 'Su yetişti';
+      sub = 'Sonsuz Kuyu · ' + fmt(sim.t, 0) + ' sn';
+      recLine = 'Rekor ' + save.endless.score + ' puan · en yüksek ' + save.endless.meters + ' m';
+    }
     noteStats(speed, 0);
     $('kart').className = 'kart sonuc';
     $('kart').innerHTML =
-      '<div class="sonuc-bas"><h2>' + (isRecord ? 'Yeni rekor!' : 'Su yetişti') + '</h2><span>Sonsuz Kuyu · ' + fmt(sim.t, 0) + ' sn</span></div>' +
+      '<div class="sonuc-bas"><h2>' + title + '</h2><span>' + sub + '</span></div>' +
       '<div class="odul-satir"><b id="odulSayi">0</b><small>puan</small>' + (isRecord ? '<em class="rekor-etiket">REKOR</em>' : '') + '</div>' +
       '<p class="odul-hesap">' + m + ' m + ' + sim.bonus + ' akış + ' + sim.fireflyPts + ' ateşböceği' + (mult > 1 ? ' = ' + raw + ' × x' + fmt(mult, 2) + ' hız' : '') + '</p>' +
       '<div class="istatistik">' +
@@ -753,8 +797,8 @@
       stat(IK.akis, 'x' + sim.maxCombo, 'en uzun akış x' + sim.maxCombo, recC) +
       stat(IK.hiz, fmt(speed, 0) + ' m/sn', 'en yüksek hız', false) +
       '</div>' +
-      '<p class="rekor-satir">Rekor ' + save.endless.score + ' puan · en yüksek ' + save.endless.meters + ' m</p>' +
-      '<button type="button" class="ana buyuk genis" id="yenidenBtn">Yeniden dene</button>' +
+      '<p class="rekor-satir">' + recLine + '</p>' +
+      '<button type="button" class="ana buyuk genis" id="yenidenBtn">' + (dailyKey ? 'Bir daha dene' : 'Yeniden dene') + '</button>' +
       '<button type="button" class="genis" id="menuDonBtn">Ana menü</button>';
     showSheet();
     countUp($('odulSayi'), sc);
@@ -840,7 +884,7 @@
     active = null; // parmak panelde kalkarsa ip bırakılmasın
     var m = E.meters(sim);
     if (mode === 'endless') {
-      $('duraklatBilgi').textContent = 'Sonsuz Kuyu · ' + m + ' m · ' + E.score(sim) + ' puan · akış x' + sim.combo;
+      $('duraklatBilgi').textContent = (dailyKey ? 'Günlük Kuyu' : 'Sonsuz Kuyu') + ' · ' + m + ' m · ' + E.score(sim) + ' puan · akış x' + sim.combo;
       $('bastanBtn').textContent = 'Yeni koşu';
       $('dAtlaBtn').hidden = true;
     } else {
@@ -934,7 +978,9 @@
   // Ekran yöneticisinin kullandığı arayüz
   window.KuyuGame = {
     startLevel: function (n) { ac(); startLevel(n); },
-    startEndless: function () { ac(); startEndless(); },
+    startEndless: function () { ac(); startEndless(false); },
+    startDaily: function () { ac(); startEndless(true); },
+    dailyInfo: dailyInfo,
     pause: function () { paused = true; },
     save: function () { return save; },
     persist: persist,

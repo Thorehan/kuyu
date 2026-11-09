@@ -8,7 +8,7 @@
   var EKRANLAR = ['ekAcilis', 'ekGiris', 'ekTanitim', 'ekAna', 'ekBolumler', 'ekAyarlar', 'ekProfil'];
   var current = 'ekAcilis';
   var q = new URLSearchParams(location.search);
-  var deepLink = q.get('mod') === 'sonsuz' ? { mode: 'endless' } : q.get('bolum') ? { mode: 'level', n: parseInt(q.get('bolum'), 10) || 1 } : null;
+  var deepLink = q.get('mod') === 'gunluk' ? { mode: 'daily' } : q.get('mod') === 'sonsuz' ? { mode: 'endless' } : q.get('bolum') ? { mode: 'level', n: parseInt(q.get('bolum'), 10) || 1 } : null;
   var save = function () { return G.save(); };
 
   var SEKMELER = ['ekAna', 'ekBolumler', 'ekProfil', 'ekAyarlar'];
@@ -58,7 +58,7 @@
   function openDeepLink() {
     var d = deepLink; deepLink = null;
     try { history.replaceState(null, '', location.pathname); } catch (e) {}
-    if (d.mode === 'endless') G.startEndless(); else G.startLevel(d.n);
+    if (d.mode === 'daily') G.startDaily(); else if (d.mode === 'endless') G.startEndless(); else G.startLevel(d.n);
   }
 
   // ---------- giriş ----------
@@ -134,13 +134,15 @@
     $('toplamAtes').textContent = ates;
     var rec = s.endless || {};
     $('sonsuzRekor').textContent = rec.score ? 'Rekor ' + rec.score + ' · ' + rec.meters + ' m' : 'Bölüm yok, su yükselir';
-    var mc = medalCount();
-    $('madalyaSay').textContent = mc.done ? mc.done + ' bölüm · ' + mc.medals + ' hedef' : 'Hepsi açık, sonu yok';
+    var di = G.dailyInfo();
+    $('gunlukBilgi').textContent = di.tries ? 'Bugün en iyi ' + di.best + ' puan' : 'Bugünün kuyusu hazır';
+    $('gunlukSeri').hidden = !di.streak;
+    $('gunlukSeri').textContent = di.streak + ' gün seri' + (di.playedToday ? '' : ' · bugün oyna, seri sürsün');
     show('ekAna');
   }
   $('oynaBtn').addEventListener('click', function () { G.startLevel(save().last || 1); });
   $('sonsuzBtn').addEventListener('click', function () { G.startEndless(); });
-  $('bolumlerBtn').addEventListener('click', function () { openLevels(); });
+  $('gunlukBtn').addEventListener('click', function () { G.startDaily(); });
   $('profilBtn').addEventListener('click', function () { openProfile(); });
 
   // ---------- profil kartı ----------
@@ -165,6 +167,11 @@
     $('pMetre').textContent = (rec.meters || 0) + ' m';
     $('pKat').textContent = Math.floor((rec.meters || 0) / 3);
     $('pAkis').textContent = 'x' + (rec.combo || 0);
+    var di = G.dailyInfo();
+    $('pGunluk').textContent = di.best;
+    $('pSeri').textContent = di.streak + ' gün';
+    $('pMaxSeri').textContent = di.maxStreak + ' gün';
+    $('pDeneme').textContent = di.tries;
     show('ekProfil');
   }
   document.querySelectorAll('[data-geri]').forEach(function (b) { b.addEventListener('click', home); });

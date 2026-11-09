@@ -178,3 +178,13 @@ button.anahtar-dugme[aria-checked="false"] { color: var(--soluk); }
 @keyframes sayfaGir { from { transform: translateY(40px); opacity: 0; } }
 @keyframes madalyaZipla { 0% { transform: scale(.7); } 60% { transform: scale(1.1); } 100% { transform: none; } }
 @media (prefers-reduced-motion: reduce) { .kart.sonuc, .madalya.yeni { animation: none; } }
+
+/* tanıtım kartı (v0.14) */
+.katman.tanitim-katman { background: rgba(8,13,14,.5); z-index: 4; cursor: pointer; }
+.kart.yeni-kart { position: relative; max-width: 360px; gap: 8px; padding: 22px 18px 14px; border-radius: 20px; border-color: #4b5a2e; animation: sayfaGir .3s cubic-bezier(.2, .9, .3, 1) both; }
+.yeni-rozet { position: absolute; top: -10px; left: 50%; transform: translateX(-50%); background: var(--atesbocegi); color: #23260a; font-size: 11px; font-weight: 800; letter-spacing: .08em; padding: 3px 10px; border-radius: 8px; }
+.yeni-ikon { width: 72px; height: 72px; border-radius: 18px; background: #101817; border: 1px solid #2c3936; display: flex; align-items: center; justify-content: center; }
+.yeni-ikon svg { width: 58px; height: 58px; }
+.yeni-kart h2 { font-size: 26px; }
+.yeni-kart p { font-size: 15px; color: var(--yazi); opacity: .85; text-wrap: pretty; }
+@media (prefers-reduced-motion: reduce) { .kart.yeni-kart { animation: none; } }

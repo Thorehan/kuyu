@@ -14,9 +14,10 @@
 
   // ---------- kayıt ----------
   var KEY = 'kuyu.v2';
-  var save = { best: {}, last: 1, mute: false, haptics: true, endless: { score: 0, meters: 0, combo: 0 }, maxLevel: 1, profile: null, stats: { maxSpeed: 0, bestReward: 0 } };
+  var save = { best: {}, last: 1, mute: false, haptics: true, endless: { score: 0, meters: 0, combo: 0 }, maxLevel: 1, profile: null, stats: { maxSpeed: 0, bestReward: 0 }, seen: {} };
   try { var raw = localStorage.getItem(KEY); if (raw) save = Object.assign(save, JSON.parse(raw)); } catch (e) {}
   if (!save.stats) save.stats = { maxSpeed: 0, bestReward: 0 };
+  if (!save.seen) save.seen = {};
   function persist() { try { localStorage.setItem(KEY, JSON.stringify(save)); } catch (e) {} }
 
   // ---------- bölümler ----------
@@ -140,7 +141,7 @@
     sim = E.createSim(def);
     parts = []; floaters = []; trail = []; winT = null; deadT = null; resultShown = false; lastHud = '';
     $('katman').hidden = true;
-    closePause();
+    closePause(); closeIntro(true);
     paused = false; acc = 0; lastT = 0;
     if (window.KuyuScreens) window.KuyuScreens.showGame();
     layout();
@@ -203,13 +204,14 @@
     for (var i = 0; i < ev.length; i++) {
       var e = ev[i];
       if (e.type === 'fire') SFX.fire();
-      else if (e.type === 'missShot') { tone(300, 0.08, 'triangle', 0.04, 200); floatText(sim.p.x + (aim.x < 0 ? -30 : 30), sim.p.y - 26, 'bu tarafta yok', '#8fa09c', 12); }
+      else if (e.type === 'missShot') { wantIntro('bos'); tone(300, 0.08, 'triangle', 0.04, 200); floatText(sim.p.x + (aim.x < 0 ? -30 : 30), sim.p.y - 26, 'bu tarafta yok', '#8fa09c', 12); }
       else if (e.type === 'boost') { SFX.combo(8); buzz(15); burst(e.x, e.y + 8, 12, '#6fd3ff', 180, 0.45, 200); floatText(e.x, e.y - 30, 'HIZ!', '#6fd3ff', 18); }
       else if (e.type === 'rescue') { SFX.fire(); buzz(25); floatText(sim.p.x, sim.p.y - 26, 'kurtarma kancası', COL.gok, 14); }
       else if (e.type === 'attach') {
         SFX.attach(); shake = Math.max(shake, 3); buzz(e.what === 'box' ? 18 : 12);
         burst(e.x, e.y, 8, e.what === 'wood' || e.what === 'box' ? COL.ahsap : COL.bakir, 140, 0.4);
       } else if (e.type === 'combo') {
+        wantIntro('akis');
         SFX.combo(e.combo); if (e.combo >= 5) buzz(8);
         var pts = Math.min(e.combo, CFG.COMBO_CAP) * CFG.COMBO_PTS;
         floatText(e.x, e.y - 16, 'AKIŞ x' + e.combo + (mode === 'endless' ? '  +' + pts : ''), e.combo >= 8 ? COL.atesbocegi : COL.gok, 13 + Math.min(e.combo, 10));
@@ -218,7 +220,7 @@
       else if (e.type === 'clink') { SFX.clink(); burst(e.x, e.y, 7, '#e9f3f0', 220, 0.25, 0); }
       else if (e.type === 'firefly') { SFX.firefly(); buzz([8, 40, 8]); burst(e.x, e.y, 16, COL.atesbocegi, 160, 0.6, -40); if (mode === 'endless') floatText(e.x, e.y - 10, '+25', COL.atesbocegi, 14); }
       else if (e.type === 'gateOpen') { SFX.gate(); buzz(35); shake = Math.max(shake, 5); }
-      else if (e.type === 'waterStart') { floatText(sim.p.x, sim.p.y + 40, 'su yükseliyor', COL.suAcik, 14); }
+      else if (e.type === 'waterStart') { wantIntro('su'); floatText(sim.p.x, sim.p.y + 40, 'su yükseliyor', COL.suAcik, 14); }
       else if (e.type === 'dead') {
         SFX.dead(); shake = 8; buzz(80);
         burst(sim.p.x, sim.p.y, 22, e.why === 'su' ? COL.suAcik : COL.kahraman, 260, 0.7);
@@ -644,6 +646,7 @@
       else if (mode === 'endless' && deadT > 0.6 && !resultShown) showEndlessResult();
     }
     handleEvents();
+    if (sim.status === 'play' && !paused) maybeIntro();
     var target = camTarget();
     cam += (target - cam) * Math.min(1, dt * (sim.status === 'dead' ? 2 : 7));
     render(t, dt);
@@ -775,10 +778,63 @@
     if (window.KuyuScreens) window.KuyuScreens.home();
   }
 
+  // ---------- tanıtım kartları ----------
+  // Yeni bir şey ilk kez görüldüğünde oyun durur, kısa bir kart çıkar. Her kart bir kez (save.seen).
+  var INTRO = {
+    ff: { t: 'Ateşböceği halkası', m: 'İçinde ateşböceği var. Bu halkaya tutun ya da içinden geç, ateşböceği senin. İstemezsen diğer tarafa git.',
+      i: '<svg viewBox="0 0 64 64"><circle cx="32" cy="32" r="22" fill="#e8f27c" opacity=".18"/><circle cx="32" cy="32" r="13" fill="none" stroke="#e8f27c" stroke-width="4"/><circle cx="32" cy="32" r="4" fill="#fbffd8"/></svg>' },
+    hiz: { t: 'Hız halkası', m: 'Tutun ve bırak: yukarı fırlarsın. Çekilirken bırakırsan daha da hızlanırsın; hız bölüm ödülünü çarpar.',
+      i: '<svg viewBox="0 0 64 64"><circle cx="32" cy="40" r="13" fill="none" stroke="#6fd3ff" stroke-width="4"/><path d="M24 20l8-8 8 8M24 29l8-8 8 8" fill="none" stroke="#6fd3ff" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/></svg>' },
+    ahsap: { t: 'Ahşap', m: 'Kanca ahşaba saplanır, taştan seker. Kahverengi panelin olduğu yana dokun, duvardan duvara tırman.',
+      i: '<svg viewBox="0 0 64 64"><rect x="8" y="10" width="14" height="44" fill="#26312f"/><rect x="22" y="14" width="9" height="36" rx="2" fill="#a2693a" stroke="#6e4223" stroke-width="2"/><path d="M22 24h9M22 34h9M22 44h9" stroke="#6e4223" stroke-width="1.6"/><path d="M56 50L31 30" stroke="#eadfc4" stroke-width="2.5"/><circle cx="56" cy="50" r="6" fill="#f26a3a"/></svg>' },
+    kutu: { t: 'Kutu ve düğme', m: 'Kanca hafif şeyleri sana çeker. Kutuyu kendine çek ve düğmenin üstüne düşür; kapak açılır.',
+      i: '<svg viewBox="0 0 64 64"><rect x="20" y="14" width="24" height="24" rx="2" fill="#a2693a" stroke="#6e4223" stroke-width="2.5"/><path d="M22 16l20 20M42 16L22 36" stroke="#6e4223" stroke-width="2.5"/><rect x="14" y="48" width="36" height="5" rx="2" fill="#d08a45"/><rect x="10" y="53" width="44" height="5" fill="#7a4b22"/></svg>' },
+    su: { t: 'Su yükseliyor', m: 'İlk halkaya tutununca su aşağıdan yükselmeye başlar. Asılı beklemek yerine tırmanmaya devam et.',
+      i: '<svg viewBox="0 0 64 64"><circle cx="32" cy="18" r="7" fill="#f26a3a"/><path d="M4 40c6-5 10-5 14 0s10 5 14 0 10-5 14 0 10 5 14 0V60H4z" fill="#1c6a72"/><path d="M4 40c6-5 10-5 14 0s10 5 14 0 10-5 14 0 10 5 14 0" fill="none" stroke="#5fc3c9" stroke-width="3"/><path d="M32 34v-6" stroke="#5fc3c9" stroke-width="3" stroke-linecap="round"/><path d="M28 31l4-4 4 4" fill="none" stroke="#5fc3c9" stroke-width="3" stroke-linecap="round"/></svg>' },
+    akis: { t: 'Akış!', m: 'İpi tam sarılmadan bırakıp havadayken sıradakine tutundun. Zincir uzadıkça Akış madalyası ve puan gelir; uzun asılı kalmak zinciri bitirir.',
+      i: '<svg viewBox="0 0 64 64"><path d="M6 40C14 22 22 22 30 40S46 58 58 30" fill="none" stroke="#e8f27c" stroke-width="5" stroke-linecap="round"/><text x="40" y="22" fill="#e8f27c" font-family="Baloo 2, sans-serif" font-weight="800" font-size="16">x2</text></svg>' },
+    bos: { t: 'Bu tarafta hedef yok', m: 'Kanca boşa gitti ama ipin bırakılmadı. Turkuaz (sol) ya da sarı (sağ) işaretin olduğu yana dokun.',
+      i: '<svg viewBox="0 0 64 64"><circle cx="20" cy="40" r="11" fill="none" stroke="#2fb3a6" stroke-width="3.5" stroke-dasharray="5 4"/><path d="M44 30l10 10M54 30L44 40" stroke="#f2b23a" stroke-width="4" stroke-linecap="round" opacity=".7"/></svg>' },
+    kurtarma: { t: 'Kurtarma kancası', m: 'Menzilde hiç hedef kalmadı. Ekrana dokun: kanca en yakın yukarı halkaya kadar uzanır.',
+      i: '<svg viewBox="0 0 64 64"><circle cx="46" cy="12" r="8" fill="none" stroke="#d08a45" stroke-width="3.5"/><path d="M18 54L44 18" stroke="#bfe6ee" stroke-width="3" stroke-dasharray="4 5" stroke-linecap="round"/><circle cx="16" cy="56" r="6" fill="#f26a3a"/></svg>' },
+    kayma: { t: 'El yorulur', m: 'Sonsuz Kuyu\'da asılı kaldıkça çevrendeki yay azalır; bitince elin kayar. Akışta kal, beklemeden tırman.',
+      i: '<svg viewBox="0 0 64 64"><circle cx="32" cy="34" r="10" fill="#f26a3a"/><circle cx="32" cy="34" r="18" fill="none" stroke="rgba(255,255,255,.15)" stroke-width="4"/><path d="M32 16a18 18 0 0 1 17 12" fill="none" stroke="#f26a3a" stroke-width="4" stroke-linecap="round"/></svg>' }
+  };
+  var introOpen = false, introWant = [];
+  function wantIntro(key) { if (!save.seen[key] && introWant.indexOf(key) < 0) introWant.push(key); }
+  function inView(y) { var vh = viewH / K; return y > cam + 30 && y < cam + vh - 40; }
+  function maybeIntro() {
+    if (introOpen || pauseOpen || sim.t < 0.6) return;
+    // ekranda ilk kez görünenler
+    if (!save.seen.ff && sim.rings.some(function (r) { return r.ff && !r.got && inView(r.y); })) wantIntro('ff');
+    if (!save.seen.hiz && sim.rings.some(function (r) { return r.hiz && inView(r.y); })) wantIntro('hiz');
+    if (!save.seen.ahsap && sim.rects.some(function (r) { return r.type === 'w' && inView(r.y + r.h / 2); })) wantIntro('ahsap');
+    if (!save.seen.kutu && sim.boxes.length && sim.boxes.some(function (b) { return inView(b.y); })) wantIntro('kutu');
+    if (!save.seen.kurtarma && !sim.rope && !sim.hook && E.aim(sim, 0.25).rescue) wantIntro('kurtarma');
+    if (!save.seen.kayma && mode === 'endless' && isFinite(sim.grip) && sim.hang > 0.3) wantIntro('kayma');
+    var key = introWant.shift();
+    if (key && !save.seen[key]) openIntro(key);
+  }
+  function openIntro(key) {
+    var c = INTRO[key]; if (!c) return;
+    save.seen[key] = true; persist();
+    introOpen = true; paused = true; active = null; // parmak kartta kalkarsa ip bırakılmasın
+    $('yeniIkon').innerHTML = c.i; $('yeniBaslik').textContent = c.t; $('yeniMetin').textContent = c.m;
+    $('yeniKatman').hidden = false;
+    $('yeniTamam').focus({ preventScroll: true });
+  }
+  function closeIntro(silent) {
+    if (!introOpen) { $('yeniKatman').hidden = true; return; }
+    introOpen = false; $('yeniKatman').hidden = true;
+    if (!silent && !pauseOpen) { paused = false; lastT = 0; acc = 0; }
+  }
+  $('yeniKatman').addEventListener('click', function () { closeIntro(false); });
+
   // ---------- duraklatma ----------
   // Oyun ve su durur. Tutunduğun ip bırakılmaz: devam edince aynı yerden sürersin.
   var pauseOpen = false;
   function pauseGame() {
+    if (introOpen) closeIntro(true);
     if (!sim || sim.status !== 'play' || pauseOpen) return;
     pauseOpen = true; paused = true;
     active = null; // parmak panelde kalkarsa ip bırakılmasın
@@ -858,6 +914,7 @@
   canvas.addEventListener('contextmenu', function (e) { e.preventDefault(); });
   window.addEventListener('keydown', function (e) {
     if (e.target && e.target.tagName === 'INPUT') return;
+    if (introOpen) { if (e.key === 'Enter' || e.key === ' ' || e.key === 'Escape') { e.preventDefault(); closeIntro(false); } return; }
     if (pauseOpen) {
       if (e.key === 'Escape' || e.key === 'Enter' || e.key === ' ') { e.preventDefault(); resumeGame(); }
       else if (e.key === 'r' || e.key === 'R') { closePause(); reset(); }
@@ -884,6 +941,7 @@
     levelDef: levelDef,
     handCount: HAND.length,
     toggleMute: function () { save.mute = !save.mute; persist(); setMuteIcon(); return save.mute; },
+    resetIntros: function () { save.seen = {}; persist(); },
     toggleHaptics: function () { save.haptics = save.haptics === false; persist(); if (save.haptics) buzz(20); return save.haptics; },
     unlockAudio: function () { ac(); },
     pause: function () { pauseGame(); },

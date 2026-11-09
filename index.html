@@ -16,8 +16,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&family=Figtree:wght@400;600&display=swap">
-<link rel="stylesheet" href="css/kuyu.css?v=0.13">
-<link rel="stylesheet" href="css/ekranlar.css?v=0.13">
+<link rel="stylesheet" href="css/kuyu.css?v=0.14">
+<link rel="stylesheet" href="css/ekranlar.css?v=0.14">
 </head>
 <body>
 <div class="app" id="oyunEkrani" hidden>
@@ -32,6 +32,16 @@
   <div class="sahne" id="sahne">
     <canvas id="oyun" aria-label="Kuyu. Bir noktaya bas ve basılı tut: kanca oraya fırlar, ipe sarılırsın. Bırakınca düşersin."></canvas>
     <div class="katman" id="katman" hidden><div class="kart" id="kart"></div></div>
+    <!-- Tanıtım kartı: yeni bir şey ilk kez görülünce oyun kısa süre durur -->
+    <div class="katman alt tanitim-katman" id="yeniKatman" hidden role="dialog" aria-modal="true" aria-labelledby="yeniBaslik">
+      <div class="kart yeni-kart">
+        <span class="yeni-rozet">YENİ</span>
+        <div class="yeni-ikon" id="yeniIkon" aria-hidden="true"></div>
+        <h2 id="yeniBaslik"></h2>
+        <p id="yeniMetin"></p>
+        <button type="button" class="ana buyuk genis" id="yeniTamam">Anladım</button>
+      </div>
+    </div>
     <!-- Duraklatma paneli: oyun ve su durur, tutunduğun ip bırakılmaz -->
     <div class="katman duraklat" id="duraklat" hidden role="dialog" aria-modal="true" aria-labelledby="duraklatBaslik">
       <div class="kart">
@@ -59,7 +69,7 @@
   <img id="acilisLogo" class="marka-logo" src="assets/funday-morning-logo.webp" alt="Funday Morning Games">
   <div class="yukleme" aria-hidden="true"><div id="yuklemeDolgu"></div></div>
   <div class="yukleme-not" id="yuklemeNot">Yükleniyor…</div>
-  <div class="ek-surum">Kuyu v0.13</div>
+  <div class="ek-surum">Kuyu v0.14</div>
 </section>
 
 <!-- Giriş: yalnızca ilk açılışta -->
@@ -186,7 +196,8 @@
     </ol>
     <div class="ayar-satir" id="tamEkranSatir"><div><b>Tam ekran</b><span id="tamEkranYazi">Tarayıcı çubukları gizlenir. Ana ekrana eklersen oyun kendiliğinden tam ekran açılır.</span></div><button type="button" id="tamEkranBtn">Aç</button></div>
     <button type="button" id="tanitimBtn">Tanıtımı yeniden izle</button>
-    <p class="surum">Kuyu v0.13 · prototip · Funday Morning Games</p>
+    <button type="button" id="ipucuSifirBtn">Tanıtım kartlarını yeniden göster</button>
+    <p class="surum">Kuyu v0.14 · prototip · Funday Morning Games</p>
   </div>
 </section>
 
@@ -200,10 +211,10 @@
 
 <div class="bildirim" id="bildirim" role="status" hidden></div>
 
-<script src="js/engine.js?v=0.13"></script>
-<script src="js/levels.js?v=0.13"></script>
-<script src="js/gen.js?v=0.13"></script>
-<script src="js/game.js?v=0.13"></script>
-<script src="js/screens.js?v=0.13"></script>
+<script src="js/engine.js?v=0.14"></script>
+<script src="js/levels.js?v=0.14"></script>
+<script src="js/gen.js?v=0.14"></script>
+<script src="js/game.js?v=0.14"></script>
+<script src="js/screens.js?v=0.14"></script>
 </body>
 </html>

@@ -276,6 +276,7 @@
     toast('Adın kaydedildi: ' + name);
   });
   $('tanitimBtn').addEventListener('click', runIntro);
+  $('ipucuSifirBtn').addEventListener('click', function () { G.resetIntros(); toast('Tanıtım kartları yeni şeyleri ilk gördüğünde yeniden çıkacak.'); });
 
   document.addEventListener('keydown', function (e) {
     if (e.key === 'Escape' && (current === 'ekBolumler' || current === 'ekAyarlar' || current === 'ekProfil')) home();

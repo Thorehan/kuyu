@@ -6,12 +6,18 @@
 <meta name="theme-color" content="#0d1416">
 <meta name="description" content="Kuyu: kancayla halkadan halkaya atılarak derin bir kuyudan gün ışığına tırmandığın mobil oyun. Funday Morning Games.">
 <title>Kuyu</title>
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230d1416'/%3E%3Ccircle cx='32' cy='18' r='9' fill='none' stroke='%23d08a45' stroke-width='5'/%3E%3Cline x1='32' y1='27' x2='32' y2='40' stroke='%23eadfc4' stroke-width='3'/%3E%3Ccircle cx='32' cy='46' r='9' fill='%23f26a3a'/%3E%3C/svg%3E">
+<link rel="icon" type="image/png" href="assets/icons/icon-192.png">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="assets/icons/apple-180.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Kuyu">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&family=Figtree:wght@400;600&display=swap">
-<link rel="stylesheet" href="css/kuyu.css?v=0.7.1">
-<link rel="stylesheet" href="css/ekranlar.css?v=0.7.1">
+<link rel="stylesheet" href="css/kuyu.css?v=0.8">
+<link rel="stylesheet" href="css/ekranlar.css?v=0.8">
 </head>
 <body>
 <div class="app" id="oyunEkrani" hidden>
@@ -41,7 +47,7 @@
   <img id="acilisLogo" class="marka-logo" src="assets/funday-morning-logo.webp" alt="Funday Morning Games">
   <div class="yukleme" aria-hidden="true"><div id="yuklemeDolgu"></div></div>
   <div class="yukleme-not" id="yuklemeNot">Yükleniyor…</div>
-  <div class="ek-surum">Kuyu v0.7</div>
+  <div class="ek-surum">Kuyu v0.8</div>
 </section>
 
 <!-- Giriş: yalnızca ilk açılışta -->
@@ -154,17 +160,18 @@
       <li>Asılı kalmak bedava değil: elin yorulur ve kayarsın.</li>
       <li>Kanca ahşaba ve halkaya saplanır, taştan seker. Alttan yükselen suya dikkat.</li>
     </ol>
+    <div class="ayar-satir" id="tamEkranSatir"><div><b>Tam ekran</b><span id="tamEkranYazi">Tarayıcı çubukları gizlenir. Ana ekrana eklersen oyun kendiliğinden tam ekran açılır.</span></div><button type="button" id="tamEkranBtn">Aç</button></div>
     <button type="button" id="tanitimBtn">Tanıtımı yeniden izle</button>
-    <p class="surum">Kuyu v0.7 · prototip · Funday Morning Games</p>
+    <p class="surum">Kuyu v0.8 · prototip · Funday Morning Games</p>
   </div>
 </section>
 
 <div class="bildirim" id="bildirim" role="status" hidden></div>
 
-<script src="js/engine.js?v=0.7.1"></script>
-<script src="js/levels.js?v=0.7.1"></script>
-<script src="js/gen.js?v=0.7.1"></script>
-<script src="js/game.js?v=0.7.1"></script>
-<script src="js/screens.js?v=0.7.1"></script>
+<script src="js/engine.js?v=0.8"></script>
+<script src="js/levels.js?v=0.8"></script>
+<script src="js/gen.js?v=0.8"></script>
+<script src="js/game.js?v=0.8"></script>
+<script src="js/screens.js?v=0.8"></script>
 </body>
 </html>

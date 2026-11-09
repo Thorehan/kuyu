@@ -61,7 +61,8 @@
       fireflies: [],
       gatesOpen: false,
       water: def.water || def.waterSpeed ? (def.endless ? sy + (def.waterStart || 300) : H + 80) : null,
-      grip: def.grip || CFG.GRIP,
+      // El kayması yalnızca Sonsuz Kuyu'da: bölümlerde asılı kalınabilir (akış yine bozulur).
+      grip: def.endless ? (def.grip || CFG.GRIP) : Infinity,
       events: [],
       grounded: false,
       // akış ve skor

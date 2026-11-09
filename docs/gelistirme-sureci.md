@@ -15,6 +15,8 @@ Bir aşamadaki işler bitmeden sonrakine geçilmez; yeni bulunan oynanış sorun
 - **Görsel tasarım şimdilik bu haliyle devam eder.** İleride yapılacak görsel düzenleme bu yapının (renkler, yazı tipleri, ekran düzeni, sahne çizimi) üzerine yapılır; baştan tasarım yok.
 - **Uçuş hızı iyi.** Kancanın çekme hızına (`CFG.REEL` 760) ve uçuşa yavaşlatma/hızlandırma eklenmez.
 - **Şimdilik zorluk yok.** Diken ve taş çıkıntı yok (`gen.js` içinde `HAZARDS = false`). Tek tehlike alttan yükselen su; oyuncu erken kaybetmemeli.
+- **Sonsuz Kuyu temposu değişmez** (2026-11-09): "kimse ölmüyor" bir sorun sayılmaz; oyun akışını ciddi etkileyen tempo/zorluk değişikliklerinde acele edilmez, önce konuşulur.
+- **El kayması yalnızca Sonsuz Kuyu'da**, bölümlerde yok. **Kusursuz** madalyasında boş atışlar sayılmaz.
 - **Ateşböceği alınamıyor olmamalı.** Ateşböcekleri halkanın içindedir; o halkaya tutunmak ya da içinden geçmek yeter. İstemeyen es geçer.
 
 ## Sıradaki işler
@@ -33,7 +35,8 @@ Bir aşamadaki işler bitmeden sonrakine geçilmez; yeni bulunan oynanış sorun
 - [ ] Halka çeşitleri (öneri, karar bekliyor): çürük halka (kısa süre sonra kopar), sallanan halka (zamanlama), yay halkası.
 - [x] Raunttaki en yüksek hız; bölüm sonunda gösterilir ve ödüle çarpan olur.
 - [x] Profil kartı: en yüksek hız, en yüksek bölüm, sonsuz modda en yüksek metre ve kat.
-- [ ] Ana ekrana ekleme (manifest, simge), tam ekran.
+- [x] Ana ekrana ekleme (manifest, simge), tam ekran, internetsiz açılış.
+- [ ] Telefon denemesi: `docs/telefon-testi.md` (kullanıcı yapacak).
 - [ ] Ödül puanının ne işe yarayacağı (mağaza, kozmetik vb.) henüz kararlaştırılmadı.
 
 ### 3. Online özellikler
@@ -43,6 +46,7 @@ Bir aşamadaki işler bitmeden sonrakine geçilmez; yeni bulunan oynanış sorun
 - [ ] Karakter, kaçış nedeni, ateşböceklerinin anlamı.
 
 ## Yapılanlar
+- 2026-11-09 · v0.8 · Sprint 1: ana ekrana kurulum ve internetsiz açılış, tam ekran düğmesi, simgeler; bölümlerde el kayması yok; Kusursuz'da boş atış sayılmaz; 6. bölüme hız halkası; telefon deneme listesi; `kontrol.js`, `tempo.js`. Su temposu ölçüldü ama değiştirilmedi.
 - 2026-11-09 · v0.7.1 · Su ilk halkadan sonra tetiklenir; "su yükseliyor" uyarısı.
 - 2026-11-09 · v0.7 · El yapımı bölümlere hız halkası; 2. bölüm ipucu hız halkasını anlatır.
 - 2026-11-09 · v0.6 · Katı sol/sağ seçimi, boş atışta ip korunur, karar noktaları, hız halkası, `oyuncu.js` tarzları (sadeceSag/sadeceSol 0/74).

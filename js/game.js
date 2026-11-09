@@ -165,14 +165,14 @@
       $('puan').innerHTML = sc + '<small>puan</small>';
       $('altbaslik').textContent = m + ' m · akış x' + sim.combo + ' · hız x' + E.speedMult(sim).toFixed(2).replace('.', ',') + ' · rekor ' + (save.endless.score || 0);
     } else {
-      var n = E.fireflyCount(sim), key2 = 'l' + n + '|' + m + '|' + sim.combo + '|' + sim.shots;
+      var n = E.fireflyCount(sim), key2 = 'l' + n + '|' + m + '|' + sim.combo + '|' + sim.shots + '|' + sim.misses;
       if (key2 === lastHud && !force) return; lastHud = key2;
       var h = '';
       for (var i = 0; i < sim.fireflies.length; i++) h += '<i class="' + (i < n ? 'var' : '') + '"></i>';
       $('noktalar').innerHTML = h;
       $('noktalar').setAttribute('aria-label', n + ' / ' + sim.fireflies.length + ' ateşböceği');
       var depth = Math.max(0, Math.round(sim.p.y / 20));
-      $('altbaslik').textContent = depth + ' m · atış ' + sim.shots + '/' + def.par + ' · akış x' + sim.combo;
+      $('altbaslik').textContent = depth + ' m · atış ' + (sim.shots - sim.misses) + '/' + def.par + ' · akış x' + sim.combo;
     }
   }
 
@@ -438,6 +438,7 @@
 
   // Asılıyken elin ne kadar dayanacağı: oyuncunun çevresinde azalan yay.
   function drawGrip() {
+    if (!isFinite(sim.grip)) return; // bölümlerde el kaymaz
     if (!sim.rope || sim.rope.kind !== 'anchor' || sim.hang <= 0) return;
     var left = Math.max(0, 1 - sim.hang / sim.grip);
     ctx.lineWidth = 3; ctx.lineCap = 'round';
@@ -664,7 +665,9 @@
   function showLevelResult() {
     resultShown = true;
     var ff = E.fireflyCount(sim), time = sim.t;
-    var perfect = sim.shots <= def.par, flow = sim.maxCombo >= def.flow;
+    // Kusursuz: boş atışlar (o tarafta hedef yokken basmak) sayılmaz; kurtarma kancası sayılır.
+    var shots = sim.shots - sim.misses;
+    var perfect = shots <= def.par, flow = sim.maxCombo >= def.flow;
     var b = save.best[levelNo] || {};
     var newTime = !b.time || time < b.time;
     // Ödül: temel (bölüm + ateşböceği + madalyalar) × hız çarpanı
@@ -683,7 +686,7 @@
       '<h2>Gün ışığı!</h2>' +
       '<div class="madalyalar">' +
       medal(ff >= sim.fireflies.length, ICON.ff, 'Ateşböceği', ff + '/' + sim.fireflies.length) +
-      medal(perfect, ICON.perfect, 'Kusursuz', sim.shots + ' atış · en çok ' + def.par) +
+      medal(perfect, ICON.perfect, 'Kusursuz', shots + ' atış · en çok ' + def.par) +
       medal(flow, ICON.flow, 'Akış', 'en iyi x' + sim.maxCombo + ' · hedef x' + def.flow) +
       '</div>' +
       speedBlock(speed, mult, base, reward, 'Bölüm ödülü') +

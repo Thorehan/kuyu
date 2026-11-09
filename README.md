@@ -1,12 +1,19 @@
 # Kuyu
 
-**Funday Morning Games** · 2D mobil oyun · prototip v0.7
+**Funday Morning Games** · 2D mobil oyun · prototip v0.8
 
 Derin bir kuyunun dibindesin. Telefonu tek elle tut: ekranın soluna ya da sağına dokun, kanca o taraftaki hedefe fırlasın; basılı tut, ipe sarıl; bırak, savrul. Halkadan halkaya, ahşaptan ahşaba tırmanıp kuyudan çık.
 
 **Canlı sürüm:** https://thorehan.github.io/kuyu/
 
 **Geliştirme sırası ve kararlar:** [docs/gelistirme-sureci.md](docs/gelistirme-sureci.md) (oynanış sorunları → geliştirmeler → online → hikâye)
+
+## Telefona kurulum
+- **Android (Chrome):** menü → "Ana ekrana ekle" / "Uygulamayı yükle". **iPhone (Safari):** Paylaş → "Ana Ekrana Ekle".
+- Ana ekrandan açılınca tam ekran ve dikey açılır; bir kez açıldıktan sonra **internetsiz** de çalışır (`sw.js`).
+- Kurmadan tarayıcıda oynayanlar Ayarlar → **Tam ekran** ile tarayıcı çubuklarını gizleyebilir (Android).
+- Simgeler `tools/simge.py` ile çizilir (`assets/icons/`).
+- Telefonda denerken: [docs/telefon-testi.md](docs/telefon-testi.md)
 
 ## Açılış ve menü
 Pofi ile aynı akış:
@@ -56,6 +63,7 @@ Ana menüde "Merhaba, {ad}" düğmesi açar: en yüksek hız; en yüksek ve geç
 - **Bas ve tut:** Kanca parmağının yönüne fırlar. Halka ya da ahşaba saplanırsa seni oraya çeker. Kutu gibi hafif şeyleri sana çeker. Taş kancayı tutmaz.
 - **Bırak:** İpten kopar, o anki hızınla savrulursun. İp tam sarılmadan bırakmak seni halkanın ötesine fırlatır.
 - **Tutunma gücü:** Asılı kalmak bedava değil. İpin ucunda asılıyken oyuncunun çevresindeki yay azalır; bitince el kayar.
+- **El kayması yalnızca Sonsuz Kuyu'da.** Bölümlerde asılı kalınabilir (akış yine bozulur).
 - **Akış:** İp tam sarılmadan bırakıp havadayken sıradaki noktaya tutunursan akış sayacı artar. 0,45 sn'den uzun asılı kalmak, yere basmak ya da 1,1 sn tutunmadan havada kalmak akışı bitirir.
 - **Tehlike:** Bazı bölümlerde ve sonsuz modda su aşağıdan yükselir.
 
@@ -67,7 +75,7 @@ Ana menüde "Merhaba, {ad}" düğmesi açar: en yüksek hız; en yüksek ve geç
 - Doğrudan bağlantı: adresin sonuna `?bolum=25` ekle.
 - Her bölümde üç hedef:
   - **Ateşböceği:** üçünü de topla. Biri genelde ipi erken bırakıp fırlayarak alınır.
-  - **Kusursuz:** bölümü en fazla `par` atışla bitir (boşa atış yok).
+  - **Kusursuz:** bölümü en fazla `par` atışla bitir. Hedef olmayan tarafa basılan boş atışlar sayılmaz; kurtarma kancası sayılır.
   - **Akış:** bölümde en az `flow` uzunluğunda bir akış zinciri kur.
 
 ### Sonsuz Kuyu
@@ -86,7 +94,7 @@ Hepsi `js/engine.js` başındaki `CFG` içinde, sonsuz modun suyu `js/gen.js` i�
 | `COMBO_HANG` | 0,45 sn | Bundan uzun asılı kalmak akışı bitirir |
 | `COMBO_AIR` | 1,1 sn | Havada bundan uzun tutunmadan kalmak akışı bitirir |
 | `COMBO_PTS` × `COMBO_CAP` | 3 × 12 | Akış bonusu (tutunma başına en çok 36) |
-| Sonsuz su hızı | 38 + metre × 0,3, en çok 300 birim/sn | Önce çok yavaş, tırmandıkça hızlanır |
+| Sonsuz su hızı | 38 + metre × 0,3, en çok 300 birim/sn (`gen.js` → `ENDLESS_WATER`) | Değiştirilmiyor (karar 2026-11-09). `node tools/tempo.js` üç sanal oyuncunun ne zaman yakalandığını ölçer: şu an tepki süresi olan ortalama ve iyi oyuncu yaklaşık 1 dk 20 sn, akışla oynayan 20 dk+ |
 | `WATER_GRACE` | 1 sn | Su ilk halkaya tutununca tetiklenir, bu kadar sonra yükselmeye başlar; oyuncu başlamadan beklerken su gelmez |
 | Bölüm suyu | 5. bölüm 80; üretilen her 3. bölümde 45 + n × 0,5, en çok 90 | |
 
@@ -140,5 +148,10 @@ Bot rota bilmez; yalnızca ekrandaki sol ve sağ işarete bakar. Sonuçlar (6 el
 | `tools/bot.js` | Doğrulama botu (koordinatla oynar) |
 | `tools/oyuncu.js` | Gerçek oyuncu gibi tek elle oynayan bot (yalnızca işaretlere bakar) |
 | `docs/gelistirme-sureci.md` | Geliştirme sırası, kalıcı kararlar, yapılanlar |
+| `docs/telefon-testi.md` | Telefonda 10 dakikalık deneme listesi |
+| `sw.js`, `manifest.webmanifest` | Ana ekrana kurulum ve internetsiz açılış |
+| `tools/kontrol.js` | Duman testi: sözdizimi, sayfa bağlantıları, servis çalışanı listesi, sürüm etiketi |
+| `tools/tempo.js` | Sonsuz Kuyu su temposu ölçümü |
+| `tools/simge.py` | Uygulama simgelerini çizer |
 
-Düz JavaScript, derleme adımı yok. Her yayında `index.html` içindeki `?v=` sürüm etiketini artırın; yoksa telefonlar eski CSS/JS'i önbellekten kullanabilir. Kayıt tarayıcıda `kuyu.v2` anahtarıyla tutulur.
+Düz JavaScript, derleme adımı yok. Her yayında `index.html` içindeki `?v=` sürüm etiketini artırın ve `node tools/kontrol.js` çalıştırın; yeni bir js/css dosyası eklenirse `sw.js` listesine de yazılmalı; yoksa telefonlar eski CSS/JS'i önbellekten kullanabilir. Kayıt tarayıcıda `kuyu.v2` anahtarıyla tutulur.

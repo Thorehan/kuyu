@@ -360,6 +360,26 @@
 
   window.addEventListener('resize', function () { brickKey = ''; });
 
+  // ---------- tam ekran ve kurulum ----------
+  var standalone = (window.matchMedia && (window.matchMedia('(display-mode: fullscreen)').matches || window.matchMedia('(display-mode: standalone)').matches)) || navigator.standalone;
+  var canFull = !!(document.documentElement.requestFullscreen) && !standalone;
+  if (!canFull) {
+    $('tamEkranBtn').hidden = true;
+    $('tamEkranYazi').textContent = standalone ? 'Oyun ana ekrandan açıldı, zaten tam ekran.' : 'Bu tarayıcıda tam ekran yok. Paylaş menüsünden "Ana Ekrana Ekle" ile kurarsan tam ekran açılır.';
+  }
+  $('tamEkranBtn').addEventListener('click', function () {
+    if (document.fullscreenElement) { document.exitFullscreen().catch(function () {}); return; }
+    document.documentElement.requestFullscreen({ navigationUI: 'hide' }).then(function () {
+      try { screen.orientation && screen.orientation.lock && screen.orientation.lock('portrait').catch(function () {}); } catch (e) {}
+    }).catch(function () { toast('Tam ekran açılamadı.'); });
+  });
+  document.addEventListener('fullscreenchange', function () { $('tamEkranBtn').textContent = document.fullscreenElement ? 'Kapat' : 'Aç'; });
+
+  // Servis çalışanı: ana ekrana eklenebilir ve internetsiz açılır (https ya da localhost'ta)
+  if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
+    window.addEventListener('load', function () { navigator.serviceWorker.register('sw.js').catch(function () {}); });
+  }
+
   // oyunun kullandığı arayüz
   window.KuyuScreens = {
     home: home,

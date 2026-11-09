@@ -224,8 +224,7 @@
       id: num, name: levelName(num, r), H: H, generated: true,
       hint: waterLevel ? 'Su yükseliyor. Asılı kalma, fırlayıp tutun.' : 'Az tutunarak çık: ipi erken bırak, havadayken sıradakine at.',
       start: [180, Math.round(off - 20)], goal: sh(goal),
-      water: waterLevel ? Math.min(90, 45 + num * 0.5) : 0, waterDelay: 3,
-      grip: 1.8,
+      water: waterLevel ? Math.min(90, 45 + num * 0.5) : 0,
       rects: rects,
       rings: out.rings.map(sh).concat(ffRings.map(function (a) { return [a.x, Math.round(a.y + off), 'ff']; }))
         .concat(hizRings.map(function (a) { return [a.x, Math.round(a.y + off), 'hiz']; })),
@@ -251,9 +250,14 @@
       id: 'sonsuz', name: 'Sonsuz Kuyu', endless: true, seed: seed,
       hint: 'Su durmadan yükselir. Sağa ya da sola dokunarak tırman; ipi erken bırakıp zincirlersen ekstra puan.',
       start: [180, startY - 20], rects: [[WL, startY, W - 2 * WL, 60, 's']], rings: [], fireflies: [],
-      grip: 1.6, waterStart: 380, waterDelay: 3,
+      grip: 1.6, waterStart: 380,
       // Su önce çok yavaş, tırmandıkça hızlanır: koşu erken bitmez, bekleyen oyuncuyu ancak yüksekte yakalar.
-      waterSpeed: function (s) { var m = (s.startY - s.topY) / 20; return Math.min(300, 38 + m * 0.3); },
+      // Su hızı = taban + metre × perM + (su başladıktan sonraki saniye) × perS, en çok cap (birim/sn).
+      // Değerler v0.7 ile aynı (karar 2026-11-09: tempo şimdilik değişmeyecek). Denemek için: node tools/tempo.js taban perM perS cap
+      waterSpeed: function (s) {
+        var W = api.ENDLESS_WATER, m = (s.startY - s.topY) / 20, sec = s.waterFrom == null ? 0 : s.t - s.waterFrom;
+        return Math.min(W.cap, W.base + m * W.perM + sec * W.perS);
+      },
       path: st.nodes
     };
     def.extend = function (s) {
@@ -308,7 +312,7 @@
     return def;
   }
 
-  var api = { createLevel: createLevel, createEndless: createEndless, target: target, hangOf: hangOf, ffAlternative: ffAlternative, rng: rng };
+  var api = { ENDLESS_WATER: { base: 38, perM: 0.3, perS: 0, cap: 300 }, createLevel: createLevel, createEndless: createEndless, target: target, hangOf: hangOf, ffAlternative: ffAlternative, rng: rng };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.KuyuGen = api;
 })(typeof window !== 'undefined' ? window : this);

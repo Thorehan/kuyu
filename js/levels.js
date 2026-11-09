@@ -1,7 +1,7 @@
 /* Kuyu — seviyeler. Dünya genişliği 360, yan duvarlar taş.
    rects: [x, y, w, h, tür, yön]  tür: s taş (kanca tutmaz), w ahşap (kanca tutar), k diken, g kapı (düğmeyle açılır)
    par: "Kusursuz" madalyası için en fazla atış.  flow: "Akış" madalyası için gereken akış.
-   grip: tutunma süresi (s), yoksa motorun varsayılanı.
+   (el kayması yalnızca Sonsuz Kuyu'da; bölümlerde asılı kalınabilir)
    route: botun seviyeyi doğrulamak için izlediği yol (oyunda ipucu değil).
      ['hook', x, y]          oraya kanca at, asılı kalana kadar tut
      ['fling', x, y, boy]    kanca at, ip bu boya inince bırak (fırlama)
@@ -12,7 +12,7 @@
   'use strict';
   var LEVELS = [
     {
-      id: 1, name: 'İlk Halka', par: 6, flow: 4, grip: 3.0, H: 1100,
+      id: 1, name: 'İlk Halka', par: 6, flow: 4, H: 1100,
       hint: 'Tek elle oyna: ekranın sağına bas, kanca sağ yukarıdaki halkaya; soluna bas, sol yukarıdakine atılır. Basılı tut: ipe sarıl. Bırak: savrul. En üstteki kovayı yakala.',
       start: [180, 1040], goal: [180, 50],
       rects: [[16, 1060, 328, 40, 's']],
@@ -21,7 +21,7 @@
       ffRoute: [['hook', 270, 835], ['hook', 110, 680], ['hook', 56, 500], ['hook', 150, 330], ['hook', 80, 180], ['hook', 180, 50]]
     },
     {
-      id: 2, name: 'Ahşap Duvarlar', par: 7, flow: 4, grip: 3.0, H: 1300,
+      id: 2, name: 'Ahşap Duvarlar', par: 7, flow: 4, H: 1300,
       hint: 'Kanca ahşaba saplanır, taştan seker. Mavi oklu halka hız halkası: tutun, bırakınca yukarı fırlarsın.',
       start: [180, 1240], goal: [180, 60],
       rects: [
@@ -61,7 +61,7 @@
       ffRoute: [['hook', 180, 930], ['box', 0], ['wait', 0.8], ['hook', 180, 930], ['hook', 160, 680], ['hook', 250, 520], ['hook', 250, 330], ['hook', 270, 190], ['hook', 180, 50]]
     },
     {
-      id: 5, name: 'Yükselen Su', par: 8, flow: 5, H: 1600, water: 80, waterDelay: 1.5,
+      id: 5, name: 'Yükselen Su', par: 8, flow: 5, H: 1600, water: 80,
       hint: 'Su yükseliyor. Asılı kalıp bekleme, sıradaki halkaya hemen atıl.',
       start: [180, 1540], goal: [180, 60],
       rects: [[16, 1560, 328, 40, 's'], [270, 1100, 74, 20, 's'], [16, 700, 70, 20, 's']],
@@ -70,13 +70,13 @@
       ffRoute: [['hook', 220, 1360], ['hook', 270, 1180], ['hook', 250, 1000], ['hook', 304, 820], ['hook', 260, 640], ['hook', 304, 460], ['hook', 240, 280], ['hook', 180, 60]]
     },
     {
-      id: 6, name: 'Kuyu Ağzı', par: 9, flow: 5, H: 1700, water: 62, waterDelay: 2,
+      id: 6, name: 'Kuyu Ağzı', par: 9, flow: 5, H: 1700, water: 62,
       hint: 'Son kuyu: ahşap, halkalar ve yükselen su. Kovaya ulaş, gün ışığına çık.',
       start: [180, 1640], goal: [180, 50],
       rects: [
         [16, 1660, 328, 40, 's']
       ],
-      rings: [[100, 1476], [230, 1270], [120, 1106], [260, 900], [100, 720], [260, 556], [150, 380], [100, 220], [260, 1476, 'ff'], [70, 925, 'ff'], [56, 556, 'ff']],
+      rings: [[100, 1476], [230, 1270], [120, 1106], [260, 900], [100, 720], [260, 556], [150, 380], [100, 220], [260, 1476, 'ff'], [70, 925, 'ff'], [56, 556, 'ff'], [290, 360, 'hiz']],
       route: [['hook', 100, 1476], ['hook', 230, 1270], ['hook', 120, 1106], ['hook', 260, 900], ['hook', 100, 720], ['hook', 260, 556], ['hook', 150, 380], ['fling', 100, 220, 80], ['hook', 180, 50]],
       ffRoute: [['hook', 260, 1476], ['hook', 230, 1270], ['hook', 120, 1106], ['hook', 70, 925], ['hook', 100, 720], ['hook', 56, 556], ['hook', 150, 380], ['hook', 180, 50]]
     }

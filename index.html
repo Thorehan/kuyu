@@ -16,8 +16,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&family=Figtree:wght@400;600&display=swap">
-<link rel="stylesheet" href="css/kuyu.css?v=0.15">
-<link rel="stylesheet" href="css/ekranlar.css?v=0.15">
+<link rel="stylesheet" href="css/kuyu.css?v=0.16">
+<link rel="stylesheet" href="css/ekranlar.css?v=0.16">
 </head>
 <body>
 <div class="app" id="oyunEkrani" hidden>
@@ -69,7 +69,7 @@
   <img id="acilisLogo" class="marka-logo" src="assets/funday-morning-logo.webp" alt="Funday Morning Games">
   <div class="yukleme" aria-hidden="true"><div id="yuklemeDolgu"></div></div>
   <div class="yukleme-not" id="yuklemeNot">Yükleniyor…</div>
-  <div class="ek-surum">Kuyu v0.15</div>
+  <div class="ek-surum">Kuyu v0.16</div>
 </section>
 
 <!-- Giriş: yalnızca ilk açılışta -->
@@ -147,6 +147,17 @@
 </section>
 
 <!-- Profil kartı -->
+<section class="ekran sayfa-ekran sekmeli" id="ekGorevler" hidden>
+  <div class="sayfa-ust"><h2>Görevler</h2></div>
+  <div class="sayfa-ic">
+    <div class="gorev-bas"><h3>Bugünün görevleri</h3><span id="gorevSure">yenisi gece yarısı</span></div>
+    <div class="gorev-liste" id="gorevListe"></div>
+    <div class="gorev-bas"><h3>Başarımlar</h3><span id="basarimSay">0/27</span></div>
+    <div class="basarim-liste" id="basarimListe"></div>
+    <p class="not">Görevler her gece yarısı (Türkiye saati) yenilenir ve o gün herkes için aynıdır. Sayılan koşular: geçilen bölümler ile biten Sonsuz ve Günlük Kuyu koşuları. Görev ödülleri toplam ödül puanına eklenir. Başarımların üç kademesi var: Bronz, Gümüş, Altın.</p>
+  </div>
+</section>
+
 <section class="ekran sayfa-ekran sekmeli" id="ekProfil" hidden>
   <div class="sayfa-ust"><h2>Profil</h2></div>
   <div class="sayfa-ic">
@@ -204,7 +215,7 @@
     <div class="ayar-satir" id="tamEkranSatir"><div><b>Tam ekran</b><span id="tamEkranYazi">Tarayıcı çubukları gizlenir. Ana ekrana eklersen oyun kendiliğinden tam ekran açılır.</span></div><button type="button" id="tamEkranBtn">Aç</button></div>
     <button type="button" id="tanitimBtn">Tanıtımı yeniden izle</button>
     <button type="button" id="ipucuSifirBtn">Tanıtım kartlarını yeniden göster</button>
-    <p class="surum">Kuyu v0.15 · prototip · Funday Morning Games</p>
+    <p class="surum">Kuyu v0.16 · prototip · Funday Morning Games</p>
   </div>
 </section>
 
@@ -212,16 +223,18 @@
 <nav class="alt-menu" id="altMenu" aria-label="Ana gezinme" hidden>
   <button type="button" data-sekme="ekAna"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="7" r="3.2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 10.5v4" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="18" r="3" fill="currentColor"/></svg><span>Ana sayfa</span></button>
   <button type="button" data-sekme="ekBolumler"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="6.5" height="6.5" rx="1.6" fill="none" stroke="currentColor" stroke-width="2"/><rect x="13.5" y="4" width="6.5" height="6.5" rx="1.6" fill="none" stroke="currentColor" stroke-width="2"/><rect x="4" y="13.5" width="6.5" height="6.5" rx="1.6" fill="none" stroke="currentColor" stroke-width="2"/><rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1.6" fill="none" stroke="currentColor" stroke-width="2"/></svg><span>Bölümler</span></button>
+  <button type="button" data-sekme="ekGorevler"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="3.5" width="14" height="17" rx="2.4" fill="none" stroke="currentColor" stroke-width="2"/><path d="M8.5 9l1.6 1.6 3-3M8.5 15.5h7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Görevler</span><i class="nokta" id="gorevNokta" hidden></i></button>
   <button type="button" data-sekme="ekProfil"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8.5" r="4" fill="none" stroke="currentColor" stroke-width="2"/><path d="M4.5 20c1.2-4 4.2-5.6 7.5-5.6s6.3 1.6 7.5 5.6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><span>Profil</span></button>
   <button type="button" data-sekme="ekAyarlar"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 8.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7z" fill="none" stroke="currentColor" stroke-width="2"/><path d="M19.4 13.5l1.6 1.2-1.8 3.1-1.9-.7a7.6 7.6 0 0 1-2 1.2l-.3 2h-3.6l-.3-2a7.6 7.6 0 0 1-2-1.2l-1.9.7-1.8-3.1 1.6-1.2a7.7 7.7 0 0 1 0-2.4L2.9 9.3l1.8-3.1 1.9.7a7.6 7.6 0 0 1 2-1.2l.3-2h3.6l.3 2a7.6 7.6 0 0 1 2 1.2l1.9-.7 1.8 3.1-1.6 1.2a7.7 7.7 0 0 1 0 2.4z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg><span>Ayarlar</span></button>
 </nav>
 
 <div class="bildirim" id="bildirim" role="status" hidden></div>
 
-<script src="js/engine.js?v=0.15"></script>
-<script src="js/levels.js?v=0.15"></script>
-<script src="js/gen.js?v=0.15"></script>
-<script src="js/game.js?v=0.15"></script>
-<script src="js/screens.js?v=0.15"></script>
+<script src="js/engine.js?v=0.16"></script>
+<script src="js/levels.js?v=0.16"></script>
+<script src="js/gen.js?v=0.16"></script>
+<script src="js/gorevler.js?v=0.16"></script>
+<script src="js/game.js?v=0.16"></script>
+<script src="js/screens.js?v=0.16"></script>
 </body>
 </html>

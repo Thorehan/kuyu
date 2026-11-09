@@ -1,7 +1,7 @@
 /* Kuyu — ekranlar, çizim, ses ve girdi. Kurallar js/engine.js, bölümler js/levels.js ve js/gen.js. */
 (function () {
   'use strict';
-  var E = window.KuyuEngine, HAND = window.KuyuLevels, GEN = window.KuyuGen, CFG = E.CFG;
+  var E = window.KuyuEngine, HAND = window.KuyuLevels, GEN = window.KuyuGen, GOREV = window.KuyuGorev, CFG = E.CFG;
   var $ = function (id) { return document.getElementById(id); };
   var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -18,6 +18,7 @@
   try { var raw = localStorage.getItem(KEY); if (raw) save = Object.assign(save, JSON.parse(raw)); } catch (e) {}
   if (!save.stats) save.stats = { maxSpeed: 0, bestReward: 0 };
   if (!save.seen) save.seen = {};
+  GOREV.ensure(save);
   function persist() { try { localStorage.setItem(KEY, JSON.stringify(save)); } catch (e) {} }
 
   // ---------- bölümler ----------
@@ -710,6 +711,20 @@
     if (reward > (st.bestReward || 0)) st.bestReward = reward;
     persist();
   }
+  // Koşu bitti: görev ilerlemesi ve başarımlar (js/gorevler.js).
+  function recordRun(run) { var r = GOREV.record(save, run, todayKey()); persist(); return r; }
+  var KAZ_IK = {
+    gorev: '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8.5l3 3 7-7" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+    basarim: '<svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="6" r="4.2" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M5.6 9.4L4.5 15 8 13.2 11.5 15l-1.1-5.6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>'
+  };
+  function kazanimHtml(r) {
+    var items = [];
+    r.missions.forEach(function (m) { items.push('<li class="kz-gorev">' + KAZ_IK.gorev + '<span><small>Görev</small>' + m.text + '</span><em>+' + m.reward + '</em></li>'); });
+    r.ach.forEach(function (a) { items.push('<li class="kz-basarim t' + a.tier + '">' + KAZ_IK.basarim + '<span><small>' + a.kademe + '</small>' + a.ad + '</span></li>'); });
+    if (!items.length) return '';
+    var more = items.length > 3 ? '<li class="kz-daha">ve ' + (items.length - 3) + ' tane daha · Görevler sekmesinde</li>' : '';
+    return '<ul class="kazanimlar" aria-label="Kazanımlar">' + items.slice(0, 3).join('') + more + '</ul>';
+  }
   function showSheet() {
     $('katman').classList.add('alt');
     $('katman').hidden = false;
@@ -737,6 +752,7 @@
     noteStats(speed, reward);
     if (levelNo + 1 > save.maxLevel) save.maxLevel = levelNo + 1;
     persist();
+    var kaz = recordRun({ mode: 'level', won: true, ff: ff, boosts: sim.boosts, maxCombo: sim.maxCombo, speed: speed, perfect: perfect });
     $('kart').className = 'kart sonuc';
     $('kart').innerHTML =
       '<div class="sonuc-bas"><h2>Gün ışığı!</h2><span>' + levelNo + '. ' + def.name + (first ? ' · ilk kez geçildi' : deaths ? ' · ' + (deaths + 1) + '. deneme' : '') + '</span></div>' +
@@ -750,7 +766,7 @@
       '<div class="istatistik">' +
       stat(SURE_IK, fmt(time, 1) + ' sn', 'süre ' + fmt(time, 1) + ' saniye', recTime) +
       stat(IK.hiz, fmt(speed, 0) + ' m/sn', 'en yüksek hız ' + fmt(speed, 1) + ' metre/saniye', recSpeed) +
-      '</div>' +
+      '</div>' + kazanimHtml(kaz) +
       '<button type="button" class="ana buyuk genis" id="sonrakiBtn">Bölüm ' + (levelNo + 1) + ' ›</button>' +
       '<div class="dur-iki"><button type="button" id="tekrarBtn">Tekrar</button><button type="button" id="bolumlerDonBtn">Bölümler</button></div>';
     showSheet();
@@ -787,6 +803,7 @@
       recLine = 'Rekor ' + save.endless.score + ' puan · en yüksek ' + save.endless.meters + ' m';
     }
     noteStats(speed, 0);
+    var kaz = recordRun({ mode: dailyKey ? 'daily' : 'endless', ff: E.fireflyCount(sim), boosts: sim.boosts, maxCombo: sim.maxCombo, meters: m, speed: speed });
     $('kart').className = 'kart sonuc';
     $('kart').innerHTML =
       '<div class="sonuc-bas"><h2>' + title + '</h2><span>' + sub + '</span></div>' +
@@ -797,7 +814,7 @@
       stat(IK.akis, 'x' + sim.maxCombo, 'en uzun akış x' + sim.maxCombo, recC) +
       stat(IK.hiz, fmt(speed, 0) + ' m/sn', 'en yüksek hız', false) +
       '</div>' +
-      '<p class="rekor-satir">' + recLine + '</p>' +
+      '<p class="rekor-satir">' + recLine + '</p>' + kazanimHtml(kaz) +
       '<button type="button" class="ana buyuk genis" id="yenidenBtn">' + (dailyKey ? 'Bir daha dene' : 'Yeniden dene') + '</button>' +
       '<button type="button" class="genis" id="menuDonBtn">Ana menü</button>';
     showSheet();
@@ -981,6 +998,11 @@
     startEndless: function () { ac(); startEndless(false); },
     startDaily: function () { ac(); startEndless(true); },
     dailyInfo: dailyInfo,
+    gorevler: function () { return GOREV.daily(save, todayKey()); },
+    gorevAl: function (i) { var r = GOREV.claim(save, i); persist(); return r; },
+    gorevBekleyen: function () { return GOREV.unclaimed(save, todayKey()); },
+    basarimlar: function () { return GOREV.achList(save); },
+    yeniGune: msToNextDay,
     pause: function () { paused = true; },
     save: function () { return save; },
     persist: persist,

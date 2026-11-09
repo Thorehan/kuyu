@@ -1,6 +1,6 @@
 # Kuyu
 
-**Funday Morning Games** · 2D mobil oyun · prototip v0.15
+**Funday Morning Games** · 2D mobil oyun · prototip v0.16
 
 Derin bir kuyunun dibindesin. Telefonu tek elle tut: ekranın soluna ya da sağına dokun, kanca o taraftaki hedefe fırlasın; basılı tut, ipe sarıl; bırak, savrul. Halkadan halkaya, ahşaptan ahşaba tırmanıp kuyudan çık.
 
@@ -20,7 +20,7 @@ Pofi ile aynı akış:
 1. **Açılış:** Funday Morning logosu ve yükleme çubuğu (en az 2,2 sn, yazı tipleri ve logo yüklenene kadar).
 2. **Giriş:** Yalnızca ilk açılışta. Oyuncu adı ve "Misafir olarak oyna". Google ve Apple düğmeleri şimdilik "yakında" der. İlerleme bu cihazda saklanır.
 3. **Tanıtım:** "Funday Morning sunar", ardından kahraman dipten kanca atıp halkaya çekilir ve gün ışığına fırlar; "Kuyu" yazısı belirir. Dokununca geçilir.
-4. **Ana menü (v0.9):** Arka planda kuyunun içinde ipte sallanan kahraman ve ateşböcekleri. Üstte profil (avatar ve ad), toplam ödül puanı ve ateşböceği. Başparmak bölgesinde Oyna kartı (kalınan bölümün adı ve hedefleri), Sonsuz Kuyu (rekor) ve Günlük Kuyu (günün en iyisi ve seri) kartları. En altta gezinme çubuğu: Ana sayfa, Bölümler, Profil, Ayarlar (ses, titreşim, tam ekran, oyuncu adı, nasıl oynanır, tanıtımı yeniden izle).
+4. **Ana menü (v0.9):** Arka planda kuyunun içinde ipte sallanan kahraman ve ateşböcekleri. Üstte profil (avatar ve ad), toplam ödül puanı ve ateşböceği. Başparmak bölgesinde Oyna kartı (kalınan bölümün adı ve hedefleri), Sonsuz Kuyu (rekor) ve Günlük Kuyu (günün en iyisi ve seri) kartları. En altta gezinme çubuğu: Ana sayfa, Bölümler, Görevler, Profil, Ayarlar (ses, titreşim, tam ekran, oyuncu adı, nasıl oynanır, tanıtımı yeniden izle).
 
 Oyun ekranının üst şeridinde solda bölüm adı ve altında küçük göstergeler var: ateşböceği noktaları, atış/par (Kusursuz için), akış (x2 ve üstünde parlar). Sonsuz Kuyu'da metre, akış ve hız çarpanı, sağda büyük puan. Oyundaki **duraklat** düğmesi (II) paneli açar: Devam et, Baştan başla (Sonsuz'da Yeni koşu), Bölümü atla, ses ve titreşim, Ana menü. Duraklarken oyun ve su durur, tutunduğun ip bırakılmaz. Telefon arka plana alınınca (bildirim, arama) oyun kendiliğinden durur. Klavyede Esc ya da P duraklatır, Esc/Enter/Boşluk devam ettirir. `?bolum=N` ya da `?mod=sonsuz` bağlantısı açılıştan sonra tanıtımı atlayıp doğrudan oyuna girer.
 
@@ -56,6 +56,44 @@ Yeni bir şey ilk kez karşına çıktığında oyun kısa süre durur, ekranın
 - **Bölüm ödülü** = (100 + 25 × ateşböceği + 50 Kusursuz + 50 Akış) × hız çarpanı.
 - **Bölüm sonu kartı** ekranın altından açılır: ödül sayarak gelir ve hesabı yazılır, üç madalya (bu oyunda ilk kez kazanılan "YENİ" etiketiyle), süre ve en yüksek hız (kırılan rekorlar "REKOR" etiketiyle), büyük "Bölüm N ›" düğmesi, Tekrar ve Bölümler. Sonsuz Kuyu sonucu da aynı yapıda.
 - **Sonsuz Kuyu puanı** = (metre + akış bonusu + ateşböcekleri) × hız çarpanı.
+
+## Görevler ve başarımlar (v0.16)
+Alt menüdeki **Görevler** sekmesinde iki bölüm var. Mantık `js/gorevler.js` içinde, testi `node tools/gorev-test.js`.
+
+**Bugünün görevleri:** Her gün 3 görev gelir: kolay, orta ve zor, üçü de farklı türden. Görevler o gün herkes için aynıdır ve Türkiye saatiyle gece yarısı yenilenir. Ödüller 50, 100 ve 150 ödül puanıdır. Tamamlanan görevde "Al" düğmesi çıkar; alınan puan ana menüdeki toplam ödüle eklenir. Alınmamış ödül varsa alt menüdeki Görevler simgesinde turuncu nokta yanar.
+
+Görev türleri ve kolay / orta / zor hedefleri:
+
+| Tür | Kolay / Orta / Zor | Sayım |
+|---|---|---|
+| Ateşböceği topla | 5 / 10 / 18 | gün boyu toplam |
+| Hız halkasından geç | 2 / 5 / 9 | gün boyu toplam |
+| Bir koşuda xN akış | 6 / 10 / 16 | tek koşu |
+| Bölüm geç | 2 / 4 / 7 | gün boyu toplam |
+| Kusursuz bölüm | 1 / 2 / 4 | gün boyu toplam |
+| Tek koşuda N m (Sonsuz ya da Günlük) | 150 / 300 / 550 | tek koşu |
+| Günlük Kuyu denemesi | 1 / 2 / 3 | gün boyu toplam |
+| Bir koşuda N m/sn hız | 25 / 40 / 52 | tek koşu |
+
+Hedefler botların ölçtüğü oynanışa göre seçildi. Ortalama oyuncu Sonsuz Kuyu'da yaklaşık 450 m çıkıyor. Bir hız halkası yaklaşık 33 m/sn veriyor, x1,50 çarpanda hız yaklaşık 57 m/sn.
+
+**Koşu:** Geçilen bir bölüm ya da biten bir Sonsuz veya Günlük Kuyu koşusu. Bölümde ölüp yeniden başlamak koşu sayılmaz.
+
+**Başarımlar:** Kalıcıdır. 9 başarımın her birinde Bronz, Gümüş ve Altın kademesi var:
+
+| Başarım | Ölçü | Bronz / Gümüş / Altın |
+|---|---|---|
+| Ateşböceği avcısı | toplam ateşböceği | 25 / 100 / 400 |
+| Rüzgâr | toplam hız halkası | 10 / 50 / 200 |
+| Akış ustası | bir koşuda en uzun akış | x10 / x20 / x40 |
+| Işık hızı | en yüksek hız | 30 / 45 / 55 m/sn |
+| Kâşif | geçilen bölüm | 10 / 30 / 100 |
+| Kusursuz | Kusursuz geçilen bölüm | 5 / 20 / 60 |
+| Derin kuyu | bir koşuda en yüksek metre | 300 / 1000 / 3000 |
+| Sadık | en uzun Günlük Kuyu serisi | 3 / 7 / 30 gün |
+| Görevci | tamamlanan görev | 5 / 25 / 100 |
+
+Önceki ilerleme de sayılır: bölüm ateşböcekleri, Sonsuz rekoru, en yüksek hız ve seri kayıttan okunur. Yeni kazanılan görev ve başarımlar bölüm sonu ile Sonsuz/Günlük sonuç kartında gösterilir (en çok 3 satır, fazlası için "ve N tane daha").
 
 ## Profil kartı
 Ana menüde "Merhaba, {ad}" düğmesi açar: en yüksek hız; en yüksek ve geçilen bölüm, ateşböceği, Kusursuz/Akış sayısı, toplam ve en iyi bölüm ödülü; Sonsuz Kuyu rekor puanı, en yüksek metre, kat (3 m = 1 kat) ve en uzun akış.
@@ -153,6 +191,7 @@ Bot rota bilmez; yalnızca ekrandaki sol ve sağ işarete bakar. Sonuçlar (6 el
 | `js/engine.js` | Kanca fiziği, tutunma gücü, akış ve puan (tarayıcı + Node) |
 | `js/levels.js` | El yapımı 6 bölüm |
 | `js/gen.js` | Bölüm 7+ ve sonsuz kuyu üretici |
+| `js/gorevler.js` | Günlük görevler ve başarımlar (tarayıcı + Node) |
 | `js/game.js` | Oyun ekranı: çizim, ses, girdi, kayıt |
 | `js/screens.js` | Açılış, giriş, tanıtım, ana menü, bölümler, ayarlar ve arka plan sahnesi |
 | `assets/funday-morning-logo.webp` | Şirket logosu (Pofi ile aynı) |
@@ -163,6 +202,7 @@ Bot rota bilmez; yalnızca ekrandaki sol ve sağ işarete bakar. Sonuçlar (6 el
 | `sw.js`, `manifest.webmanifest` | Ana ekrana kurulum ve internetsiz açılış |
 | `tools/kontrol.js` | Duman testi: sözdizimi, sayfa bağlantıları, servis çalışanı listesi, sürüm etiketi |
 | `tools/tempo.js` | Sonsuz Kuyu su temposu ölçümü |
+| `tools/gorev-test.js` | Görev ve başarım mantığı testi |
 | `tools/simge.py` | Uygulama simgelerini çizer |
 
 Düz JavaScript, derleme adımı yok. Her yayında `index.html` içindeki `?v=` sürüm etiketini artırın ve `node tools/kontrol.js` çalıştırın; yeni bir js/css dosyası eklenirse `sw.js` listesine de yazılmalı; yoksa telefonlar eski CSS/JS'i önbellekten kullanabilir. Kayıt tarayıcıda `kuyu.v2` anahtarıyla tutulur.

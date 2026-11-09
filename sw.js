@@ -9,7 +9,7 @@ const MEDIA = 'kuyu-media-v1';
 const CORE = [
   './', 'index.html', 'manifest.webmanifest',
   'css/kuyu.css', 'css/ekranlar.css',
-  'js/engine.js', 'js/levels.js', 'js/gen.js', 'js/game.js', 'js/screens.js',
+  'js/engine.js', 'js/levels.js', 'js/gen.js', 'js/gorevler.js', 'js/game.js', 'js/screens.js',
 ];
 const CORE_MEDIA = [
   'assets/funday-morning-logo.webp',

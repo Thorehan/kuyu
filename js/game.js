@@ -208,6 +208,7 @@
       else if (e.type === 'clink') { SFX.clink(); burst(e.x, e.y, 7, '#e9f3f0', 220, 0.25, 0); }
       else if (e.type === 'firefly') { SFX.firefly(); buzz([8, 40, 8]); burst(e.x, e.y, 16, COL.atesbocegi, 160, 0.6, -40); if (mode === 'endless') floatText(e.x, e.y - 10, '+25', COL.atesbocegi, 14); }
       else if (e.type === 'gateOpen') { SFX.gate(); buzz(35); shake = Math.max(shake, 5); }
+      else if (e.type === 'waterStart') { floatText(sim.p.x, sim.p.y + 40, 'su yükseliyor', COL.suAcik, 14); }
       else if (e.type === 'dead') {
         SFX.dead(); shake = 8; buzz(80);
         burst(sim.p.x, sim.p.y, 22, e.why === 'su' ? COL.suAcik : COL.kahraman, 260, 0.7);

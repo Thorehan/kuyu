@@ -25,6 +25,8 @@ Bir aşamadaki işler bitmeden sonrakine geçilmez; yeni bulunan oynanış sorun
 
 - [x] Sol/sağ kararı anlamsızlaşmıştı (yalnızca sağa basarak oynanıyordu): karşı tarafa otomatik atış kalktı, boş tarafa basınca kanca boşa gider ve ip bırakılmaz, her 2–3 adımda karar noktası.
 
+- [x] Su, oyuncu başlamadan (AFK) yükseliyordu: artık ilk halkaya tutununca tetiklenir.
+
 ### 2. Geliştirmeler
 - [x] Hız halkası: bırakınca yukarı itiş; karar noktalarında ateşböceği halkasıyla dönüşümlü.
 - [x] El yapımı bölümlere hız halkası: 2. bölümde tanıtım, 2–5. bölümlerde toplam 5 tane (6. bölümde uygun yer yok).
@@ -41,6 +43,7 @@ Bir aşamadaki işler bitmeden sonrakine geçilmez; yeni bulunan oynanış sorun
 - [ ] Karakter, kaçış nedeni, ateşböceklerinin anlamı.
 
 ## Yapılanlar
+- 2026-11-09 · v0.7.1 · Su ilk halkadan sonra tetiklenir; "su yükseliyor" uyarısı.
 - 2026-11-09 · v0.7 · El yapımı bölümlere hız halkası; 2. bölüm ipucu hız halkasını anlatır.
 - 2026-11-09 · v0.6 · Katı sol/sağ seçimi, boş atışta ip korunur, karar noktaları, hız halkası, `oyuncu.js` tarzları (sadeceSag/sadeceSol 0/74).
 - 2026-11-09 · v0.5 · Ayrıca: tutunurken aşağı çekilme engellendi (iki halka arası döngü), önbellek için `?v=` sürüm etiketi, `tools/oyuncu.js`.

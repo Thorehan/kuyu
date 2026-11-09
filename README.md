@@ -86,7 +86,8 @@ Hepsi `js/engine.js` başındaki `CFG` içinde, sonsuz modun suyu `js/gen.js` i�
 | `COMBO_HANG` | 0,45 sn | Bundan uzun asılı kalmak akışı bitirir |
 | `COMBO_AIR` | 1,1 sn | Havada bundan uzun tutunmadan kalmak akışı bitirir |
 | `COMBO_PTS` × `COMBO_CAP` | 3 × 12 | Akış bonusu (tutunma başına en çok 36) |
-| Sonsuz su hızı | 38 + metre × 0,3, en çok 300 birim/sn, 3 sn sonra başlar | Önce çok yavaş, tırmandıkça hızlanır |
+| Sonsuz su hızı | 38 + metre × 0,3, en çok 300 birim/sn | Önce çok yavaş, tırmandıkça hızlanır |
+| `WATER_GRACE` | 1 sn | Su ilk halkaya tutununca tetiklenir, bu kadar sonra yükselmeye başlar; oyuncu başlamadan beklerken su gelmez |
 | Bölüm suyu | 5. bölüm 80; üretilen her 3. bölümde 45 + n × 0,5, en çok 90 | |
 
 Bot ölçümü (8 tohum, sonsuz mod, engel yok): iki tarz da 1500 m test sınırına ulaşıyor. Asılıp bekleyen bot yaklaşık 3.000 puan, akışla çıkan bot 7.000–7.400 puan topluyor.

@@ -33,6 +33,7 @@
     COMBO_AIR: 1.1,     // havada bundan uzun tutunmadan kalmak akışı bozar
     NEAR_V: 40,         // yatayda bu kadar yakın (tam tepedeki) hedef iki taraftan da alınır
     BOOST: 650,         // hız halkasından bırakınca eklenen yukarı hız (birim/sn)
+    WATER_GRACE: 1.0,   // ilk halkaya tutunduktan bu kadar sonra su yükselmeye başlar
     RESCUE_MAX: 1000,   // kurtarma kancası: menzilde hedef yokken en yakın yukarıdaki hedefe bu kadar uzağa atılır
     SPEED_BASE: 200,    // hız çarpanı bu serbest uçuş hızından sonra başlar
     SPEED_TOP: 1150,    // bu hızda çarpan en yüksek (x1,5)
@@ -192,6 +193,7 @@
 
   function onAttach(s, x, y, what) {
     s.hooks++;
+    if (s.waterFrom == null) { s.waterFrom = s.t; if (s.water != null) s.events.push({ type: 'waterStart' }); }
     s.combo = s.chain && s.combo > 0 ? s.combo + 1 : 1;
     s.chain = false;
     s.hang = 0;
@@ -448,8 +450,8 @@
       if (hr.type === 'k' && hr.y < p.y + 30 && hr.y + hr.h > p.y - 30 && overlapsRect(p, hr, CFG.R * 0.8)) return die(s, 'diken');
     }
     if (s.water != null) {
-      var delay = s.def.waterDelay == null ? 1.5 : s.def.waterDelay;
-      if (s.t > delay) {
+      // Su ilk halkaya tutununca tetiklenir (oyuncu başlamadan beklerken yükselmez), kısa bir payla başlar.
+      if (s.waterFrom != null && s.t - s.waterFrom > CFG.WATER_GRACE) {
         var speed = s.def.waterSpeed ? s.def.waterSpeed(s) : s.def.water;
         s.water -= speed * dt;
         // sonsuz modda su çok geride kalmasın

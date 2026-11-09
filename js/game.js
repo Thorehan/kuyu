@@ -656,15 +656,26 @@
     perfect: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="#bfe6ee" stroke-width="2.5"/><circle cx="12" cy="12" r="3.5" fill="#bfe6ee"/></svg>',
     flow: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 16c4 0 4-8 9-8s5 8 9 8" fill="none" stroke="#f26a3a" stroke-width="2.8" stroke-linecap="round"/></svg>'
   };
-  function medal(ok, icon, title, sub) {
-    return '<div class="madalya' + (ok ? ' var' : '') + '">' + icon + '<b>' + title + '</b><span>' + sub + '</span></div>';
+  // Bölüm sonu madalyası; bu oyunda ilk kez kazanıldıysa "YENİ" etiketi ve küçük bir zıplama.
+  function medal(ok, icon, title, sub, isNew, i) {
+    return '<div class="madalya' + (ok ? ' var' : '') + (isNew ? ' yeni' : '') + '" style="--i:' + (i || 0) + '">' +
+      (isNew ? '<span class="yeni-etiket">YENİ</span>' : '') + icon + '<b>' + title + '</b><span>' + sub + '</span></div>';
   }
   function fmt(n, d) { return n.toFixed(d).replace('.', ','); }
-  // Bölüm sonu hız kutusu: en yüksek hız, çarpan ve çarpanlı sonuç
-  function speedBlock(speed, mult, base, result, label) {
-    return '<div class="hiz-kutu"><div><small>En yüksek hız</small><b>' + fmt(speed, 1) + ' m/sn</b></div>' +
-      '<div><small>Hız çarpanı</small><b>x' + fmt(mult, 2) + '</b></div>' +
-      '<div><small>' + label + '</small><b>' + base + (mult > 1 ? ' → ' + result : '') + '</b></div></div>';
+  function stat(icon, text, label, rec) {
+    return '<span class="cip buyuk-cip' + (rec ? ' rekor-cip' : '') + '" aria-label="' + label + '">' + icon + '<b>' + text + '</b>' + (rec ? '<em>REKOR</em>' : '') + '</span>';
+  }
+  var SURE_IK = '<svg viewBox="0 0 12 12" aria-hidden="true"><circle cx="6" cy="6.5" r="4.3" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M6 4.3v2.4l1.6 1M4.6 1.4h2.8" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>';
+  // Büyük sayı 0'dan sayarak gelir (hareket azaltma açıksa hemen).
+  function countUp(el, to) {
+    if (reduceMotion || to <= 0) { el.textContent = to; return; }
+    var t0 = performance.now(), dur = 750;
+    (function tick(now) {
+      var k = Math.min(1, (now - t0) / dur), e = 1 - Math.pow(1 - k, 3);
+      el.textContent = Math.round(to * e);
+      if (k < 1 && document.body.contains(el)) requestAnimationFrame(tick); else el.textContent = to;
+    })(t0);
+    setTimeout(function () { el.textContent = to; }, dur + 400); // sekme arka plandaysa da doğru sayı kalsın
   }
   function noteStats(speed, reward) {
     var st = save.stats || (save.stats = { maxSpeed: 0, bestReward: 0 });
@@ -672,18 +683,25 @@
     if (reward > (st.bestReward || 0)) st.bestReward = reward;
     persist();
   }
+  function showSheet() {
+    $('katman').classList.add('alt');
+    $('katman').hidden = false;
+  }
   function showLevelResult() {
     resultShown = true;
-    var ff = E.fireflyCount(sim), time = sim.t;
+    var ff = E.fireflyCount(sim), ffT = sim.fireflies.length, time = sim.t;
     // Kusursuz: boş atışlar (o tarafta hedef yokken basmak) sayılmaz; kurtarma kancası sayılır.
     var shots = sim.shots - sim.misses;
     var perfect = shots <= def.par, flow = sim.maxCombo >= def.flow;
     var b = save.best[levelNo] || {};
-    var newTime = !b.time || time < b.time;
     // Ödül: temel (bölüm + ateşböceği + madalyalar) × hız çarpanı
     var base = 100 + 25 * ff + (perfect ? 50 : 0) + (flow ? 50 : 0);
     var mult = E.speedMult(sim), reward = Math.round(base * mult);
     var speed = E.speedMs(sim.maxSpeed);
+    // bu oyunda kırılan rekorlar ve ilk kez kazanılan madalyalar
+    var first = !b.done;
+    var newFF = ff > (b.ff || 0) && ff >= ffT && ffT > 0, newPerfect = perfect && !b.perfect, newFlow = flow && !b.flow;
+    var recTime = !first && time < (b.time || Infinity), recReward = !first && reward > (b.reward || 0), recSpeed = !first && speed > (b.speed || 0) + 0.05;
     save.best[levelNo] = {
       ff: Math.max(b.ff || 0, ff), time: b.time ? Math.min(b.time, time) : time,
       perfect: !!(b.perfect || perfect), flow: !!(b.flow || flow), done: true,
@@ -692,40 +710,51 @@
     noteStats(speed, reward);
     if (levelNo + 1 > save.maxLevel) save.maxLevel = levelNo + 1;
     persist();
+    $('kart').className = 'kart sonuc';
     $('kart').innerHTML =
-      '<h2>Gün ışığı!</h2>' +
+      '<div class="sonuc-bas"><h2>Gün ışığı!</h2><span>' + levelNo + '. ' + def.name + (first ? ' · ilk kez geçildi' : deaths ? ' · ' + (deaths + 1) + '. deneme' : '') + '</span></div>' +
+      '<div class="odul-satir"><i class="ikon-odul" aria-hidden="true"></i><b id="odulSayi">0</b>' + (recReward ? '<em class="rekor-etiket">REKOR</em>' : '') + '</div>' +
+      '<p class="odul-hesap">' + (mult > 1 ? base + ' × x' + fmt(mult, 2) + ' hız çarpanı' : 'Bölüm ödülü · hızlanırsan çarpan artar') + '</p>' +
       '<div class="madalyalar">' +
-      medal(ff >= sim.fireflies.length, ICON.ff, 'Ateşböceği', ff + '/' + sim.fireflies.length) +
-      medal(perfect, ICON.perfect, 'Kusursuz', shots + ' atış · en çok ' + def.par) +
-      medal(flow, ICON.flow, 'Akış', 'en iyi x' + sim.maxCombo + ' · hedef x' + def.flow) +
+      medal(ffT > 0 && ff >= ffT, ICON.ff, 'Ateşböceği', ff + '/' + ffT, newFF, 0) +
+      medal(perfect, ICON.perfect, 'Kusursuz', shots + '/' + def.par + ' atış', newPerfect, 1) +
+      medal(flow, ICON.flow, 'Akış', 'x' + sim.maxCombo + ' · hedef x' + def.flow, newFlow, 2) +
       '</div>' +
-      speedBlock(speed, mult, base, reward, 'Bölüm ödülü') +
-      '<p>' + time.toFixed(1) + ' sn' + (newTime ? ' · <span class="rekor">en iyi süre</span>' : ' · en iyi ' + b.time.toFixed(1) + ' sn') +
-      (deaths ? ' · ' + (deaths + 1) + '. deneme' : ' · ilk denemede') + '</p>' +
-      '<div class="dugmeler"><button type="button" id="tekrarBtn">Tekrar</button>' +
-      '<button type="button" class="ana" id="sonrakiBtn">Bölüm ' + (levelNo + 1) + '</button></div>';
-    $('katman').hidden = false;
+      '<div class="istatistik">' +
+      stat(SURE_IK, fmt(time, 1) + ' sn', 'süre ' + fmt(time, 1) + ' saniye', recTime) +
+      stat(IK.hiz, fmt(speed, 0) + ' m/sn', 'en yüksek hız ' + fmt(speed, 1) + ' metre/saniye', recSpeed) +
+      '</div>' +
+      '<button type="button" class="ana buyuk genis" id="sonrakiBtn">Bölüm ' + (levelNo + 1) + ' ›</button>' +
+      '<div class="dur-iki"><button type="button" id="tekrarBtn">Tekrar</button><button type="button" id="bolumlerDonBtn">Bölümler</button></div>';
+    showSheet();
+    countUp($('odulSayi'), reward);
     $('tekrarBtn').onclick = function () { reset(); };
     $('sonrakiBtn').onclick = function () { startLevel(levelNo + 1); };
+    $('bolumlerDonBtn').onclick = function () { goLevels(); };
     $('sonrakiBtn').focus({ preventScroll: true });
   }
   function showEndlessResult() {
     resultShown = true;
     var raw = E.score(sim), mult = E.speedMult(sim), sc = E.finalScore(sim), m = E.meters(sim), rec = save.endless || {};
     var speed = E.speedMs(sim.maxSpeed);
-    var isRecord = sc > (rec.score || 0);
+    var isRecord = sc > (rec.score || 0), recM = m > (rec.meters || 0), recC = sim.maxCombo > (rec.combo || 0);
     save.endless = { score: Math.max(rec.score || 0, sc), meters: Math.max(rec.meters || 0, m), combo: Math.max(rec.combo || 0, sim.maxCombo) };
     noteStats(speed, 0);
+    $('kart').className = 'kart sonuc';
     $('kart').innerHTML =
-      '<h2>' + (isRecord ? 'Yeni rekor!' : 'Kuyu kazandı') + '</h2>' +
-      '<div class="buyuk">' + sc + '</div>' +
-      '<p>' + m + ' m tırmanış + ' + sim.bonus + ' akış + ' + sim.fireflyPts + ' ateşböceği = ' + raw + '</p>' +
-      speedBlock(speed, mult, raw, sc, 'Puan') +
-      '<p>En uzun akış x' + sim.maxCombo + ' · ' + sim.hooks + ' tutunma · ' + sim.t.toFixed(0) + ' sn</p>' +
-      '<p>Rekor: <span class="rekor">' + save.endless.score + '</span> · en yüksek ' + save.endless.meters + ' m</p>' +
-      '<div class="dugmeler"><button type="button" id="menuDonBtn">Menü</button>' +
-      '<button type="button" class="ana" id="yenidenBtn">Yeniden dene</button></div>';
-    $('katman').hidden = false;
+      '<div class="sonuc-bas"><h2>' + (isRecord ? 'Yeni rekor!' : 'Su yetişti') + '</h2><span>Sonsuz Kuyu · ' + fmt(sim.t, 0) + ' sn</span></div>' +
+      '<div class="odul-satir"><b id="odulSayi">0</b><small>puan</small>' + (isRecord ? '<em class="rekor-etiket">REKOR</em>' : '') + '</div>' +
+      '<p class="odul-hesap">' + m + ' m + ' + sim.bonus + ' akış + ' + sim.fireflyPts + ' ateşböceği' + (mult > 1 ? ' = ' + raw + ' × x' + fmt(mult, 2) + ' hız' : '') + '</p>' +
+      '<div class="istatistik">' +
+      stat(IK.metre, m + ' m', m + ' metre', recM && !isRecord) +
+      stat(IK.akis, 'x' + sim.maxCombo, 'en uzun akış x' + sim.maxCombo, recC) +
+      stat(IK.hiz, fmt(speed, 0) + ' m/sn', 'en yüksek hız', false) +
+      '</div>' +
+      '<p class="rekor-satir">Rekor ' + save.endless.score + ' puan · en yüksek ' + save.endless.meters + ' m</p>' +
+      '<button type="button" class="ana buyuk genis" id="yenidenBtn">Yeniden dene</button>' +
+      '<button type="button" class="genis" id="menuDonBtn">Ana menü</button>';
+    showSheet();
+    countUp($('odulSayi'), sc);
     $('menuDonBtn').onclick = function () { goHome(); };
     $('yenidenBtn').onclick = function () { reset(); };
     $('yenidenBtn').focus({ preventScroll: true });
@@ -733,6 +762,12 @@
 
   // ---------- ekranlar ----------
   // Menü, açılış ve giriş js/screens.js içinde. Oyun ana menüye dönünce durur (su da durur).
+  function goLevels() {
+    closePause();
+    paused = true;
+    if (sim) E.release(sim);
+    if (window.KuyuScreens && window.KuyuScreens.levels) window.KuyuScreens.levels(); else goHome();
+  }
   function goHome() {
     closePause();
     paused = true;

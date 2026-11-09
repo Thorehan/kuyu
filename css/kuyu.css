@@ -154,3 +154,27 @@ button.anahtar-dugme[aria-checked="false"] { color: var(--soluk); }
 .cip.akis.aktif { color: var(--atesbocegi); border-color: #5b5f2e; }
 .cip.hiz.aktif { color: #6fd3ff; border-color: #2c5566; }
 .cip.atis.asti { color: #8a9692; text-decoration: line-through; }
+
+/* bölüm sonu kartı (v0.13): alt sayfa, büyük ödül, yeni madalya ve rekor anları */
+.katman.alt { align-items: flex-end; padding: 10px 10px calc(10px + env(safe-area-inset-bottom, 0px)); }
+.kart.sonuc { max-width: 380px; gap: 10px; padding: 18px 16px 14px; border-radius: 20px; animation: sayfaGir .32s cubic-bezier(.2, .9, .3, 1) both; }
+.sonuc-bas { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+.sonuc-bas span { color: var(--soluk); font-size: 13px; }
+.odul-satir { display: flex; align-items: center; justify-content: center; gap: 8px; }
+.odul-satir .ikon-odul { width: 30px; height: 30px; }
+.odul-satir b { font-family: var(--font-oyun); font-weight: 800; font-size: 50px; line-height: 1; color: var(--yazi); font-variant-numeric: tabular-nums; }
+.odul-satir small { color: var(--soluk); font-size: 14px; align-self: flex-end; margin-bottom: 6px; }
+.rekor-etiket { font-style: normal; background: var(--atesbocegi); color: #23260a; font-size: 11px; font-weight: 800; letter-spacing: .06em; padding: 3px 7px; border-radius: 7px; }
+.odul-hesap { font-size: 13px; text-align: center; }
+.kart.sonuc .madalya { position: relative; padding: 9px 4px 8px; }
+.madalya.yeni { animation: madalyaZipla .5s cubic-bezier(.3, 1.6, .5, 1) both; animation-delay: calc(.25s + var(--i) * .12s); border-color: var(--atesbocegi); }
+.yeni-etiket { position: absolute; top: -8px; left: 50%; transform: translateX(-50%); background: var(--atesbocegi); color: #23260a; font-size: 9px; font-weight: 800; letter-spacing: .06em; padding: 2px 6px; border-radius: 6px; }
+.istatistik { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; }
+.cip.buyuk-cip { height: 28px; padding: 0 10px; font-size: 14px; gap: 6px; }
+.cip.buyuk-cip svg { width: 14px; height: 14px; }
+.cip.rekor-cip { color: var(--atesbocegi); border-color: #5b5f2e; }
+.cip em { font-style: normal; font-size: 9px; font-weight: 800; letter-spacing: .06em; color: #23260a; background: var(--atesbocegi); padding: 1px 4px; border-radius: 4px; }
+.rekor-satir { font-size: 13px; }
+@keyframes sayfaGir { from { transform: translateY(40px); opacity: 0; } }
+@keyframes madalyaZipla { 0% { transform: scale(.7); } 60% { transform: scale(1.1); } 100% { transform: none; } }
+@media (prefers-reduced-motion: reduce) { .kart.sonuc, .madalya.yeni { animation: none; } }

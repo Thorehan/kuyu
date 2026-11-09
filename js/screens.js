@@ -452,6 +452,7 @@
   // oyunun kullandığı arayüz
   window.KuyuScreens = {
     home: home,
+    levels: function () { openLevels(); },
     showGame: function () { show('oyun'); },
     toast: toast
   };

@@ -40,7 +40,7 @@ body {
 
 /* üst şerit */
 .serit { display: flex; align-items: center; gap: 8px; min-height: 44px; }
-.serit .bilgi { flex: 1; min-width: 0; display: flex; flex-direction: column; line-height: 1.15; }
+.serit .bilgi { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; line-height: 1.15; }
 .serit .bilgi b { font-family: var(--font-oyun); font-weight: 600; font-size: 17px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .serit .bilgi span { color: var(--soluk); font-size: 12px; font-variant-numeric: tabular-nums; letter-spacing: .03em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .puan { font-family: var(--font-oyun); font-weight: 800; font-size: 24px; line-height: 1; color: var(--gok); font-variant-numeric: tabular-nums; text-align: right; }
@@ -140,3 +140,17 @@ button.ana.buyuk.genis { min-height: 56px; font-size: 18px; font-family: var(--f
 button.anahtar-dugme { font-size: 14px; }
 button.anahtar-dugme[aria-checked="true"] { border-color: #5a7c74; }
 button.anahtar-dugme[aria-checked="false"] { color: var(--soluk); }
+
+/* oyun içi üst şerit göstergeleri */
+.cipler { display: flex; align-items: center; gap: 5px; min-width: 0; overflow: hidden; }
+.cip { display: inline-flex; align-items: center; gap: 4px; height: 20px; padding: 0 7px; border-radius: 999px;
+  background: #18211f; border: 1px solid #2a3633; color: var(--soluk); font-size: 12px; flex: none; }
+.cip svg { width: 12px; height: 12px; }
+.cip.akis svg { width: 15px; }
+.cip b { font-weight: 600; font-variant-numeric: tabular-nums; }
+.cip.ates { gap: 3px; padding: 0 6px; }
+.cip.ates i { width: 8px; height: 8px; border-radius: 50%; background: #2f3b38; display: block; }
+.cip.ates i.var { background: var(--atesbocegi); box-shadow: 0 0 6px var(--atesbocegi); }
+.cip.akis.aktif { color: var(--atesbocegi); border-color: #5b5f2e; }
+.cip.hiz.aktif { color: #6fd3ff; border-color: #2c5566; }
+.cip.atis.asti { color: #8a9692; text-decoration: line-through; }

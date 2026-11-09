@@ -55,6 +55,7 @@
     won: function () { [660, 880, 1100, 1320].forEach(function (f, i) { setTimeout(function () { tone(f, 0.18, 'triangle', 0.08); }, i * 90); }); }
   };
   function setMuteIcon() {
+    if (!$('sesBtn')) return; // ses düğmesi artık duraklatma panelinde
     $('sesBtn').innerHTML = save.mute
       ? '<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4 8h3l4-3v10l-4-3H4z" fill="currentColor"/><path d="M14 8l4 4M18 8l-4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>'
       : '<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4 8h3l4-3v10l-4-3H4z" fill="currentColor"/><path d="M14 7.5c1.2 1.3 1.2 3.7 0 5M16.3 5.5c2.3 2.5 2.3 6.5 0 9" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg>';
@@ -121,8 +122,7 @@
     save.last = levelNo; if (levelNo > save.maxLevel) save.maxLevel = levelNo; persist();
     deaths = 0;
     $('ipucu').textContent = def.hint;
-    $('atlaBtn').hidden = false;
-    $('puan').hidden = true; $('noktalar').hidden = false;
+    $('puan').hidden = true;
     $('baslik').textContent = levelNo + '. ' + def.name;
     reset();
   }
@@ -131,8 +131,7 @@
     def = GEN.createEndless((Date.now() ^ (Math.random() * 1e9)) >>> 0);
     deaths = 0;
     $('ipucu').textContent = def.hint;
-    $('atlaBtn').hidden = true;
-    $('puan').hidden = false; $('noktalar').hidden = true;
+    $('puan').hidden = false;
     $('baslik').textContent = 'Sonsuz Kuyu';
     reset();
   }
@@ -157,23 +156,33 @@
     return Math.max(-170, Math.min(sim.H + 30 - vh, t));
   }
 
+  // Üst şerit: bölüm adı ve altında küçük göstergeler. Dar ekranda kesilmesin diye kısa tutulur.
+  var IK = {
+    atis: '<svg viewBox="0 0 12 12" aria-hidden="true"><circle cx="6" cy="6" r="4.4" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="6" cy="6" r="1.6" fill="currentColor"/></svg>',
+    akis: '<svg viewBox="0 0 16 12" aria-hidden="true"><path d="M1 6.5C2.8 2.5 4.8 2.5 6 6.5S9.2 10.5 10.5 6.5 13.7 2.5 15 6.5" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>',
+    hiz: '<svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2.5 6.5L6 3l3.5 3.5M2.5 10L6 6.5 9.5 10" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+    metre: '<svg viewBox="0 0 12 12" aria-hidden="true"><path d="M6 1.5v9M3 4.5L6 1.5l3 3" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>'
+  };
+  function cip(cls, icon, text, label) { return '<span class="cip ' + cls + '" title="' + label + '" aria-label="' + label + '">' + icon + '<b>' + text + '</b></span>'; }
   var lastHud = '';
   function updateHud(force) {
-    var m = E.meters(sim);
+    var m = E.meters(sim), mult = E.speedMult(sim), combo = sim.combo;
+    var akis = cip('akis' + (combo >= 2 ? ' aktif' : ''), IK.akis, 'x' + combo, 'akış x' + combo);
     if (mode === 'endless') {
-      var sc = E.score(sim), key = 'e' + sc + '|' + m + '|' + sim.combo + '|' + E.speedMult(sim);
+      var sc = E.score(sim), key = 'e' + sc + '|' + m + '|' + combo + '|' + mult;
       if (key === lastHud && !force) return; lastHud = key;
       $('puan').innerHTML = sc + '<small>puan</small>';
-      $('altbaslik').textContent = m + ' m · akış x' + sim.combo + ' · hız x' + E.speedMult(sim).toFixed(2).replace('.', ',') + ' · rekor ' + (save.endless.score || 0);
+      $('cipler').innerHTML = cip('', IK.metre, m + ' m', m + ' metre') + akis +
+        cip('hiz' + (mult > 1 ? ' aktif' : ''), IK.hiz, 'x' + mult.toFixed(2).replace('.', ','), 'hız çarpanı x' + mult.toFixed(2));
     } else {
-      var n = E.fireflyCount(sim), key2 = 'l' + n + '|' + m + '|' + sim.combo + '|' + sim.shots + '|' + sim.misses;
+      var n = E.fireflyCount(sim), shots = sim.shots - sim.misses;
+      var key2 = 'l' + n + '|' + combo + '|' + shots;
       if (key2 === lastHud && !force) return; lastHud = key2;
-      var h = '';
-      for (var i = 0; i < sim.fireflies.length; i++) h += '<i class="' + (i < n ? 'var' : '') + '"></i>';
-      $('noktalar').innerHTML = h;
-      $('noktalar').setAttribute('aria-label', n + ' / ' + sim.fireflies.length + ' ateşböceği');
-      var depth = Math.max(0, Math.round(sim.p.y / 20));
-      $('altbaslik').textContent = depth + ' m · atış ' + (sim.shots - sim.misses) + '/' + def.par + ' · akış x' + sim.combo;
+      var dots = '';
+      for (var i = 0; i < sim.fireflies.length; i++) dots += '<i class="' + (i < n ? 'var' : '') + '"></i>';
+      $('cipler').innerHTML =
+        (sim.fireflies.length ? '<span class="cip ates" title="ateşböceği" aria-label="ateşböceği ' + n + ' / ' + sim.fireflies.length + '">' + dots + '</span>' : '') +
+        cip('atis' + (shots > def.par ? ' asti' : ''), IK.atis, shots + '/' + def.par, 'atış ' + shots + ' / ' + def.par + ' (Kusursuz için)') + akis;
     }
   }
 
@@ -779,8 +788,6 @@
   document.addEventListener('visibilitychange', function () {
     if (document.hidden && !$('oyunEkrani').hidden) pauseGame();
   });
-  $('atlaBtn').onclick = function () { if (mode === 'level') startLevel(levelNo + 1); };
-  $('sesBtn').onclick = function () { save.mute = !save.mute; persist(); setMuteIcon(); };
   setMuteIcon();
 
   // ---------- girdi ----------

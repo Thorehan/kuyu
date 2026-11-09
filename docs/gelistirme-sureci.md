@@ -39,7 +39,7 @@ Dört başlık: **oynanış, UI/UX, hikâye, online**. `[~]` üzerinde çalış�
 - [x] **Ana menü düzeni (v0.9):** üst şerit (profil + toplam ödül + ateşböceği), Oyna kartında sıradaki bölümün adı ve hedefleri, başparmak bölgesinde modlar, alt gezinme çubuğu (Ana sayfa / Bölümler / Profil / Ayarlar). İleride Dolap ve Görevler bu çubuğa eklenir.
 - [ ] Ana menü için senin geri bildirimin (telefonda).
 - [x] Oyun içi duraklatma paneli (v0.10): Devam et, Baştan / Yeni koşu, Bölümü atla, ses ve titreşim, Ana menü. Oyun ve su durur, ip bırakılmaz; telefon arka plana alınınca kendiliğinden durur.
-- [ ] Oyun içi üst şerit: alt bilgi satırı dar ekranda kesiliyor ("… a…"); sadeleştir.
+- [x] Oyun içi üst şerit (v0.11): solda bölüm adı ve küçük göstergeler (ateşböceği, atış/par, akış; Sonsuz'da metre, akış, hız çarpanı), sağda duraklat. Atla ve Ses duraklatma paneline taşındı. 360 px'te kesilme yok.
 - [ ] Bölümler ekranı: bölge başlıkları, ilerleme çubuğu, son oynanana kaydırma.
 - [ ] Bölüm sonu kartı: madalya + hız kutusu + ödül tek bakışta; "yeni rekor" anı.
 - [ ] Yeni şeylerin tanıtımı: hız halkası, ateşböceği halkası, kurtarma kancası ilk görüldüğünde kısa kart.
@@ -64,6 +64,7 @@ Dört başlık: **oynanış, UI/UX, hikâye, online**. `[~]` üzerinde çalış�
 - [?] Yayın: Unity'ye taşıma zamanı, mağaza hesabı, yalnızca seçilen ödüllü reklam (Pofi kuralı).
 
 ## Yapılanlar
+- 2026-11-10 · v0.11 · Oyun içi üst şerit sadeleşti: göstergeler, Atla/Ses panelde.
 - 2026-11-09 · v0.10 · Oyun içi duraklatma paneli; arka plana alınınca otomatik duraklatma.
 - 2026-11-09 · v0.9 · Yapılacaklar listesi dört başlıkta (oynanış, UI/UX, hikâye, online); yeni ana menü düzeni ve alt gezinme çubuğu.
 - 2026-11-09 · v0.8 · Sprint 1: ana ekrana kurulum ve internetsiz açılış, tam ekran düğmesi, simgeler; bölümlerde el kayması yok; Kusursuz'da boş atış sayılmaz; 6. bölüme hız halkası; telefon deneme listesi; `kontrol.js`, `tempo.js`. Su temposu ölçüldü ama değiştirilmedi.

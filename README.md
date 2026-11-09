@@ -20,8 +20,7 @@ Pofi ile aynı akış:
 1. **Açılış:** Funday Morning logosu ve yükleme çubuğu (en az 2,2 sn, yazı tipleri ve logo yüklenene kadar).
 2. **Giriş:** Yalnızca ilk açılışta. Oyuncu adı ve "Misafir olarak oyna". Google ve Apple düğmeleri şimdilik "yakında" der. İlerleme bu cihazda saklanır.
 3. **Tanıtım:** "Funday Morning sunar", ardından kahraman dipten kanca atıp halkaya çekilir ve gün ışığına fırlar; "Kuyu" yazısı belirir. Dokununca geçilir.
-4. **Ana menü (v0.9):** Üstte profil (avatar ve ad), toplam ödül puanı ve ateşböceği. Başparmak bölgesinde Oyna kartı (sıradaki bölümün adı ve hedefleri), Sonsuz Kuyu ve Bölümler kartları. En altta gezinme çubuğu: Ana sayfa, Bölümler, Profil, Ayarlar.
-5. **Önceki ana menü notu:** Kuyunun içinde ipte sallanan kahraman ve ateşböcekleri. "Oyna" kalınan bölümden devam eder. "Sonsuz Kuyu" kartı rekoru, "Bölümler" kartı geçilen bölüm ve hedef sayısını gösterir. Sağ üstte Ayarlar: ses, oyuncu adı, hesap bilgisi, nasıl oynanır, tanıtımı yeniden izle.
+4. **Ana menü (v0.9):** Arka planda kuyunun içinde ipte sallanan kahraman ve ateşböcekleri. Üstte profil (avatar ve ad), toplam ödül puanı ve ateşböceği. Başparmak bölgesinde Oyna kartı (kalınan bölümün adı ve hedefleri), Sonsuz Kuyu (rekor) ve Bölümler (ilerleme) kartları. En altta gezinme çubuğu: Ana sayfa, Bölümler, Profil, Ayarlar (ses, titreşim, tam ekran, oyuncu adı, nasıl oynanır, tanıtımı yeniden izle).
 
 Oyundaki menü düğmesi ana menüye döner; oyun (ve su) orada bekler. `?bolum=N` ya da `?mod=sonsuz` bağlantısı açılıştan sonra tanıtımı atlayıp doğrudan oyuna girer.
 

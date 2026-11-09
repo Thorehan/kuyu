@@ -127,3 +127,16 @@ canvas#oyun {
 .hiz-kutu small { color: var(--soluk); font-size: 11px; }
 .hiz-kutu b { font-family: var(--font-oyun); font-weight: 800; font-size: 17px; color: var(--yazi); font-variant-numeric: tabular-nums; white-space: nowrap; }
 .hiz-kutu > div:nth-child(2) b { color: var(--atesbocegi); }
+
+/* duraklatma paneli */
+.katman.duraklat { background: rgba(8,13,14,.72); z-index: 5; }
+.duraklat .kart { gap: 10px; }
+.duraklat .kart p { font-size: 14px; text-wrap: balance; }
+button.genis { width: 100%; }
+button.ana.buyuk.genis { min-height: 56px; font-size: 18px; font-family: var(--font-oyun); font-weight: 800; }
+.dur-iki { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; width: 100%; }
+.dur-iki > button { min-height: 46px; padding: 0 8px; }
+.dur-iki > button[hidden] + button, .dur-iki > button:only-child { grid-column: 1 / -1; }
+button.anahtar-dugme { font-size: 14px; }
+button.anahtar-dugme[aria-checked="true"] { border-color: #5a7c74; }
+button.anahtar-dugme[aria-checked="false"] { color: var(--soluk); }

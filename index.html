@@ -16,8 +16,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&family=Figtree:wght@400;600&display=swap">
-<link rel="stylesheet" href="css/kuyu.css?v=0.9">
-<link rel="stylesheet" href="css/ekranlar.css?v=0.9">
+<link rel="stylesheet" href="css/kuyu.css?v=0.10">
+<link rel="stylesheet" href="css/ekranlar.css?v=0.10">
 </head>
 <body>
 <div class="app" id="oyunEkrani" hidden>
@@ -29,14 +29,31 @@
       <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4 5l7 5-7 5zM11 5l7 5-7 5z" fill="currentColor"/></svg>
     </button>
     <button type="button" id="sesBtn" aria-label="Sesi kapat" title="Ses"></button>
-    <button type="button" id="menuBtn" aria-label="Menü" title="Menü">
-      <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M3 5h14M3 10h14M3 15h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+    <button type="button" id="menuBtn" aria-label="Duraklat" title="Duraklat">
+      <svg viewBox="0 0 20 20" aria-hidden="true"><rect x="5" y="4" width="3.4" height="12" rx="1.2" fill="currentColor"/><rect x="11.6" y="4" width="3.4" height="12" rx="1.2" fill="currentColor"/></svg>
     </button>
   </div>
 
   <div class="sahne" id="sahne">
     <canvas id="oyun" aria-label="Kuyu. Bir noktaya bas ve basılı tut: kanca oraya fırlar, ipe sarılırsın. Bırakınca düşersin."></canvas>
     <div class="katman" id="katman" hidden><div class="kart" id="kart"></div></div>
+    <!-- Duraklatma paneli: oyun ve su durur, tutunduğun ip bırakılmaz -->
+    <div class="katman duraklat" id="duraklat" hidden role="dialog" aria-modal="true" aria-labelledby="duraklatBaslik">
+      <div class="kart">
+        <h2 id="duraklatBaslik">Duraklatıldı</h2>
+        <p id="duraklatBilgi"></p>
+        <button type="button" class="ana buyuk genis" id="devamBtn">Devam et</button>
+        <div class="dur-iki">
+          <button type="button" id="bastanBtn">Baştan başla</button>
+          <button type="button" id="dAtlaBtn">Bölümü atla</button>
+        </div>
+        <div class="dur-iki">
+          <button type="button" class="anahtar-dugme" id="dSesBtn" role="switch" aria-checked="true">Ses</button>
+          <button type="button" class="anahtar-dugme" id="dTitresimBtn" role="switch" aria-checked="true">Titreşim</button>
+        </div>
+        <button type="button" class="genis" id="anaMenuBtn">Ana menü</button>
+      </div>
+    </div>
   </div>
 
   <p class="ipucu" id="ipucu"></p>
@@ -47,7 +64,7 @@
   <img id="acilisLogo" class="marka-logo" src="assets/funday-morning-logo.webp" alt="Funday Morning Games">
   <div class="yukleme" aria-hidden="true"><div id="yuklemeDolgu"></div></div>
   <div class="yukleme-not" id="yuklemeNot">Yükleniyor…</div>
-  <div class="ek-surum">Kuyu v0.9</div>
+  <div class="ek-surum">Kuyu v0.10</div>
 </section>
 
 <!-- Giriş: yalnızca ilk açılışta -->
@@ -166,7 +183,7 @@
     </ol>
     <div class="ayar-satir" id="tamEkranSatir"><div><b>Tam ekran</b><span id="tamEkranYazi">Tarayıcı çubukları gizlenir. Ana ekrana eklersen oyun kendiliğinden tam ekran açılır.</span></div><button type="button" id="tamEkranBtn">Aç</button></div>
     <button type="button" id="tanitimBtn">Tanıtımı yeniden izle</button>
-    <p class="surum">Kuyu v0.9 · prototip · Funday Morning Games</p>
+    <p class="surum">Kuyu v0.10 · prototip · Funday Morning Games</p>
   </div>
 </section>
 
@@ -180,10 +197,10 @@
 
 <div class="bildirim" id="bildirim" role="status" hidden></div>
 
-<script src="js/engine.js?v=0.9"></script>
-<script src="js/levels.js?v=0.9"></script>
-<script src="js/gen.js?v=0.9"></script>
-<script src="js/game.js?v=0.9"></script>
-<script src="js/screens.js?v=0.9"></script>
+<script src="js/engine.js?v=0.10"></script>
+<script src="js/levels.js?v=0.10"></script>
+<script src="js/gen.js?v=0.10"></script>
+<script src="js/game.js?v=0.10"></script>
+<script src="js/screens.js?v=0.10"></script>
 </body>
 </html>

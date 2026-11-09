@@ -141,6 +141,7 @@
     sim = E.createSim(def);
     parts = []; floaters = []; trail = []; winT = null; deadT = null; resultShown = false; lastHud = '';
     $('katman').hidden = true;
+    closePause();
     paused = false; acc = 0; lastT = 0;
     if (window.KuyuScreens) window.KuyuScreens.showGame();
     layout();
@@ -724,11 +725,60 @@
   // ---------- ekranlar ----------
   // Menü, açılış ve giriş js/screens.js içinde. Oyun ana menüye dönünce durur (su da durur).
   function goHome() {
+    closePause();
     paused = true;
     if (sim) E.release(sim);
     if (window.KuyuScreens) window.KuyuScreens.home();
   }
-  $('menuBtn').onclick = function () { goHome(); };
+
+  // ---------- duraklatma ----------
+  // Oyun ve su durur. Tutunduğun ip bırakılmaz: devam edince aynı yerden sürersin.
+  var pauseOpen = false;
+  function pauseGame() {
+    if (!sim || sim.status !== 'play' || pauseOpen) return;
+    pauseOpen = true; paused = true;
+    active = null; // parmak panelde kalkarsa ip bırakılmasın
+    var m = E.meters(sim);
+    if (mode === 'endless') {
+      $('duraklatBilgi').textContent = 'Sonsuz Kuyu · ' + m + ' m · ' + E.score(sim) + ' puan · akış x' + sim.combo;
+      $('bastanBtn').textContent = 'Yeni koşu';
+      $('dAtlaBtn').hidden = true;
+    } else {
+      var depth = Math.max(0, Math.round(sim.p.y / 20));
+      $('duraklatBilgi').textContent = levelNo + '. ' + def.name + ' · ' + depth + ' m · atış ' + (sim.shots - sim.misses) + '/' + def.par +
+        ' · ateşböceği ' + E.fireflyCount(sim) + '/' + sim.fireflies.length;
+      $('bastanBtn').textContent = 'Baştan başla';
+      $('dAtlaBtn').hidden = false;
+    }
+    syncPauseToggles();
+    $('duraklat').hidden = false;
+    $('devamBtn').focus({ preventScroll: true });
+  }
+  function closePause() { pauseOpen = false; $('duraklat').hidden = true; }
+  function resumeGame() {
+    if (!pauseOpen) return;
+    closePause();
+    paused = false; lastT = 0; acc = 0;
+    canvas.focus && canvas.focus({ preventScroll: true });
+  }
+  function syncPauseToggles() {
+    $('dSesBtn').setAttribute('aria-checked', save.mute ? 'false' : 'true');
+    $('dSesBtn').textContent = save.mute ? 'Ses kapalı' : 'Ses açık';
+    $('dTitresimBtn').setAttribute('aria-checked', save.haptics === false ? 'false' : 'true');
+    $('dTitresimBtn').textContent = save.haptics === false ? 'Titreşim kapalı' : 'Titreşim açık';
+  }
+  // Sonuç kartı açıkken (bölüm bitti / yakalandın) duraklatmanın anlamı yok: menüye döner.
+  $('menuBtn').onclick = function () { if (sim && sim.status === 'play' && !paused) pauseGame(); else goHome(); };
+  $('devamBtn').onclick = resumeGame;
+  $('bastanBtn').onclick = function () { closePause(); reset(); };
+  $('dAtlaBtn').onclick = function () { closePause(); if (mode === 'level') startLevel(levelNo + 1); };
+  $('anaMenuBtn').onclick = function () { goHome(); };
+  $('dSesBtn').onclick = function () { save.mute = !save.mute; persist(); setMuteIcon(); syncPauseToggles(); };
+  $('dTitresimBtn').onclick = function () { save.haptics = save.haptics === false; persist(); syncPauseToggles(); };
+  // Telefon arka plana alınınca (bildirim, arama, uygulama değişimi) oyun kendiliğinden durur.
+  document.addEventListener('visibilitychange', function () {
+    if (document.hidden && !$('oyunEkrani').hidden) pauseGame();
+  });
   $('atlaBtn').onclick = function () { if (mode === 'level') startLevel(levelNo + 1); };
   $('sesBtn').onclick = function () { save.mute = !save.mute; persist(); setMuteIcon(); };
   setMuteIcon();
@@ -766,9 +816,14 @@
   canvas.addEventListener('contextmenu', function (e) { e.preventDefault(); });
   window.addEventListener('keydown', function (e) {
     if (e.target && e.target.tagName === 'INPUT') return;
+    if (pauseOpen) {
+      if (e.key === 'Escape' || e.key === 'Enter' || e.key === ' ') { e.preventDefault(); resumeGame(); }
+      else if (e.key === 'r' || e.key === 'R') { closePause(); reset(); }
+      return;
+    }
     if (paused) return;
     if (e.key === 'r' || e.key === 'R') reset();
-    else if (e.key === 'Escape') goHome();
+    else if (e.key === 'Escape' || e.key === 'p' || e.key === 'P') { if (sim && sim.status === 'play') pauseGame(); else goHome(); }
     else if (e.key === 'Enter' && !$('katman').hidden) { if (mode === 'level') startLevel(levelNo + 1); else reset(); }
   });
   var rt = null;
@@ -789,6 +844,8 @@
     toggleMute: function () { save.mute = !save.mute; persist(); setMuteIcon(); return save.mute; },
     toggleHaptics: function () { save.haptics = save.haptics === false; persist(); if (save.haptics) buzz(20); return save.haptics; },
     unlockAudio: function () { ac(); },
+    pause: function () { pauseGame(); },
+    resume: function () { resumeGame(); },
     sfx: SFX
   };
 

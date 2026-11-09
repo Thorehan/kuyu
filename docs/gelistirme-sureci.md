@@ -38,7 +38,7 @@ Dört başlık: **oynanış, UI/UX, hikâye, online**. `[~]` üzerinde çalış�
 ### 2. UI / UX
 - [x] **Ana menü düzeni (v0.9):** üst şerit (profil + toplam ödül + ateşböceği), Oyna kartında sıradaki bölümün adı ve hedefleri, başparmak bölgesinde modlar, alt gezinme çubuğu (Ana sayfa / Bölümler / Profil / Ayarlar). İleride Dolap ve Görevler bu çubuğa eklenir.
 - [ ] Ana menü için senin geri bildirimin (telefonda).
-- [ ] Oyun içi duraklatma paneli: menü düğmesi doğrudan ana menüye atmasın (Devam / Baştan / Ana menü).
+- [x] Oyun içi duraklatma paneli (v0.10): Devam et, Baştan / Yeni koşu, Bölümü atla, ses ve titreşim, Ana menü. Oyun ve su durur, ip bırakılmaz; telefon arka plana alınınca kendiliğinden durur.
 - [ ] Oyun içi üst şerit: alt bilgi satırı dar ekranda kesiliyor ("… a…"); sadeleştir.
 - [ ] Bölümler ekranı: bölge başlıkları, ilerleme çubuğu, son oynanana kaydırma.
 - [ ] Bölüm sonu kartı: madalya + hız kutusu + ödül tek bakışta; "yeni rekor" anı.
@@ -64,6 +64,7 @@ Dört başlık: **oynanış, UI/UX, hikâye, online**. `[~]` üzerinde çalış�
 - [?] Yayın: Unity'ye taşıma zamanı, mağaza hesabı, yalnızca seçilen ödüllü reklam (Pofi kuralı).
 
 ## Yapılanlar
+- 2026-11-09 · v0.10 · Oyun içi duraklatma paneli; arka plana alınınca otomatik duraklatma.
 - 2026-11-09 · v0.9 · Yapılacaklar listesi dört başlıkta (oynanış, UI/UX, hikâye, online); yeni ana menü düzeni ve alt gezinme çubuğu.
 - 2026-11-09 · v0.8 · Sprint 1: ana ekrana kurulum ve internetsiz açılış, tam ekran düğmesi, simgeler; bölümlerde el kayması yok; Kusursuz'da boş atış sayılmaz; 6. bölüme hız halkası; telefon deneme listesi; `kontrol.js`, `tempo.js`. Su temposu ölçüldü ama değiştirilmedi.
 - 2026-11-09 · v0.7.1 · Su ilk halkadan sonra tetiklenir; "su yükseliyor" uyarısı.

@@ -137,6 +137,29 @@
     }
   }
 
+  // ---------- ateşböceği halkaları ----------
+  // Ana yoldaki bir tutunma noktasının (t) alternatifi: önceki asılma noktasından (from) ulaşılır,
+  // kendisinden sonraki hedefe (next) de ulaşılır. Oyuncu ister bu halkaya gider (ateşböceğini alır),
+  // ister ana halkaya gider (es geçer). Hiçbiri olmazsa null.
+  function ffAlternative(r, from, t, next, rings) {
+    var tries = [];
+    var mx = 2 * from.x - t.x;            // önceki noktaya göre karşı taraf
+    [0, 30, -30, 60, -60].forEach(function (ox) { [0, 25, -25].forEach(function (oy) { tries.push({ x: mx + ox, y: t.y + oy }); }); });
+    // karşı taraf olmuyorsa aynı tarafta, ana halkanın biraz yanında
+    [-90, 90, -120, 120].forEach(function (ox) { tries.push({ x: t.x + ox, y: t.y + 10 }); });
+    for (var i = 0; i < tries.length; i++) {
+      var c = { x: clamp(tries[i].x, 56, 304), y: tries[i].y };
+      var d1 = dist(from, c);
+      if (d1 < 120 || d1 > REACH) continue;
+      if (dist(c, t) < 80) continue;
+      if (next && dist({ x: c.x, y: c.y + MIN }, next) > REACH - 8) continue;
+      var crowded = rings.some(function (rg) { return Math.hypot(rg.x - c.x, rg.y - c.y) < 70; });
+      if (crowded) continue;
+      return { x: Math.round(c.x), y: Math.round(c.y) };
+    }
+    return null;
+  }
+
   // ---------- sonlu bölüm ----------
   function createLevel(num) {
     var r = rng(num * 7919 + 13);
@@ -161,13 +184,17 @@
       var yB = allPts[i].y - 30, yT = target(nodes[i]).y + 10;
       if (i > 0) addHazards(r, out, diff, yT, yB, segs.slice(Math.max(0, i - 2), i + 3), anchors.slice(Math.max(0, i - 2), i + 3), out.panels);
     }
-    // ateşböcekleri: ikisi yol üstünde, biri cesaret isteyen yerde (halkanın ötesinde)
-    var ff = [];
-    var picks = [Math.floor(nodesN * 0.3), Math.floor(nodesN * 0.7)];
-    picks.forEach(function (pi) { var a = allPts[pi], b = target(nodes[pi]); ff.push([Math.round((a.x + b.x) / 2), Math.round((a.y + b.y) / 2)]); });
-    var bi = Math.min(nodesN - 2, Math.floor(nodesN * 0.5));
-    var a2 = allPts[bi], b2 = target(nodes[bi]), dl = dist(a2, b2) || 1;
-    ff.push([Math.round(clamp(b2.x + (b2.x - a2.x) / dl * 70, 40, 320)), Math.round(b2.y + (b2.y - a2.y) / dl * 70)]);
+    // ateşböceği halkaları: üç karar noktasında, ana yolun alternatifi
+    var ffRings = [], ffAt = {};
+    [0.25, 0.5, 0.75].forEach(function (q) {
+      var base = Math.max(1, Math.min(nodesN - 2, Math.round(nodesN * q)));
+      for (var k = 0; k < 4; k++) {
+        var ii = base + (k % 2 ? -1 : 1) * Math.ceil(k / 2);
+        if (ii < 1 || ii > nodesN - 2 || ffAt[ii] || ffAt[ii - 1] || ffAt[ii + 1]) continue;
+        var alt = ffAlternative(r, allPts[ii], target(nodes[ii]), target(nodes[ii + 1]), out.rings.concat(ffRings));
+        if (alt) { ffRings.push(alt); ffAt[ii] = alt; break; }
+      }
+    });
 
     // koordinatları kaydır: kova y=50'de, taban aşağıda
     var off = 50 - goal.y;
@@ -179,6 +206,8 @@
     var waterLevel = num % 3 === 2;
     var route = nodes.map(function (nn) { var t = target(nn); return ['hook', Math.round(t.x), Math.round(t.y + off)]; });
     route.push(['hook', Math.round(goal.x), Math.round(goal.y + off)]);
+    // ateşböceklerini alan rota: karar noktalarında ateşböceği halkasına gider
+    var ffRoute = route.map(function (st, k) { var a = ffAt[k]; return a ? ['hook', a.x, Math.round(a.y + off)] : st; });
     return {
       id: num, name: levelName(num, r), H: H, generated: true,
       hint: waterLevel ? 'Su yükseliyor. Asılı kalma, fırlayıp tutun.' : 'Az tutunarak çık: ipi erken bırak, havadayken sıradakine at.',
@@ -186,9 +215,9 @@
       water: waterLevel ? Math.min(90, 45 + num * 0.5) : 0, waterDelay: 3,
       grip: 1.8,
       rects: rects,
-      rings: out.rings.map(sh),
-      fireflies: ff.map(function (f) { return [f[0], f[1] + off]; }),
+      rings: out.rings.map(sh).concat(ffRings.map(function (a) { return [a.x, Math.round(a.y + off), 'ff']; })),
       route: route,
+      ffRoute: ffRoute,
       par: route.length,
       flow: Math.max(3, Math.floor(route.length * 0.5))
     };
@@ -203,7 +232,7 @@
   function createEndless(seed) {
     var r = rng(seed >>> 0);
     var startY = 0;
-    var st = { hp: { x: 180, y: startY }, prevKind: null, nodes: [], frontier: startY, segs: [], anchors: [] };
+    var st = { hp: { x: 180, y: startY }, prevKind: null, nodes: [], frontier: startY, segs: [], anchors: [], prevHp: null, prevT: null, lastFF: -9 };
     var def = {
       id: 'sonsuz', name: 'Sonsuz Kuyu', endless: true, seed: seed,
       hint: 'Su durmadan yükselir. Sağa ya da sola dokunarak tırman; ipi erken bırakıp zincirlersen ekstra puan.',
@@ -235,13 +264,18 @@
           addHazards(r, hz, diff, t.y + 10, st.hp.y - 30, st.segs, st.anchors, s.panels);
           hz.rects.slice(before).forEach(function (rc) { s.rects.push(rc); });
         }
-        // ateşböceği: bazen yol üstünde, bazen halkanın ötesinde (fırlayarak)
-        var roll = r();
-        if (roll < 0.28) s.fireflies.push({ x: Math.round((st.hp.x + t.x) / 2), y: Math.round((st.hp.y + t.y) / 2), got: false });
-        else if (roll < 0.42 && n.kind === 'ring') {
-          var dl = dist(st.hp, t) || 1;
-          s.fireflies.push({ x: Math.round(clamp(t.x + (t.x - st.hp.x) / dl * 70, 40, 320)), y: Math.round(t.y + (t.y - st.hp.y) / dl * 70), got: false });
+        // ateşböceği halkası: bir önceki düğümün alternatifi (artık sıradaki hedef belli: t)
+        if (st.prevT && st.nodes.length - st.lastFF >= 2 && r() < 0.4) {
+          var near = s.rings.filter(function (rg) { return Math.abs(rg.y - st.prevT.y) < 300; });
+          var alt = ffAlternative(r, st.prevHp, st.prevT, t, near);
+          if (alt) {
+            var fr = { x: alt.x, y: alt.y, ff: true };
+            s.rings.push(fr);
+            s.fireflies.push({ x: alt.x, y: alt.y, got: false, ring: fr });
+            st.lastFF = st.nodes.length;
+          }
         }
+        st.prevHp = st.hp; st.prevT = t;
         st.nodes.push(n);
         st.hp = hangOf(n);
         st.frontier = t.y;
@@ -258,7 +292,7 @@
     return def;
   }
 
-  var api = { createLevel: createLevel, createEndless: createEndless, target: target, hangOf: hangOf };
+  var api = { createLevel: createLevel, createEndless: createEndless, target: target, hangOf: hangOf, ffAlternative: ffAlternative, rng: rng };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.KuyuGen = api;
 })(typeof window !== 'undefined' ? window : this);

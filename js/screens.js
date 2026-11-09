@@ -5,7 +5,7 @@
   var G = window.KuyuGame;
   var $ = function (id) { return document.getElementById(id); };
   var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  var EKRANLAR = ['ekAcilis', 'ekGiris', 'ekTanitim', 'ekAna', 'ekBolumler', 'ekAyarlar'];
+  var EKRANLAR = ['ekAcilis', 'ekGiris', 'ekTanitim', 'ekAna', 'ekBolumler', 'ekAyarlar', 'ekProfil'];
   var current = 'ekAcilis';
   var q = new URLSearchParams(location.search);
   var deepLink = q.get('mod') === 'sonsuz' ? { mode: 'endless' } : q.get('bolum') ? { mode: 'level', n: parseInt(q.get('bolum'), 10) || 1 } : null;
@@ -123,6 +123,32 @@
   $('sonsuzBtn').addEventListener('click', function () { G.startEndless(); });
   $('bolumlerBtn').addEventListener('click', function () { openLevels(); });
   $('ayarBtn').addEventListener('click', function () { openSettings(); });
+  $('profilBtn').addEventListener('click', function () { openProfile(); });
+
+  // ---------- profil kartı ----------
+  function fmt(n, d) { return Number(n || 0).toFixed(d).replace('.', ','); }
+  function openProfile() {
+    var s = save(), st = s.stats || {}, rec = s.endless || {};
+    var best = s.best || {}, keys = Object.keys(best);
+    var done = keys.filter(function (k) { return best[k].done; }).map(Number);
+    var ff = 0, perfect = 0, flow = 0, total = 0;
+    keys.forEach(function (k) { var b = best[k]; ff += b.ff || 0; if (b.perfect) perfect++; if (b.flow) flow++; total += b.reward || 0; });
+    $('pAd').textContent = (s.profile && s.profile.name) || 'Tırmanıcı';
+    $('pHesap').textContent = 'Misafir · ilerleme bu cihazda';
+    $('pHiz').textContent = fmt(st.maxSpeed, 1) + ' m/sn';
+    $('pHizNot').textContent = st.maxSpeed >= 40 ? 'Akış ustası: ipi erken bırakıp zincir kuruyorsun.' : 'İpi tam sarılmadan bırak, havadayken sıradakine tutun: hız ve ödül artar.';
+    $('pBolum').textContent = done.length ? Math.max.apply(null, done) : '–';
+    $('pGecilen').textContent = done.length;
+    $('pAtes').textContent = ff;
+    $('pMadalya').textContent = perfect + ' · ' + flow;
+    $('pOdul').textContent = total;
+    $('pEnIyiOdul').textContent = st.bestReward || 0;
+    $('pRekor').textContent = rec.score || 0;
+    $('pMetre').textContent = (rec.meters || 0) + ' m';
+    $('pKat').textContent = Math.floor((rec.meters || 0) / 3);
+    $('pAkis').textContent = 'x' + (rec.combo || 0);
+    show('ekProfil');
+  }
   document.querySelectorAll('[data-geri]').forEach(function (b) { b.addEventListener('click', home); });
 
   // ---------- bölümler ----------
@@ -183,7 +209,7 @@
   $('tanitimBtn').addEventListener('click', runIntro);
 
   document.addEventListener('keydown', function (e) {
-    if (e.key === 'Escape' && (current === 'ekBolumler' || current === 'ekAyarlar')) home();
+    if (e.key === 'Escape' && (current === 'ekBolumler' || current === 'ekAyarlar' || current === 'ekProfil')) home();
     if ((e.key === 'Enter' || e.key === ' ') && current === 'ekTanitim') $('ekTanitim').click();
   });
 

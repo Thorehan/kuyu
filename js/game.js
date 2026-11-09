@@ -14,8 +14,9 @@
 
   // ---------- kayıt ----------
   var KEY = 'kuyu.v2';
-  var save = { best: {}, last: 1, mute: false, haptics: true, endless: { score: 0, meters: 0, combo: 0 }, maxLevel: 1, profile: null };
+  var save = { best: {}, last: 1, mute: false, haptics: true, endless: { score: 0, meters: 0, combo: 0 }, maxLevel: 1, profile: null, stats: { maxSpeed: 0, bestReward: 0 } };
   try { var raw = localStorage.getItem(KEY); if (raw) save = Object.assign(save, JSON.parse(raw)); } catch (e) {}
+  if (!save.stats) save.stats = { maxSpeed: 0, bestReward: 0 };
   function persist() { try { localStorage.setItem(KEY, JSON.stringify(save)); } catch (e) {} }
 
   // ---------- bölümler ----------
@@ -63,6 +64,8 @@
   // ---------- titreşim (Android tarayıcıları; iOS Safari desteklemez, sessizce atlanır) ----------
   function buzz(pattern) {
     if (save.haptics === false || !navigator.vibrate) return;
+    // Tarayıcı, kullanıcı sayfaya hiç dokunmadan titreşime izin vermez (konsola hata basar).
+    if (navigator.userActivation && !navigator.userActivation.hasBeenActive) return;
     try { navigator.vibrate(pattern); } catch (e) {}
   }
 
@@ -157,10 +160,10 @@
   function updateHud(force) {
     var m = E.meters(sim);
     if (mode === 'endless') {
-      var sc = E.score(sim), key = 'e' + sc + '|' + m + '|' + sim.combo;
+      var sc = E.score(sim), key = 'e' + sc + '|' + m + '|' + sim.combo + '|' + E.speedMult(sim);
       if (key === lastHud && !force) return; lastHud = key;
       $('puan').innerHTML = sc + '<small>puan</small>';
-      $('altbaslik').textContent = m + ' m · akış x' + sim.combo + ' · rekor ' + (save.endless.score || 0);
+      $('altbaslik').textContent = m + ' m · akış x' + sim.combo + ' · hız x' + E.speedMult(sim).toFixed(2).replace('.', ',') + ' · rekor ' + (save.endless.score || 0);
     } else {
       var n = E.fireflyCount(sim), key2 = 'l' + n + '|' + m + '|' + sim.combo + '|' + sim.shots;
       if (key2 === lastHud && !force) return; lastHud = key2;
@@ -190,6 +193,7 @@
     for (var i = 0; i < ev.length; i++) {
       var e = ev[i];
       if (e.type === 'fire') SFX.fire();
+      else if (e.type === 'rescue') { SFX.fire(); buzz(25); floatText(sim.p.x, sim.p.y - 26, 'kurtarma kancası', COL.gok, 14); }
       else if (e.type === 'attach') {
         SFX.attach(); shake = Math.max(shake, 3); buzz(e.what === 'box' ? 18 : 12);
         burst(e.x, e.y, 8, e.what === 'wood' || e.what === 'box' ? COL.ahsap : COL.bakir, 140, 0.4);
@@ -352,8 +356,18 @@
     ctx.fillStyle = b.pressed ? COL.atesbocegi : COL.bakir; ctx.fillRect(b.x + 4, b.y - 2 + dy, b.w - 8, 5);
   }
 
+  // Ateşböceği halkası: halkanın içinde parlayan ateşböceği. Tutun ya da içinden geç, alınır.
+  function drawFireflyRing(r, t) {
+    var a = 0.75 + 0.25 * Math.sin(t / 260 + r.x);
+    var g = ctx.createRadialGradient(r.x, r.y, 0, r.x, r.y, 30);
+    g.addColorStop(0, 'rgba(232,242,124,' + (0.55 * a) + ')'); g.addColorStop(1, 'rgba(232,242,124,0)');
+    ctx.fillStyle = g; ctx.fillRect(r.x - 30, r.y - 30, 60, 60);
+    ctx.lineWidth = 2.4; ctx.strokeStyle = 'rgba(232,242,124,' + (0.9 * a) + ')';
+    ctx.beginPath(); ctx.arc(r.x, r.y, CFG.RING_R + 2, 0, Math.PI * 2); ctx.stroke();
+    ctx.fillStyle = '#fbffd8'; ctx.beginPath(); ctx.arc(r.x + Math.cos(t / 300) * 2, r.y + Math.sin(t / 240) * 2, 3, 0, Math.PI * 2); ctx.fill();
+  }
   function drawFirefly(f, t) {
-    if (f.got) return;
+    if (f.got || f.ring) return;
     var y = f.y + Math.sin(t / 400 + f.x) * 3, x = f.x + Math.cos(t / 600 + f.y) * 2;
     var g = ctx.createRadialGradient(x, y, 0, x, y, 16);
     g.addColorStop(0, 'rgba(232,242,124,0.9)'); g.addColorStop(0.3, 'rgba(232,242,124,0.35)'); g.addColorStop(1, 'rgba(232,242,124,0)');
@@ -451,10 +465,25 @@
   function drawAimMarkers(t) {
     if (sim.status !== 'play') return;
     var L = E.aim(sim, 0.2), R = E.aim(sim, 0.8);
+    if (L.rescue || R.rescue) { drawRescueMarker(L.rescue ? L : R, t); return; }
     var same = L.kind !== 'none' && R.kind !== 'none' && Math.hypot(L.x - R.x, L.y - R.y) < 4;
     if (L.kind !== 'none') marker(L, COL_SOL, -1, t);
     if (R.kind !== 'none' && !same) marker(R, COL_SAG, 1, t);
     if (same) arrow(R.x, R.y, COL_SAG, 1);
+  }
+  // Menzilde hedef yok: kurtarma kancasının gideceği hedef ve yol, nereye basılırsa basılsın.
+  function drawRescueMarker(m, t) {
+    ctx.save();
+    ctx.strokeStyle = COL.gok; ctx.globalAlpha = 0.55; ctx.lineWidth = 2; ctx.setLineDash([3, 7]); ctx.lineDashOffset = -t / 40;
+    ctx.beginPath(); ctx.moveTo(sim.p.x, sim.p.y); ctx.lineTo(m.x, m.y); ctx.stroke();
+    ctx.globalAlpha = 0.95; ctx.setLineDash([5, 4]); ctx.lineWidth = 2.6;
+    ctx.beginPath(); ctx.arc(m.x, m.y, 19 * (1 + 0.1 * Math.sin(t / 150)), 0, Math.PI * 2); ctx.stroke();
+    ctx.restore();
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.font = '800 13px "Baloo 2", system-ui, sans-serif';
+    ctx.lineWidth = 3; ctx.strokeStyle = 'rgba(8,13,14,0.85)';
+    ctx.strokeText('dokun: kurtarma kancası', sim.p.x, sim.p.y - 30);
+    ctx.fillStyle = COL.gok; ctx.fillText('dokun: kurtarma kancası', sim.p.x, sim.p.y - 30);
   }
   function marker(m, color, dir, t) {
     var pulse = 1 + 0.08 * Math.sin(t / 180);
@@ -542,7 +571,7 @@
     var vh = viewH / K;
     for (var i = 0; i < sim.rects.length; i++) drawRect(sim.rects[i]);
     sim.buttons.forEach(drawButton);
-    sim.rings.forEach(function (r) { if (r.y > cam - 20 && r.y < cam + vh + 20) drawRing(r.x, r.y); });
+    sim.rings.forEach(function (r) { if (r.y > cam - 30 && r.y < cam + vh + 30) { drawRing(r.x, r.y); if (r.ff && !r.got) drawFireflyRing(r, t); } });
     sim.fireflies.forEach(function (f) { if (f.y > cam - 20 && f.y < cam + vh + 20) drawFirefly(f, t); });
     sim.boxes.forEach(drawBox);
     drawAimMarkers(t);
@@ -593,16 +622,35 @@
   function medal(ok, icon, title, sub) {
     return '<div class="madalya' + (ok ? ' var' : '') + '">' + icon + '<b>' + title + '</b><span>' + sub + '</span></div>';
   }
+  function fmt(n, d) { return n.toFixed(d).replace('.', ','); }
+  // Bölüm sonu hız kutusu: en yüksek hız, çarpan ve çarpanlı sonuç
+  function speedBlock(speed, mult, base, result, label) {
+    return '<div class="hiz-kutu"><div><small>En yüksek hız</small><b>' + fmt(speed, 1) + ' m/sn</b></div>' +
+      '<div><small>Hız çarpanı</small><b>x' + fmt(mult, 2) + '</b></div>' +
+      '<div><small>' + label + '</small><b>' + base + (mult > 1 ? ' → ' + result : '') + '</b></div></div>';
+  }
+  function noteStats(speed, reward) {
+    var st = save.stats || (save.stats = { maxSpeed: 0, bestReward: 0 });
+    if (speed > (st.maxSpeed || 0)) st.maxSpeed = speed;
+    if (reward > (st.bestReward || 0)) st.bestReward = reward;
+    persist();
+  }
   function showLevelResult() {
     resultShown = true;
     var ff = E.fireflyCount(sim), time = sim.t;
     var perfect = sim.shots <= def.par, flow = sim.maxCombo >= def.flow;
     var b = save.best[levelNo] || {};
     var newTime = !b.time || time < b.time;
+    // Ödül: temel (bölüm + ateşböceği + madalyalar) × hız çarpanı
+    var base = 100 + 25 * ff + (perfect ? 50 : 0) + (flow ? 50 : 0);
+    var mult = E.speedMult(sim), reward = Math.round(base * mult);
+    var speed = E.speedMs(sim.maxSpeed);
     save.best[levelNo] = {
       ff: Math.max(b.ff || 0, ff), time: b.time ? Math.min(b.time, time) : time,
-      perfect: !!(b.perfect || perfect), flow: !!(b.flow || flow), done: true
+      perfect: !!(b.perfect || perfect), flow: !!(b.flow || flow), done: true,
+      reward: Math.max(b.reward || 0, reward), speed: Math.max(b.speed || 0, speed)
     };
+    noteStats(speed, reward);
     if (levelNo + 1 > save.maxLevel) save.maxLevel = levelNo + 1;
     persist();
     $('kart').innerHTML =
@@ -612,6 +660,7 @@
       medal(perfect, ICON.perfect, 'Kusursuz', sim.shots + ' atış · en çok ' + def.par) +
       medal(flow, ICON.flow, 'Akış', 'en iyi x' + sim.maxCombo + ' · hedef x' + def.flow) +
       '</div>' +
+      speedBlock(speed, mult, base, reward, 'Bölüm ödülü') +
       '<p>' + time.toFixed(1) + ' sn' + (newTime ? ' · <span class="rekor">en iyi süre</span>' : ' · en iyi ' + b.time.toFixed(1) + ' sn') +
       (deaths ? ' · ' + (deaths + 1) + '. deneme' : ' · ilk denemede') + '</p>' +
       '<div class="dugmeler"><button type="button" id="tekrarBtn">Tekrar</button>' +
@@ -623,14 +672,16 @@
   }
   function showEndlessResult() {
     resultShown = true;
-    var sc = E.score(sim), m = E.meters(sim), rec = save.endless || {};
+    var raw = E.score(sim), mult = E.speedMult(sim), sc = E.finalScore(sim), m = E.meters(sim), rec = save.endless || {};
+    var speed = E.speedMs(sim.maxSpeed);
     var isRecord = sc > (rec.score || 0);
     save.endless = { score: Math.max(rec.score || 0, sc), meters: Math.max(rec.meters || 0, m), combo: Math.max(rec.combo || 0, sim.maxCombo) };
-    persist();
+    noteStats(speed, 0);
     $('kart').innerHTML =
       '<h2>' + (isRecord ? 'Yeni rekor!' : 'Kuyu kazandı') + '</h2>' +
       '<div class="buyuk">' + sc + '</div>' +
-      '<p>' + m + ' m tırmanış + ' + sim.bonus + ' akış + ' + sim.fireflyPts + ' ateşböceği</p>' +
+      '<p>' + m + ' m tırmanış + ' + sim.bonus + ' akış + ' + sim.fireflyPts + ' ateşböceği = ' + raw + '</p>' +
+      speedBlock(speed, mult, raw, sc, 'Puan') +
       '<p>En uzun akış x' + sim.maxCombo + ' · ' + sim.hooks + ' tutunma · ' + sim.t.toFixed(0) + ' sn</p>' +
       '<p>Rekor: <span class="rekor">' + save.endless.score + '</span> · en yüksek ' + save.endless.meters + ' m</p>' +
       '<div class="dugmeler"><button type="button" id="menuDonBtn">Menü</button>' +
@@ -662,7 +713,7 @@
   canvas.addEventListener('pointerdown', function (ev) {
     ev.preventDefault();
     ac();
-    if (sim.status !== 'play') return;
+    if (!sim || paused || sim.status !== 'play') return;
     active = ev.pointerId;
     try { canvas.setPointerCapture(ev.pointerId); } catch (e) {}
     // Tek el: dokunuşun ekrandaki yatay yeri yönü seçer (sol / orta / sağ), nişan yardımı hedefi bulur.
@@ -670,9 +721,11 @@
     var w = toWorld(ev), r = canvas.getBoundingClientRect();
     var f = (ev.clientX - r.left) / Math.max(1, r.width);
     var tgt = E.aim(sim, f, w.x, w.y);
+    // Tutunurken yukarıda hedef yoksa ip bırakılmaz ve aşağı atılmaz; parmak kalkınca yine bırakılır.
+    if (tgt.hold) return;
     var dx = tgt.x - sim.p.x, dy = tgt.y - sim.p.y, d = Math.sqrt(dx * dx + dy * dy) || 1;
     aim = { x: dx / d, y: dy / d };
-    E.press(sim, tgt.x, tgt.y);
+    E.press(sim, tgt.x, tgt.y, { rescue: !!tgt.rescue });
   });
   function up(ev) {
     if (ev.pointerId !== active) return;

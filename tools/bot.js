@@ -23,11 +23,12 @@ function runFor(s, sec, until) {
 const speed = p => Math.hypot(p.x - p.px, p.y - p.py) / C.DT;
 
 // style: 'rahat' her noktada asılıp durulur; 'akis' ip tam sarılmadan sıradakine atılır
-function play(def, style) {
+function play(def, style, route) {
+  route = route || def.route;
   const s = E.createSim(def);
   const log = [];
   let prevKey = '';
-  for (const [i, a] of def.route.entries()) {
+  for (const [i, a] of route.entries()) {
     if (s.status !== 'play') break;
     const key = a.slice(1, 3).join(',');
     if (style === 'akis' && key === prevKey) continue;
@@ -91,10 +92,13 @@ if (!args.includes('--gen') || only) {
   for (const def of LEVELS) {
     if (only && def.id !== only) continue;
     const a = play(def, 'rahat');
-    const { ff } = report(def, a, def.fireflies.length);
+    const c = play(def, 'rahat', def.ffRoute);
+    const ffTotal = c.s.fireflies.length;
+    const ff = E.fireflyCount(c.s);
+    if (!a.ok || !c.ok || ff < ffTotal) allOk = false;
     const b = play(def, 'akis');
     if (!b.ok) allOk = false;
-    console.log(`${def.id}. ${def.name.padEnd(15)} rahat: ${a.ok ? 'GEÇTİ' : 'KALDI'} ${a.s.t.toFixed(1)}s atış ${a.s.shots} ateşböceği ${ff}/3 ${a.why || ''}` +
+    console.log(`${def.id}. ${def.name.padEnd(15)} rahat: ${a.ok ? 'GEÇTİ' : 'KALDI'} ${a.s.t.toFixed(1)}s atış ${a.s.shots} (es geçince ateşböceği ${E.fireflyCount(a.s)}) | ateşböceği rotası: ${c.ok ? 'GEÇTİ' : 'KALDI'} ${ff}/${ffTotal} ${c.why || a.why || ''}` +
       ` | akış: ${b.ok ? 'GEÇTİ' : 'KALDI'} ${b.s.t.toFixed(1)}s atış ${b.s.shots} en iyi akış x${b.s.maxCombo} ${b.why || ''}` +
       ` | hedef: par ${def.par} akış x${def.flow}`);
     if (trace || !a.ok) a.log.forEach(l => console.log('   ' + l));
@@ -111,14 +115,17 @@ if (!only) {
     const def = G.createLevel(n);
     const a = play(def, 'rahat');
     const b = play(def, 'akis');
-    const ff = E.fireflyCount(a.s);
+    const c = play(def, 'rahat', def.ffRoute);
+    const ff = E.fireflyCount(c.s);
+    if (!c.ok) { fail++; allOk = false; console.log(`${n} ${def.name}: ateşböceği rotası KALDI ${c.why}`); }
     if (!a.ok) { fail++; allOk = false; console.log(`${n} ${def.name}: rahat KALDI ${a.why}`); if (trace) a.log.forEach(l => console.log('   ' + l)); }
     if (!b.ok) { console.log(`${n} ${def.name}: akış KALDI ${b.why}`); }
     if (b.ok && b.s.maxCombo < def.flow) flowMiss++;
-    if (ff < 2) ffLow++;
-    if (n <= 9 || n % 20 === 0) console.log(`${n} ${def.name.padEnd(18)} H=${def.H} su=${def.water ? def.water.toFixed(0) : 0} rahat ${a.ok ? 'GEÇTİ' : 'KALDI'} ${a.s.t.toFixed(1)}s ateşböceği ${ff}/3 | akış ${b.ok ? 'GEÇTİ' : 'KALDI'} x${b.s.maxCombo} (hedef x${def.flow}, par ${def.par})`);
+    if (ff < c.s.fireflies.length) ffLow++;
+    if (n <= 9 || n % 20 === 0) console.log(`${n} ${def.name.padEnd(18)} H=${def.H} su=${def.water ? def.water.toFixed(0) : 0} rahat ${a.ok ? 'GEÇTİ' : 'KALDI'} ${a.s.t.toFixed(1)}s ateşböceği ${ff}/${c.s.fireflies.length} | akış ${b.ok ? 'GEÇTİ' : 'KALDI'} x${b.s.maxCombo} (hedef x${def.flow}, par ${def.par})`);
   }
-  console.log(`Sonuç: ${genMax - 6} bölüm, rahat koşuda kalan ${fail}, akış hedefi tutmayan ${flowMiss}, ateşböceği < 2 olan ${ffLow}`);
+  console.log(`Sonuç: ${genMax - 6} bölüm, rahat koşuda kalan ${fail}, akış hedefi tutmayan ${flowMiss}, ateşböceği rotasında hepsini alamayan ${ffLow}`);
+  if (ffLow) allOk = false;
   if (flowMiss) allOk = false;
 }
 

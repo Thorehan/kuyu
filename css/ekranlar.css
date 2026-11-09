@@ -77,8 +77,9 @@ button.sosyal:hover { background: #fff; }
 .ana-ekran canvas { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 0; }
 .ana-ekran > *:not(canvas) { position: relative; z-index: 1; }
 .ana-ust { display: flex; align-items: center; justify-content: space-between; width: 100%; max-width: 448px; margin: 0 auto; }
-.selam { display: flex; flex-direction: column; line-height: 1.1; min-width: 0; }
-.selam span { color: var(--soluk); font-size: 13px; }
+button.selam { display: flex; align-items: center; gap: 10px; min-width: 0; padding: 4px 14px 4px 4px; border-radius: 999px; background: rgba(38,49,47,.85); text-align: left; }
+.selam-yazi { display: flex; flex-direction: column; line-height: 1.1; min-width: 0; }
+.selam-yazi > span { color: var(--soluk); font-size: 12px; }
 .selam b { font-family: var(--font-oyun); font-weight: 600; font-size: 20px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 button.yuvarlak { border-radius: 50%; width: 46px; height: 46px; min-width: 46px; padding: 0; background: rgba(38,49,47,.85); }
 button.yuvarlak svg { width: 22px; height: 22px; }
@@ -141,3 +142,24 @@ button.oyna:active { transform: translateY(3px); box-shadow: 0 3px 0 #a83b16; }
   button.oyna { min-height: 60px; font-size: 28px; }
   .tanitim-baslik h1 { font-size: 72px; }
 }
+
+/* ---------- profil kartı ---------- */
+.avatar { width: 38px; height: 38px; border-radius: 50%; flex: none; position: relative; display: block;
+  background: radial-gradient(circle at 35% 30%, rgba(255,255,255,.25) 0 18%, transparent 19%), #f26a3a; box-shadow: inset 0 -3px 0 #b8401b; }
+.avatar::before { content: ""; position: absolute; left: 50%; top: 38%; width: 34%; height: 34%; margin-left: -4%; border-radius: 50%; background: #fff; }
+.avatar::after { content: ""; position: absolute; left: 22%; right: 22%; bottom: 22%; height: 12%; border-radius: 3px; background: #2fb3a6; }
+.avatar.buyuk { width: 64px; height: 64px; }
+.profil-kart { display: flex; flex-direction: column; gap: 12px; }
+.profil-bas { display: flex; align-items: center; gap: 14px; }
+.profil-bas > div { display: flex; flex-direction: column; min-width: 0; }
+.profil-bas b { font-family: var(--font-oyun); font-weight: 800; font-size: 26px; line-height: 1.05; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.profil-bas span { color: var(--soluk); font-size: 13px; }
+.profil-hiz { display: flex; flex-direction: column; gap: 2px; padding: 14px 16px; border-radius: 16px;
+  background: linear-gradient(160deg, rgba(31,63,66,.95), rgba(22,38,42,.95)); border: 1px solid #2f5a5c; }
+.profil-hiz small { color: var(--soluk); font-size: 12px; letter-spacing: .04em; }
+.profil-hiz b { font-family: var(--font-oyun); font-weight: 800; font-size: 38px; line-height: 1; color: var(--atesbocegi); font-variant-numeric: tabular-nums; }
+.profil-hiz span { color: var(--soluk); font-size: 13px; }
+.profil-izgara { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.profil-izgara > div { display: flex; flex-direction: column; gap: 2px; padding: 10px 12px; border-radius: 12px; background: #16201f; border: 1px solid #2c3936; min-width: 0; }
+.profil-izgara small { color: var(--soluk); font-size: 12px; }
+.profil-izgara b { font-family: var(--font-oyun); font-weight: 800; font-size: 22px; line-height: 1.05; font-variant-numeric: tabular-nums; }

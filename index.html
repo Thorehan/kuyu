@@ -10,8 +10,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&family=Figtree:wght@400;600&display=swap">
-<link rel="stylesheet" href="css/kuyu.css">
-<link rel="stylesheet" href="css/ekranlar.css">
+<link rel="stylesheet" href="css/kuyu.css?v=0.5">
+<link rel="stylesheet" href="css/ekranlar.css?v=0.5">
 </head>
 <body>
 <div class="app" id="oyunEkrani" hidden>
@@ -41,7 +41,7 @@
   <img id="acilisLogo" class="marka-logo" src="assets/funday-morning-logo.webp" alt="Funday Morning Games">
   <div class="yukleme" aria-hidden="true"><div id="yuklemeDolgu"></div></div>
   <div class="yukleme-not" id="yuklemeNot">Yükleniyor…</div>
-  <div class="ek-surum">Kuyu v0.4</div>
+  <div class="ek-surum">Kuyu v0.5</div>
 </section>
 
 <!-- Giriş: yalnızca ilk açılışta -->
@@ -74,7 +74,7 @@
 <section class="ekran ana-ekran" id="ekAna" hidden>
   <canvas id="anaSahne" aria-hidden="true"></canvas>
   <div class="ana-ust">
-    <div class="selam"><span>Merhaba,</span><b id="selamAd">Tırmanıcı</b></div>
+    <button type="button" class="selam" id="profilBtn" aria-label="Profil kartını aç"><span class="avatar" aria-hidden="true"></span><span class="selam-yazi"><span>Merhaba,</span><b id="selamAd">Tırmanıcı</b></span></button>
     <button type="button" class="yuvarlak" id="ayarBtn" aria-label="Ayarlar" title="Ayarlar">
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 8.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7z" fill="none" stroke="currentColor" stroke-width="2"/><path d="M19.4 13.5l1.6 1.2-1.8 3.1-1.9-.7a7.6 7.6 0 0 1-2 1.2l-.3 2h-3.6l-.3-2a7.6 7.6 0 0 1-2-1.2l-1.9.7-1.8-3.1 1.6-1.2a7.7 7.7 0 0 1 0-2.4L2.9 9.3l1.8-3.1 1.9.7a7.6 7.6 0 0 1 2-1.2l.3-2h3.6l.3 2a7.6 7.6 0 0 1 2 1.2l1.9-.7 1.8 3.1-1.6 1.2a7.7 7.7 0 0 1 0 2.4z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
     </button>
@@ -106,6 +106,34 @@
   </div>
 </section>
 
+<!-- Profil kartı -->
+<section class="ekran sayfa-ekran" id="ekProfil" hidden>
+  <div class="sayfa-ust"><button type="button" class="yuvarlak geri" data-geri aria-label="Ana menüye dön"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M12.5 4l-6 6 6 6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button><h2>Profil</h2></div>
+  <div class="sayfa-ic">
+    <div class="profil-kart">
+      <div class="profil-bas"><span class="avatar buyuk" aria-hidden="true"></span><div><b id="pAd">Tırmanıcı</b><span id="pHesap">Misafir · bu cihaz</span></div></div>
+      <div class="profil-hiz"><small>En yüksek hız</small><b id="pHiz">0 m/sn</b><span id="pHizNot">Akışla, ipi erken bırakarak hızlanırsın.</span></div>
+      <h3>Bölümler</h3>
+      <div class="profil-izgara">
+        <div><small>En yüksek bölüm</small><b id="pBolum">–</b></div>
+        <div><small>Geçilen bölüm</small><b id="pGecilen">0</b></div>
+        <div><small>Ateşböceği</small><b id="pAtes">0</b></div>
+        <div><small>Kusursuz · Akış</small><b id="pMadalya">0 · 0</b></div>
+        <div><small>Toplam ödül</small><b id="pOdul">0</b></div>
+        <div><small>En iyi bölüm ödülü</small><b id="pEnIyiOdul">0</b></div>
+      </div>
+      <h3>Sonsuz Kuyu</h3>
+      <div class="profil-izgara">
+        <div><small>Rekor puan</small><b id="pRekor">0</b></div>
+        <div><small>En yüksek</small><b id="pMetre">0 m</b></div>
+        <div><small>Kat</small><b id="pKat">0</b></div>
+        <div><small>En uzun akış</small><b id="pAkis">x0</b></div>
+      </div>
+      <p class="not">Kat: bir bina katı 3 metre sayılır.</p>
+    </div>
+  </div>
+</section>
+
 <!-- Ayarlar -->
 <section class="ekran sayfa-ekran" id="ekAyarlar" hidden>
   <div class="sayfa-ust"><button type="button" class="yuvarlak geri" data-geri aria-label="Ana menüye dön"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M12.5 4l-6 6 6 6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button><h2>Ayarlar</h2></div>
@@ -126,16 +154,16 @@
       <li>Kanca ahşaba ve halkaya saplanır, taştan seker. Alttan yükselen suya dikkat.</li>
     </ol>
     <button type="button" id="tanitimBtn">Tanıtımı yeniden izle</button>
-    <p class="surum">Kuyu v0.4 · prototip · Funday Morning Games</p>
+    <p class="surum">Kuyu v0.5 · prototip · Funday Morning Games</p>
   </div>
 </section>
 
 <div class="bildirim" id="bildirim" role="status" hidden></div>
 
-<script src="js/engine.js"></script>
-<script src="js/levels.js"></script>
-<script src="js/gen.js"></script>
-<script src="js/game.js"></script>
-<script src="js/screens.js"></script>
+<script src="js/engine.js?v=0.5"></script>
+<script src="js/levels.js?v=0.5"></script>
+<script src="js/gen.js?v=0.5"></script>
+<script src="js/game.js?v=0.5"></script>
+<script src="js/screens.js?v=0.5"></script>
 </body>
 </html>

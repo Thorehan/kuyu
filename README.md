@@ -1,10 +1,12 @@
 # Kuyu
 
-**Funday Morning Games** · 2D mobil oyun · prototip v0.4
+**Funday Morning Games** · 2D mobil oyun · prototip v0.5
 
 Derin bir kuyunun dibindesin. Telefonu tek elle tut: ekranın soluna ya da sağına dokun, kanca o taraftaki hedefe fırlasın; basılı tut, ipe sarıl; bırak, savrul. Halkadan halkaya, ahşaptan ahşaba tırmanıp kuyudan çık.
 
 **Canlı sürüm:** https://thorehan.github.io/kuyu/
+
+**Geliştirme sırası ve kararlar:** [docs/gelistirme-sureci.md](docs/gelistirme-sureci.md) (oynanış sorunları → geliştirmeler → online → hikâye)
 
 ## Açılış ve menü
 Pofi ile aynı akış:
@@ -16,11 +18,32 @@ Pofi ile aynı akış:
 Oyundaki menü düğmesi ana menüye döner; oyun (ve su) orada bekler. `?bolum=N` ya da `?mod=sonsuz` bağlantısı açılıştan sonra tanıtımı atlayıp doğrudan oyuna girer.
 
 ## Tek el kontrolü
-- **Hedefe dokunmak gerekmez.** Başparmağın ekranın neresine bastığı yalnızca yönü seçer: sol taraf sol yukarı, orta düz yukarı, sağ taraf sağ yukarı. Nişan yardımı (`engine.aim`) o yönde menzilde ve görüşte olan en uygun halkayı, kovayı, ahşabı ya da kutuyu seçer. Ahşapta menzile giren en yüksek noktaya tutunulur.
+- **Hedefe dokunmak gerekmez.** Başparmağın ekranın solunda, ortasında ya da sağında basması yeter. Nişan yardımı (`engine.aim`) menzilde ve görüşte olan hedefi şu sırayla seçer:
+  1. Bastığın taraftaki **en yakın yukarı** hedef (halka, ahşap, kova, kutu).
+  2. O tarafta yoksa **diğer taraftaki** en yakın yukarı hedef; sol ya da sağ fark etmez, kanca yine atılır.
+  3. Bir halkaya tutunmuşken yukarıda menzilde hedef yoksa dokunuş **hiçbir şey yapmaz**: ip tutulur, oyuncu aşağı çekilmez. Aşağıdaki bir hedefe yalnızca boştayken (düşerken ya da yerdeyken) ve yukarıda hiçbir şey yokken gidilir.
+  4. Menzilde hiç hedef yoksa (dipte tıkanma) **kurtarma kancası**: en yakın yukarıdaki hedefe kadar uzanır (en çok 1000 birim), çift hızla uçar. Akışı bozar ve bir atış sayılır. Ekranda kesikli bir yol ve "dokun: kurtarma kancası" yazısı görünür.
+- "Yukarı", asılı olduğun noktanın en az 30 birim üstü demektir; aynı yükseklikteki yan halka yukarı sayılmaz, böylece iki halka arasında gidip gelinmez.
+- Ahşapta menzile giren en yüksek noktaya tutunulur.
 - **Hedef işaretleri:** Sola dokununca gidilecek hedefin çevresinde turkuaz, sağa dokununca gidilecek hedefin çevresinde sarı kesikli halka ve ok durur. İkisi aynı hedefse tek halka iki okla görünür.
 - **İlk bölüm ipucu:** 1. bölüm ilk kez oynanırken ekranın alt yarısı turkuaz (sol) ve sarı (sağ) olarak ikiye ayrılır, "Sola dokun / Sağa dokun" yazar. Dört tutunmadan sonra kaybolur.
 - **Titreşim:** Tutunma, ateşböceği, kapak açılması, el kayması, ölüm ve kazanmada kısa titreşim. Ayarlar'dan kapatılır. Android tarayıcılarında çalışır; iOS Safari titreşimi desteklemez.
 - Tablet ya da farede hedefin tam üstüne basılırsa doğrudan o hedef alınır.
+
+## Ateşböceği halkaları
+- Ateşböcekleri artık serbest durmuyor; **halkanın içinde**. O halkaya tutunmak ya da içinden geçmek yeter.
+- Halkalar **karar noktalarında**: ana yoldaki bir halkanın karşı tarafında, aynı yükseklik civarında. Oradan sıradaki halkaya da ulaşılabilir. İstemeyen ana halkaya gidip es geçer.
+- İşaret ateşböceği halkasını gösteriyorsa o yana dokunmak yeter. Gerçek oyuncu gibi oynayan bot ateşböceklerinin 215/221'ini yalnızca işaretlere bakarak topluyor.
+- El yapımı bölümlerde 3 (Kutu bölümünde 2), üretilen bölümlerin 73/74'ünde 3, sonsuz kuyuda ara ara.
+
+## Hız ve ödül
+- **En yüksek hız:** Raunt boyunca ipte değilken, yukarı ya da yana giderken ulaşılan en yüksek hız (m/sn). Kancanın çekme hızı ve düşüş sayılmaz. Bekleyerek oynayan yaklaşık 5–6 m/sn, ipi erken bırakıp zincirleyen 40–57 m/sn.
+- **Hız çarpanı:** 10 m/sn'den sonra başlar, 57,5 m/sn'de en yüksek: x1,00 – x1,50 (0,05 adımlarla).
+- **Bölüm ödülü** = (100 + 25 × ateşböceği + 50 Kusursuz + 50 Akış) × hız çarpanı. Bölüm sonunda en yüksek hız, çarpan ve ödül gösterilir.
+- **Sonsuz Kuyu puanı** = (metre + akış bonusu + ateşböcekleri) × hız çarpanı.
+
+## Profil kartı
+Ana menüde "Merhaba, {ad}" düğmesi açar: en yüksek hız; en yüksek ve geçilen bölüm, ateşböceği, Kusursuz/Akış sayısı, toplam ve en iyi bölüm ödülü; Sonsuz Kuyu rekor puanı, en yüksek metre, kat (3 m = 1 kat) ve en uzun akış.
 
 ## Zorluk
 Şimdilik zorluk yok: diken ve taş çıkıntı kaldırıldı (`js/gen.js` içinde `HAZARDS = false`, el yapımı bölümlerde de yok). Tek tehlike alttan yükselen su, o da yavaş başlar; amaç oyuncunun erken kaybetmemesi.
@@ -81,13 +104,13 @@ Bot oyunun kendi fizik motoruyla oynar:
 
 `node tools/bot.js 3 --trace` tek bölümü ayrıntılı gösterir, `node tools/bot.js --gen 200` üretilen bölümleri 200'e kadar dener.
 
-Tek el denetimleri:
+Tek el (gerçek oyuncu) denetimi:
 ```bash
-node tools/nisan.js
-node tools/tekel.js
+node tools/oyuncu.js
 ```
-- `nisan.js`: Rotadaki her adımda istenen hedef sol ya da sağ işaretle gösteriliyor mu? Şu an 945/945.
-- `tekel.js`: Bot hedef koordinatını bilmeden, yalnızca ekrandaki işaretlere bakıp sola ya da sağa dokunarak oynar. El yapımı 6 bölümün hepsi ve üretilen 54 bölümün 53'ü geçiliyor. Kalan 1 bölümde nişan yardımı bir halkayı atlayıp daha yüksektekine tutturuyor, bot ise rotasındaki aşağıdaki halkada ısrar ediyor.
+Bot rota bilmez; yalnızca ekrandaki sol ve sağ işarete bakar. Üç tarzda oynar: daha yukarıdaki işarete dokunur, ateşböceği halkasını gösteren işarete dokunur, ya da ipi erken bırakıp zincirler. Şu an üç tarzda da 6 el yapımı ve 74 üretilen bölümün hepsi geçiliyor; sonsuz kuyuda hiç kurtarma kancası gerekmiyor.
+
+`tools/bot.js` ayrıca her bölümde ateşböceği rotasını (`ffRoute`) oynar ve bütün ateşböceklerinin alınabildiğini doğrular.
 
 ## Proje yapısı
 | Dosya | İçerik |
@@ -102,7 +125,7 @@ node tools/tekel.js
 | `js/screens.js` | Açılış, giriş, tanıtım, ana menü, bölümler, ayarlar ve arka plan sahnesi |
 | `assets/funday-morning-logo.webp` | Şirket logosu (Pofi ile aynı) |
 | `tools/bot.js` | Doğrulama botu (koordinatla oynar) |
-| `tools/tekel.js` | Tek el botu (yalnızca sol/sağ dokunur) |
-| `tools/nisan.js` | Nişan yardımı denetimi |
+| `tools/oyuncu.js` | Gerçek oyuncu gibi tek elle oynayan bot (yalnızca işaretlere bakar) |
+| `docs/gelistirme-sureci.md` | Geliştirme sırası, kalıcı kararlar, yapılanlar |
 
-Düz JavaScript, derleme adımı yok. Kayıt tarayıcıda `kuyu.v2` anahtarıyla tutulur.
+Düz JavaScript, derleme adımı yok. Her yayında `index.html` içindeki `?v=` sürüm etiketini artırın; yoksa telefonlar eski CSS/JS'i önbellekten kullanabilir. Kayıt tarayıcıda `kuyu.v2` anahtarıyla tutulur.

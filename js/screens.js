@@ -177,30 +177,74 @@
   });
 
   // ---------- bölümler ----------
-  var listUpto = 0;
+  // Gruplar: 1–6 Öğrenme (el yapımı), sonra 10'arlı. Sıradaki bölüm = geçilmemiş ilk bölüm.
+  var listUpto = 0, filtre = 'tumu';
+  function groupOf(n) { return n <= 6 ? { a: 1, b: 6, ad: 'Öğrenme' } : { a: 7 + Math.floor((n - 7) / 10) * 10, b: 16 + Math.floor((n - 7) / 10) * 10, ad: '' }; }
+  function goalsOf(n) {
+    var d = G.levelDef(n), ff = (d.rings || []).filter(function (r) { return r[2] === 'ff'; }).length;
+    var b = (save().best || {})[n] || {};
+    var got = Math.min(ff, b.ff || 0) + (b.perfect ? 1 : 0) + (b.flow ? 1 : 0);
+    return { d: d, b: b, ff: ff, total: ff + 2, got: got };
+  }
+  function nextLevel() { var best = save().best || {}, n = 1; while (best[n] && best[n].done) n++; return n; }
   function openLevels() {
-    var s = save();
-    listUpto = Math.max(18, Math.ceil(((s.maxLevel || 1) + 6) / 3) * 3);
+    var s = save(), nx = nextLevel();
+    listUpto = Math.max(16, groupOf(Math.max(nx, s.maxLevel || 1)).b);
     renderLevels();
     show('ekBolumler');
-    $('ekBolumler').scrollTop = 0;
+    // sıradaki bölüme kaydır
+    var el = $('liste').querySelector('[data-siradaki]');
+    var ek = $('ekBolumler');
+    if (el) ek.scrollTop = Math.max(0, el.offsetTop - ek.clientHeight / 2 + el.offsetHeight / 2); else ek.scrollTop = 0;
   }
   function renderLevels() {
-    var s = save(), h = '';
-    for (var n = 1; n <= listUpto; n++) {
-      var b = s.best[n], d = G.levelDef(n).name, dots = '';
-      for (var k = 0; k < 3; k++) dots += '<i class="' + (b && k < b.ff ? 'var' : '') + '"></i>';
-      dots += '<i class="m' + (b && b.perfect ? ' var' : '') + '"></i><i class="m' + (b && b.flow ? ' var' : '') + '"></i>';
-      h += '<button type="button" data-n="' + n + '"' + (n === (s.last || 1) ? ' aria-current="true"' : '') + '>' +
-        '<span class="no">Bölüm ' + n + (b && b.done ? ' ✓' : '') + '</span><b>' + d + '</b><span class="rozet">' + dots + '</span></button>';
+    var s = save(), best = s.best || {}, nx = nextLevel(), h = '', shown = 0;
+    var doneAll = 0, gotAll = 0, totAll = 0;
+    Object.keys(best).forEach(function (k) {
+      if (!best[k].done) return;
+      var g = goalsOf(+k); doneAll++; gotAll += g.got; totAll += g.total;
+    });
+    $('ozetGecilen').textContent = doneAll;
+    $('ozetHedef').textContent = gotAll + '/' + totAll;
+    $('ozetCubuk').style.width = (totAll ? Math.round(gotAll / totAll * 100) : 0) + '%';
+    for (var ga = 1; ga <= listUpto;) {
+      var gr = groupOf(ga), cards = '', gDone = 0, gGot = 0, gTot = 0;
+      for (var n = gr.a; n <= gr.b; n++) {
+        var g = goalsOf(n), b = g.b, done = !!b.done, full = done && g.got >= g.total, isNext = n === nx;
+        gTot += g.total; gGot += g.got; if (done) gDone++;
+        if (filtre === 'eksik' && !(done && !full) && !isNext) continue;
+        var dots = '';
+        for (var k = 0; k < g.ff; k++) dots += '<i class="' + (k < (b.ff || 0) ? 'var' : '') + '"></i>';
+        dots += '<i class="m' + (b.perfect ? ' var' : '') + '"></i><i class="m' + (b.flow ? ' var' : '') + '"></i>';
+        cards += '<button type="button" class="bkart' + (done ? ' gecildi' : '') + (full ? ' tam' : '') + (isNext ? ' siradaki' : '') + '" data-n="' + n + '"' +
+          (isNext ? ' data-siradaki aria-current="true"' : '') + ' aria-label="Bölüm ' + n + ', ' + g.d.name + (done ? ', geçildi' : '') + ', ' + g.got + '/' + g.total + ' hedef">' +
+          '<span class="bk-ust"><span class="no">' + n + '</span>' + (isNext ? '<span class="etiket">Sıradaki</span>' : full ? '<span class="yildiz" aria-hidden="true">★</span>' : done ? '<span class="tik" aria-hidden="true">✓</span>' : '') + '</span>' +
+          '<b>' + g.d.name + '</b><span class="rozet">' + dots + '</span></button>';
+        shown++;
+      }
+      if (cards) {
+        var pct = gTot ? Math.round(gGot / gTot * 100) : 0;
+        h += '<div class="bgrup"><div class="bgrup-ust"><b>' + (gr.ad ? gr.ad + ' · ' : '') + gr.a + '–' + gr.b + '</b><span>' + gDone + '/' + (gr.b - gr.a + 1) + ' geçildi</span></div>' +
+          '<div class="cubuk ince" aria-hidden="true"><i style="width:' + pct + '%"></i></div><div class="liste">' + cards + '</div></div>';
+      }
+      ga = gr.b + 1;
     }
+    if (!shown) h = '<p class="bos">Eksik hedefi olan geçilmiş bölüm yok. Tümü sekmesinden yeni bölümlere geçebilirsin.</p>';
     $('liste').innerHTML = h;
+    $('dahaBtn').hidden = filtre === 'eksik';
   }
   $('liste').addEventListener('click', function (e) {
     var b = e.target.closest('button[data-n]'); if (!b) return;
     G.startLevel(+b.dataset.n);
   });
-  $('dahaBtn').addEventListener('click', function () { listUpto += 18; renderLevels(); });
+  document.querySelectorAll('[data-filtre]').forEach(function (b) {
+    b.addEventListener('click', function () {
+      filtre = b.dataset.filtre;
+      document.querySelectorAll('[data-filtre]').forEach(function (x) { x.setAttribute('aria-selected', x === b ? 'true' : 'false'); });
+      renderLevels();
+    });
+  });
+  $('dahaBtn').addEventListener('click', function () { listUpto = groupOf(listUpto + 1).b; renderLevels(); });
   $('gitForm').addEventListener('submit', function (e) {
     e.preventDefault();
     var n = parseInt($('gitNo').value, 10);

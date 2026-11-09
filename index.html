@@ -16,8 +16,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&family=Figtree:wght@400;600&display=swap">
-<link rel="stylesheet" href="css/kuyu.css?v=0.11">
-<link rel="stylesheet" href="css/ekranlar.css?v=0.11">
+<link rel="stylesheet" href="css/kuyu.css?v=0.12">
+<link rel="stylesheet" href="css/ekranlar.css?v=0.12">
 </head>
 <body>
 <div class="app" id="oyunEkrani" hidden>
@@ -59,7 +59,7 @@
   <img id="acilisLogo" class="marka-logo" src="assets/funday-morning-logo.webp" alt="Funday Morning Games">
   <div class="yukleme" aria-hidden="true"><div id="yuklemeDolgu"></div></div>
   <div class="yukleme-not" id="yuklemeNot">Yükleniyor…</div>
-  <div class="ek-surum">Kuyu v0.11</div>
+  <div class="ek-surum">Kuyu v0.12</div>
 </section>
 
 <!-- Giriş: yalnızca ilk açılışta -->
@@ -118,13 +118,21 @@
 <section class="ekran sayfa-ekran sekmeli" id="ekBolumler" hidden>
   <div class="sayfa-ust"><h2>Bölümler</h2></div>
   <div class="sayfa-ic">
+    <div class="bolum-ozet" id="bolumOzet">
+      <div class="ozet-satir"><b id="ozetGecilen">0</b><span>bölüm geçildi</span><b id="ozetHedef">0/0</b><span>hedef</span></div>
+      <div class="cubuk" aria-hidden="true"><i id="ozetCubuk"></i></div>
+    </div>
+    <div class="filtre" role="tablist" aria-label="Bölüm filtresi">
+      <button type="button" role="tab" data-filtre="tumu" aria-selected="true">Tümü</button>
+      <button type="button" role="tab" data-filtre="eksik" aria-selected="false">Eksik hedefler</button>
+    </div>
+    <div id="liste"></div>
+    <button type="button" id="dahaBtn">Sonraki 10 bölümü göster</button>
     <form class="git" id="gitForm">
-      <input id="gitNo" type="number" inputmode="numeric" min="1" step="1" placeholder="Bölüm numarası" aria-label="Bölüm numarası">
+      <input id="gitNo" type="number" inputmode="numeric" min="1" step="1" placeholder="Bölüm numarasıyla git" aria-label="Bölüm numarası">
       <button type="submit" class="ana">Git</button>
     </form>
-    <div class="liste" id="liste"></div>
-    <button type="button" id="dahaBtn">Daha fazla bölüm göster</button>
-    <p class="not">Bütün bölümler açık ve sonu yok: 6. bölümden sonrası numarasından üretilir. Her bölümde üç hedef var: üç ateşböceği, kusursuz (fazla atış yok) ve akış.</p>
+    <p class="not">Bütün bölümler açık ve sonu yok: 6. bölümden sonrası numarasından üretilir. Her bölümde hedefler: ateşböceği, Kusursuz (en fazla par atış) ve Akış.</p>
   </div>
 </section>
 
@@ -178,7 +186,7 @@
     </ol>
     <div class="ayar-satir" id="tamEkranSatir"><div><b>Tam ekran</b><span id="tamEkranYazi">Tarayıcı çubukları gizlenir. Ana ekrana eklersen oyun kendiliğinden tam ekran açılır.</span></div><button type="button" id="tamEkranBtn">Aç</button></div>
     <button type="button" id="tanitimBtn">Tanıtımı yeniden izle</button>
-    <p class="surum">Kuyu v0.11 · prototip · Funday Morning Games</p>
+    <p class="surum">Kuyu v0.12 · prototip · Funday Morning Games</p>
   </div>
 </section>
 
@@ -192,10 +200,10 @@
 
 <div class="bildirim" id="bildirim" role="status" hidden></div>
 
-<script src="js/engine.js?v=0.11"></script>
-<script src="js/levels.js?v=0.11"></script>
-<script src="js/gen.js?v=0.11"></script>
-<script src="js/game.js?v=0.11"></script>
-<script src="js/screens.js?v=0.11"></script>
+<script src="js/engine.js?v=0.12"></script>
+<script src="js/levels.js?v=0.12"></script>
+<script src="js/gen.js?v=0.12"></script>
+<script src="js/game.js?v=0.12"></script>
+<script src="js/screens.js?v=0.12"></script>
 </body>
 </html>

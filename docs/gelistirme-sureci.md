@@ -40,7 +40,7 @@ Dört başlık: **oynanış, UI/UX, hikâye, online**. `[~]` üzerinde çalış�
 - [ ] Ana menü için senin geri bildirimin (telefonda).
 - [x] Oyun içi duraklatma paneli (v0.10): Devam et, Baştan / Yeni koşu, Bölümü atla, ses ve titreşim, Ana menü. Oyun ve su durur, ip bırakılmaz; telefon arka plana alınınca kendiliğinden durur.
 - [x] Oyun içi üst şerit (v0.11): solda bölüm adı ve küçük göstergeler (ateşböceği, atış/par, akış; Sonsuz'da metre, akış, hız çarpanı), sağda duraklat. Atla ve Ses duraklatma paneline taşındı. 360 px'te kesilme yok.
-- [ ] Bölümler ekranı: bölge başlıkları, ilerleme çubuğu, son oynanana kaydırma.
+- [x] Bölümler ekranı (v0.12): özet ve ilerleme çubuğu, Tümü / Eksik hedefler filtresi, 1–6 Öğrenme ve 10'arlı gruplar (her grupta ilerleme), geçildi/tam işaretleri, Sıradaki etiketi ve otomatik kaydırma. Bölgeler gelince grup adları bölge adları olur.
 - [ ] Bölüm sonu kartı: madalya + hız kutusu + ödül tek bakışta; "yeni rekor" anı.
 - [ ] Yeni şeylerin tanıtımı: hız halkası, ateşböceği halkası, kurtarma kancası ilk görüldüğünde kısa kart.
 - [ ] Erişilebilirlik: turkuaz/sarı işaretlerin renk körlüğünde ayırt edilmesi (şekil farkı), yazı boyutu.
@@ -64,6 +64,7 @@ Dört başlık: **oynanış, UI/UX, hikâye, online**. `[~]` üzerinde çalış�
 - [?] Yayın: Unity'ye taşıma zamanı, mağaza hesabı, yalnızca seçilen ödüllü reklam (Pofi kuralı).
 
 ## Yapılanlar
+- 2026-11-10 · v0.12 · Bölümler ekranı: özet, filtre, gruplar, sıradaki bölüm.
 - 2026-11-10 · v0.11 · Oyun içi üst şerit sadeleşti: göstergeler, Atla/Ses panelde.
 - 2026-11-09 · v0.10 · Oyun içi duraklatma paneli; arka plana alınınca otomatik duraklatma.
 - 2026-11-09 · v0.9 · Yapılacaklar listesi dört başlıkta (oynanış, UI/UX, hikâye, online); yeni ana menü düzeni ve alt gezinme çubuğu.

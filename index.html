@@ -41,7 +41,7 @@
   <img id="acilisLogo" class="marka-logo" src="assets/funday-morning-logo.webp" alt="Funday Morning Games">
   <div class="yukleme" aria-hidden="true"><div id="yuklemeDolgu"></div></div>
   <div class="yukleme-not" id="yuklemeNot">Yükleniyor…</div>
-  <div class="ek-surum">Kuyu v0.3</div>
+  <div class="ek-surum">Kuyu v0.4</div>
 </section>
 
 <!-- Giriş: yalnızca ilk açılışta -->
@@ -110,7 +110,8 @@
 <section class="ekran sayfa-ekran" id="ekAyarlar" hidden>
   <div class="sayfa-ust"><button type="button" class="yuvarlak geri" data-geri aria-label="Ana menüye dön"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M12.5 4l-6 6 6 6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button><h2>Ayarlar</h2></div>
   <div class="sayfa-ic">
-    <div class="ayar-satir"><div><b>Ses</b><span>Kanca, akış ve ateşböceği sesleri</span></div><button type="button" class="anahtar" id="sesAnahtar" role="switch" aria-checked="true"><i></i></button></div>
+    <div class="ayar-satir"><div><b>Ses</b><span>Kanca, akış ve ateşböceği sesleri</span></div><button type="button" class="anahtar" id="sesAnahtar" role="switch" aria-checked="true" aria-label="Ses"><i></i></button></div>
+    <div class="ayar-satir"><div><b>Titreşim</b><span>Tutunurken ve ateşböceği alınca kısa titreşim (Android)</span></div><button type="button" class="anahtar" id="titresimAnahtar" role="switch" aria-checked="true" aria-label="Titreşim"><i></i></button></div>
     <form class="ayar-satir ad-satir" id="adForm">
       <label for="adDegis"><b>Oyuncu adı</b></label>
       <div class="git"><input id="adDegis" maxlength="16" autocomplete="nickname"><button type="submit">Kaydet</button></div>
@@ -118,13 +119,14 @@
     <div class="ayar-satir"><div><b>Hesap</b><span id="hesapYazi">Misafir · ilerleme bu cihazda</span></div></div>
     <h3>Nasıl oynanır</h3>
     <ol class="nasil">
-      <li><b>Bas ve tut:</b> kanca o yöne fırlar, ipe sarılırsın. <b>Bırak:</b> ipten kopar, savrulursun.</li>
+      <li><b>Tek elle oyna:</b> ekranın soluna dokun, kanca turkuaz işaretli hedefe; sağına dokun, sarı işaretli hedefe atılır.</li>
+      <li><b>Basılı tut:</b> ipe sarılırsın. <b>Bırak:</b> ipten kopar, savrulursun.</li>
       <li><b>Akış:</b> ip tam sarılmadan bırak, havadayken sıradakine tutun. Zincir uzadıkça puan artar.</li>
       <li>Asılı kalmak bedava değil: elin yorulur ve kayarsın.</li>
-      <li>Kanca ahşaba ve halkaya saplanır, taştan seker. Diken ve su öldürür.</li>
+      <li>Kanca ahşaba ve halkaya saplanır, taştan seker. Alttan yükselen suya dikkat.</li>
     </ol>
     <button type="button" id="tanitimBtn">Tanıtımı yeniden izle</button>
-    <p class="surum">Kuyu v0.3 · prototip · Funday Morning Games</p>
+    <p class="surum">Kuyu v0.4 · prototip · Funday Morning Games</p>
   </div>
 </section>
 

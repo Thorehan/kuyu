@@ -160,12 +160,17 @@
   function openSettings() {
     var s = save();
     $('sesAnahtar').setAttribute('aria-checked', s.mute ? 'false' : 'true');
+    $('titresimAnahtar').setAttribute('aria-checked', s.haptics === false ? 'false' : 'true');
     $('adDegis').value = (s.profile && s.profile.name) || '';
     show('ekAyarlar');
   }
   $('sesAnahtar').addEventListener('click', function () {
     var muted = G.toggleMute();
     $('sesAnahtar').setAttribute('aria-checked', muted ? 'false' : 'true');
+  });
+  $('titresimAnahtar').addEventListener('click', function () {
+    var on = G.toggleHaptics();
+    $('titresimAnahtar').setAttribute('aria-checked', on ? 'true' : 'false');
   });
   $('adForm').addEventListener('submit', function (e) {
     e.preventDefault();

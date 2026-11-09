@@ -14,7 +14,7 @@
 
   // ---------- kayıt ----------
   var KEY = 'kuyu.v2';
-  var save = { best: {}, last: 1, mute: false, endless: { score: 0, meters: 0, combo: 0 }, maxLevel: 1, profile: null };
+  var save = { best: {}, last: 1, mute: false, haptics: true, endless: { score: 0, meters: 0, combo: 0 }, maxLevel: 1, profile: null };
   try { var raw = localStorage.getItem(KEY); if (raw) save = Object.assign(save, JSON.parse(raw)); } catch (e) {}
   function persist() { try { localStorage.setItem(KEY, JSON.stringify(save)); } catch (e) {} }
 
@@ -58,6 +58,12 @@
       ? '<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4 8h3l4-3v10l-4-3H4z" fill="currentColor"/><path d="M14 8l4 4M18 8l-4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>'
       : '<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4 8h3l4-3v10l-4-3H4z" fill="currentColor"/><path d="M14 7.5c1.2 1.3 1.2 3.7 0 5M16.3 5.5c2.3 2.5 2.3 6.5 0 9" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg>';
     $('sesBtn').setAttribute('aria-label', save.mute ? 'Sesi aç' : 'Sesi kapat');
+  }
+
+  // ---------- titreşim (Android tarayıcıları; iOS Safari desteklemez, sessizce atlanır) ----------
+  function buzz(pattern) {
+    if (save.haptics === false || !navigator.vibrate) return;
+    try { navigator.vibrate(pattern); } catch (e) {}
   }
 
   // ---------- durum ----------
@@ -185,22 +191,22 @@
       var e = ev[i];
       if (e.type === 'fire') SFX.fire();
       else if (e.type === 'attach') {
-        SFX.attach(); shake = Math.max(shake, 3);
+        SFX.attach(); shake = Math.max(shake, 3); buzz(e.what === 'box' ? 18 : 12);
         burst(e.x, e.y, 8, e.what === 'wood' || e.what === 'box' ? COL.ahsap : COL.bakir, 140, 0.4);
       } else if (e.type === 'combo') {
-        SFX.combo(e.combo);
+        SFX.combo(e.combo); if (e.combo >= 5) buzz(8);
         var pts = Math.min(e.combo, CFG.COMBO_CAP) * CFG.COMBO_PTS;
         floatText(e.x, e.y - 16, 'AKIŞ x' + e.combo + (mode === 'endless' ? '  +' + pts : ''), e.combo >= 8 ? COL.atesbocegi : COL.gok, 13 + Math.min(e.combo, 10));
       } else if (e.type === 'comboBreak') floatText(sim.p.x, sim.p.y - 26, 'akış bitti (' + e.why + ')', '#8fa09c', 12);
-      else if (e.type === 'slip') { SFX.slip(); floatText(sim.p.x, sim.p.y - 24, 'el kaydı!', COL.kahraman, 15); }
+      else if (e.type === 'slip') { SFX.slip(); buzz(30); floatText(sim.p.x, sim.p.y - 24, 'el kaydı!', COL.kahraman, 15); }
       else if (e.type === 'clink') { SFX.clink(); burst(e.x, e.y, 7, '#e9f3f0', 220, 0.25, 0); }
-      else if (e.type === 'firefly') { SFX.firefly(); burst(e.x, e.y, 16, COL.atesbocegi, 160, 0.6, -40); if (mode === 'endless') floatText(e.x, e.y - 10, '+25', COL.atesbocegi, 14); }
-      else if (e.type === 'gateOpen') { SFX.gate(); shake = Math.max(shake, 5); }
+      else if (e.type === 'firefly') { SFX.firefly(); buzz([8, 40, 8]); burst(e.x, e.y, 16, COL.atesbocegi, 160, 0.6, -40); if (mode === 'endless') floatText(e.x, e.y - 10, '+25', COL.atesbocegi, 14); }
+      else if (e.type === 'gateOpen') { SFX.gate(); buzz(35); shake = Math.max(shake, 5); }
       else if (e.type === 'dead') {
-        SFX.dead(); shake = 8;
+        SFX.dead(); shake = 8; buzz(80);
         burst(sim.p.x, sim.p.y, 22, e.why === 'su' ? COL.suAcik : COL.kahraman, 260, 0.7);
         deadT = 0;
-      } else if (e.type === 'won') { SFX.won(); winT = 0; burst(sim.p.x, sim.p.y, 20, COL.gok, 200, 0.8, -60); }
+      } else if (e.type === 'won') { SFX.won(); buzz([20, 60, 30]); winT = 0; burst(sim.p.x, sim.p.y, 20, COL.gok, 200, 0.8, -60); }
     }
   }
 
@@ -440,6 +446,68 @@
     if (Math.floor(t / 2600) % 3 === 0 && t % 2600 < 110) { ctx.fillStyle = COL.kahraman; ctx.fillRect(p.x + lx * 3 - 5, p.y - 7 + ly * 2, 10, 5); }
   }
 
+  // Sol ve sağ dokunuşun kancayı nereye atacağı: sol hedef turkuaz, sağ hedef sarı halka ve ok.
+  var COL_SOL = '#2fb3a6', COL_SAG = '#f2b23a';
+  function drawAimMarkers(t) {
+    if (sim.status !== 'play') return;
+    var L = E.aim(sim, 0.2), R = E.aim(sim, 0.8);
+    var same = L.kind !== 'none' && R.kind !== 'none' && Math.hypot(L.x - R.x, L.y - R.y) < 4;
+    if (L.kind !== 'none') marker(L, COL_SOL, -1, t);
+    if (R.kind !== 'none' && !same) marker(R, COL_SAG, 1, t);
+    if (same) arrow(R.x, R.y, COL_SAG, 1);
+  }
+  function marker(m, color, dir, t) {
+    var pulse = 1 + 0.08 * Math.sin(t / 180);
+    ctx.save();
+    ctx.strokeStyle = color; ctx.lineWidth = 2.2; ctx.globalAlpha = 0.9;
+    ctx.setLineDash([5, 4]); ctx.lineDashOffset = -t / 60;
+    ctx.beginPath(); ctx.arc(m.x, m.y, 17 * pulse, 0, Math.PI * 2); ctx.stroke();
+    ctx.restore();
+    arrow(m.x, m.y, color, dir);
+  }
+  function arrow(x, y, color, dir) {
+    var ax = x + dir * 27;
+    ctx.fillStyle = color;
+    ctx.beginPath(); ctx.moveTo(ax + dir * 6, y); ctx.lineTo(ax - dir * 3, y - 6); ctx.lineTo(ax - dir * 3, y + 6); ctx.closePath(); ctx.fill();
+  }
+
+  // İlk bölümde ekranın iki yarısını gösteren ipucu; birkaç tutunmadan sonra kaybolur.
+  var hintAlpha = 0;
+  function drawTouchHint(dt) {
+    var want = mode === 'level' && levelNo === 1 && !(save.best[1] && save.best[1].done) && sim.hooks < 4 && sim.status === 'play';
+    hintAlpha += ((want ? 1 : 0) - hintAlpha) * Math.min(1, dt * 4);
+    if (hintAlpha < 0.02) return;
+    var w = viewW, h = viewH;
+    ctx.save();
+    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+    ctx.globalAlpha = hintAlpha;
+    ctx.fillStyle = 'rgba(47,179,166,0.10)'; ctx.fillRect(0, h * 0.45, w / 2, h * 0.55);
+    ctx.fillStyle = 'rgba(242,178,58,0.10)'; ctx.fillRect(w / 2, h * 0.45, w / 2, h * 0.55);
+    ctx.strokeStyle = 'rgba(231,238,233,0.35)'; ctx.setLineDash([6, 6]); ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.moveTo(w / 2, h * 0.47); ctx.lineTo(w / 2, h - 8); ctx.stroke(); ctx.setLineDash([]);
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    var y = h * 0.8;
+    thumbIcon(w * 0.25, y - 40, COL_SOL); thumbIcon(w * 0.75, y - 40, COL_SAG);
+    ctx.font = '800 17px "Baloo 2", system-ui, sans-serif';
+    ctx.lineWidth = 4; ctx.strokeStyle = 'rgba(8,13,14,0.9)';
+    ctx.strokeText('\u25C0 Sola dokun', w * 0.25, y); ctx.fillStyle = COL_SOL; ctx.fillText('\u25C0 Sola dokun', w * 0.25, y);
+    ctx.strokeText('Sağa dokun \u25B6', w * 0.75, y); ctx.fillStyle = COL_SAG; ctx.fillText('Sağa dokun \u25B6', w * 0.75, y);
+    ctx.font = '600 13px "Figtree", system-ui, sans-serif';
+    ctx.strokeText('Basılı tut: ipe sarıl · Bırak: savrul', w / 2, y + 30);
+    ctx.fillStyle = 'rgba(231,238,233,0.9)'; ctx.fillText('Basılı tut: ipe sarıl · Bırak: savrul', w / 2, y + 30);
+    ctx.restore();
+  }
+  function thumbIcon(x, y, color) {
+    var bob = Math.sin(performance.now() / 300) * 3;
+    ctx.save();
+    ctx.globalAlpha *= 0.9;
+    ctx.fillStyle = color;
+    ctx.beginPath(); ctx.ellipse(x, y + bob, 11, 14, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = 'rgba(255,255,255,0.35)';
+    ctx.beginPath(); ctx.ellipse(x, y + bob - 6, 6, 5, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.restore();
+  }
+
   function drawParticles(dt) {
     for (var i = parts.length - 1; i >= 0; i--) {
       var q = parts[i];
@@ -477,12 +545,13 @@
     sim.rings.forEach(function (r) { if (r.y > cam - 20 && r.y < cam + vh + 20) drawRing(r.x, r.y); });
     sim.fireflies.forEach(function (f) { if (f.y > cam - 20 && f.y < cam + vh + 20) drawFirefly(f, t); });
     sim.boxes.forEach(drawBox);
-    drawRange();
+    drawAimMarkers(t);
     drawRope();
     if (sim.status !== 'dead') { drawHero(t); drawGrip(); }
     drawParticles(dt);
     drawWater(t);
     drawFloaters(dt);
+    drawTouchHint(dt);
   }
 
   // ---------- döngü ----------
@@ -636,6 +705,7 @@
     levelDef: levelDef,
     handCount: HAND.length,
     toggleMute: function () { save.mute = !save.mute; persist(); setMuteIcon(); return save.mute; },
+    toggleHaptics: function () { save.haptics = save.haptics === false; persist(); if (save.haptics) buzz(20); return save.haptics; },
     unlockAudio: function () { ac(); },
     sfx: SFX
   };

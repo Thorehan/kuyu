@@ -1,8 +1,8 @@
 # Kuyu
 
-**Funday Morning Games** · 2D mobil oyun · prototip v0.3
+**Funday Morning Games** · 2D mobil oyun · prototip v0.4
 
-Derin bir kuyunun dibindesin. Ekrana bas, kanca o yöne fırlasın; basılı tut, ipe sarıl; bırak, savrul. Halkadan halkaya, ahşaptan ahşaba tırmanıp kuyudan çık.
+Derin bir kuyunun dibindesin. Telefonu tek elle tut: ekranın soluna ya da sağına dokun, kanca o taraftaki hedefe fırlasın; basılı tut, ipe sarıl; bırak, savrul. Halkadan halkaya, ahşaptan ahşaba tırmanıp kuyudan çık.
 
 **Canlı sürüm:** https://thorehan.github.io/kuyu/
 
@@ -15,16 +15,26 @@ Pofi ile aynı akış:
 
 Oyundaki menü düğmesi ana menüye döner; oyun (ve su) orada bekler. `?bolum=N` ya da `?mod=sonsuz` bağlantısı açılıştan sonra tanıtımı atlayıp doğrudan oyuna girer.
 
+## Tek el kontrolü
+- **Hedefe dokunmak gerekmez.** Başparmağın ekranın neresine bastığı yalnızca yönü seçer: sol taraf sol yukarı, orta düz yukarı, sağ taraf sağ yukarı. Nişan yardımı (`engine.aim`) o yönde menzilde ve görüşte olan en uygun halkayı, kovayı, ahşabı ya da kutuyu seçer. Ahşapta menzile giren en yüksek noktaya tutunulur.
+- **Hedef işaretleri:** Sola dokununca gidilecek hedefin çevresinde turkuaz, sağa dokununca gidilecek hedefin çevresinde sarı kesikli halka ve ok durur. İkisi aynı hedefse tek halka iki okla görünür.
+- **İlk bölüm ipucu:** 1. bölüm ilk kez oynanırken ekranın alt yarısı turkuaz (sol) ve sarı (sağ) olarak ikiye ayrılır, "Sola dokun / Sağa dokun" yazar. Dört tutunmadan sonra kaybolur.
+- **Titreşim:** Tutunma, ateşböceği, kapak açılması, el kayması, ölüm ve kazanmada kısa titreşim. Ayarlar'dan kapatılır. Android tarayıcılarında çalışır; iOS Safari titreşimi desteklemez.
+- Tablet ya da farede hedefin tam üstüne basılırsa doğrudan o hedef alınır.
+
+## Zorluk
+Şimdilik zorluk yok: diken ve taş çıkıntı kaldırıldı (`js/gen.js` içinde `HAZARDS = false`, el yapımı bölümlerde de yok). Tek tehlike alttan yükselen su, o da yavaş başlar; amaç oyuncunun erken kaybetmemesi.
+
 ## Oynanış
 - **Bas ve tut:** Kanca parmağının yönüne fırlar. Halka ya da ahşaba saplanırsa seni oraya çeker. Kutu gibi hafif şeyleri sana çeker. Taş kancayı tutmaz.
 - **Bırak:** İpten kopar, o anki hızınla savrulursun. İp tam sarılmadan bırakmak seni halkanın ötesine fırlatır.
 - **Tutunma gücü:** Asılı kalmak bedava değil. İpin ucunda asılıyken oyuncunun çevresindeki yay azalır; bitince el kayar.
 - **Akış:** İp tam sarılmadan bırakıp havadayken sıradaki noktaya tutunursan akış sayacı artar. 0,45 sn'den uzun asılı kalmak, yere basmak ya da 1,1 sn tutunmadan havada kalmak akışı bitirir.
-- **Tehlikeler:** Diken öldürür. Bazı bölümlerde ve sonsuz modda su aşağıdan yükselir.
+- **Tehlike:** Bazı bölümlerde ve sonsuz modda su aşağıdan yükselir.
 
 ## Modlar
 ### Bölümler
-- İlk 6 bölüm elle tasarlandı ve her biri bir şey öğretir: halka, ahşap/taş, diken, kutu ve düğme, yükselen su, hepsi bir arada.
+- İlk 6 bölüm elle tasarlandı ve her biri bir şey öğretir: halka, ahşap duvarlar, zikzak, kutu ve düğme, yükselen su, hepsi bir arada.
 - 7. bölümden sonrası **sınırsız**: `js/gen.js` her bölümü numarasından üretir; aynı numara her zaman aynı bölümü verir.
 - **Bütün bölümler açık.** Menüde istediğin bölüme dokun ya da numarasını yaz. Oyun sırasında **Atla** düğmesi sınırsız ve ücretsizdir.
 - Doğrudan bağlantı: adresin sonuna `?bolum=25` ekle.
@@ -49,9 +59,10 @@ Hepsi `js/engine.js` başındaki `CFG` içinde, sonsuz modun suyu `js/gen.js` i�
 | `COMBO_HANG` | 0,45 sn | Bundan uzun asılı kalmak akışı bitirir |
 | `COMBO_AIR` | 1,1 sn | Havada bundan uzun tutunmadan kalmak akışı bitirir |
 | `COMBO_PTS` × `COMBO_CAP` | 3 × 12 | Akış bonusu (tutunma başına en çok 36) |
-| Sonsuz su hızı | 50 + metre × 0,36, en çok 340 birim/sn | Bekleyen oyuncuyu bir noktada yakalar |
+| Sonsuz su hızı | 38 + metre × 0,3, en çok 300 birim/sn, 3 sn sonra başlar | Önce çok yavaş, tırmandıkça hızlanır |
+| Bölüm suyu | 5. bölüm 80; üretilen her 3. bölümde 45 + n × 0,5, en çok 90 | |
 
-Bot ölçümü (8 tohum, sonsuz mod): her noktada asılıp bekleyen bot 790–1380 m'de suya yakalanıyor, puanı 1.500–2.800. Akışla çıkan bot 240–1.500 m arası (dikene çarpma riski var), puanı 1.200–7.200.
+Bot ölçümü (8 tohum, sonsuz mod, engel yok): iki tarz da 1500 m test sınırına ulaşıyor. Asılıp bekleyen bot yaklaşık 3.000 puan, akışla çıkan bot 7.000–7.400 puan topluyor.
 
 ## Yerelde çalıştırma
 ```bash
@@ -70,6 +81,14 @@ Bot oyunun kendi fizik motoruyla oynar:
 
 `node tools/bot.js 3 --trace` tek bölümü ayrıntılı gösterir, `node tools/bot.js --gen 200` üretilen bölümleri 200'e kadar dener.
 
+Tek el denetimleri:
+```bash
+node tools/nisan.js
+node tools/tekel.js
+```
+- `nisan.js`: Rotadaki her adımda istenen hedef sol ya da sağ işaretle gösteriliyor mu? Şu an 945/945.
+- `tekel.js`: Bot hedef koordinatını bilmeden, yalnızca ekrandaki işaretlere bakıp sola ya da sağa dokunarak oynar. El yapımı 6 bölümün hepsi ve üretilen 54 bölümün 53'ü geçiliyor. Kalan 1 bölümde nişan yardımı bir halkayı atlayıp daha yüksektekine tutturuyor, bot ise rotasındaki aşağıdaki halkada ısrar ediyor.
+
 ## Proje yapısı
 | Dosya | İçerik |
 |---|---|
@@ -82,6 +101,8 @@ Bot oyunun kendi fizik motoruyla oynar:
 | `js/game.js` | Oyun ekranı: çizim, ses, girdi, kayıt |
 | `js/screens.js` | Açılış, giriş, tanıtım, ana menü, bölümler, ayarlar ve arka plan sahnesi |
 | `assets/funday-morning-logo.webp` | Şirket logosu (Pofi ile aynı) |
-| `tools/bot.js` | Doğrulama botu |
+| `tools/bot.js` | Doğrulama botu (koordinatla oynar) |
+| `tools/tekel.js` | Tek el botu (yalnızca sol/sağ dokunur) |
+| `tools/nisan.js` | Nişan yardımı denetimi |
 
 Düz JavaScript, derleme adımı yok. Kayıt tarayıcıda `kuyu.v2` anahtarıyla tutulur.

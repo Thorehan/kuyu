@@ -16,8 +16,15 @@ const speed = p => Math.hypot(p.x - p.px, p.y - p.py) / C.DT;
 // Oyuncunun gözüyle: hedef solumda mı, sağımda mı, tam üstümde mi?
 function side(s, x) { const dx = x - s.p.x; return dx < -15 ? 0.2 : dx > 15 ? 0.8 : 0.5; }
 
+// Oyuncu ekrandaki işaretlere bakar: hedefi turkuaz (sol) ya da sarı (sağ) işaret gösteriyorsa o yana dokunur.
+function matches(a, x, y) {
+  if (a.kind === 'none') return false;
+  if (a.kind === 'wood') return Math.abs(a.x - x) < 6 && Math.abs(a.y - y) < 70;
+  return Math.hypot(a.x - x, a.y - y) < 22;
+}
 function thumb(s, x, y) {
-  const a = E.aim(s, side(s, x));
+  const f = [0.2, 0.8].find(ff => matches(E.aim(s, ff), x, y));
+  const a = E.aim(s, f != null ? f : side(s, x));
   E.press(s, a.x, a.y);
   runFor(s, 0.6, () => s.rope || !s.hook);
   if (!s.rope) return false;

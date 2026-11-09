@@ -213,9 +213,13 @@
     for (i = 0; i < s.rects.length; i++) {
       var r = s.rects[i];
       if (r.type !== 'w' || r.y > p.y + R || r.y + r.h < p.y - R) continue;
-      // ahşabın oyuncuya bakan yüzünde, biraz yukarıda bir nokta
+      // ahşabın oyuncuya bakan yüzünde, menzile giren en yüksek nokta (en çok yükseklik kazandıran)
       var px = Math.max(r.x, Math.min(p.x, r.x + r.w));
-      var py = Math.max(r.y + 4, Math.min(p.y - 90, r.y + r.h - 4));
+      var hx = Math.abs(px - p.x);
+      if (hx >= R) continue;
+      var reachUp = Math.sqrt(R * R - hx * hx) * 0.96;
+      var py = Math.max(r.y + 6, p.y - reachUp);
+      if (py > r.y + r.h - 4) continue;
       add(px, py, 'wood', r);
     }
     return out;

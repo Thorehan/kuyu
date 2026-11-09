@@ -31,6 +31,8 @@
     EARLY: 0.25,        // bu süreden kısa asılıp bırakmak "fırlama" sayılır
     COMBO_HANG: 0.45,   // bundan uzun asılı kalmak akışı bozar
     COMBO_AIR: 1.1,     // havada bundan uzun tutunmadan kalmak akışı bozar
+    NEAR_V: 40,         // yatayda bu kadar yakın (tam tepedeki) hedef iki taraftan da alınır
+    BOOST: 650,         // hız halkasından bırakınca eklenen yukarı hız (birim/sn)
     RESCUE_MAX: 1000,   // kurtarma kancası: menzilde hedef yokken en yakın yukarıdaki hedefe bu kadar uzağa atılır
     SPEED_BASE: 200,    // hız çarpanı bu serbest uçuş hızından sonra başlar
     SPEED_TOP: 1150,    // bu hızda çarpan en yüksek (x1,5)
@@ -51,7 +53,7 @@
       def: def, H: H, endless: !!def.endless, rects: rects, t: 0, status: 'play',
       p: { x: sx, y: sy, px: sx, py: sy },
       pressed: false, hook: null, rope: null, lastAnchor: null,
-      rings: (def.rings || []).map(function (r) { return { x: r[0], y: r[1], ff: r[2] === 'ff' }; }),
+      rings: (def.rings || []).map(function (r) { return { x: r[0], y: r[1], ff: r[2] === 'ff', hiz: r[2] === 'hiz' }; }),
       goal: def.goal ? { x: def.goal[0], y: def.goal[1] } : null,
       boxes: (def.boxes || []).map(function (b) { return { x: b[0], y: b[1], px: b[0], py: b[1] }; }),
       buttons: (def.buttons || []).map(function (b) { return { x: b[0], y: b[1], w: b[2], h: 8, pressed: false }; }),
@@ -63,7 +65,7 @@
       grounded: false,
       // akış ve skor
       hang: 0, air: 0, chain: false, combo: 0, maxCombo: 0, hooks: 0, shots: 0, slips: 0,
-      startY: sy, topY: sy, bonus: 0, fireflyPts: 0, maxSpeed: 0, rescues: 0
+      startY: sy, topY: sy, bonus: 0, fireflyPts: 0, maxSpeed: 0, rescues: 0, misses: 0, boosts: 0
     };
     // Ateşböcekleri halkaların içinde: o halkaya tutunmak ya da içinden geçmek yeter.
     s.rings.forEach(function (rg) { if (rg.ff) s.fireflies.push({ x: rg.x, y: rg.y, got: false, ring: rg }); });
@@ -176,6 +178,12 @@
       s.lastAnchor = rp; s.lastAnchorT = s.t;
       s.chain = s.hang < CFG.EARLY && why !== 'slip';
       s.air = 0;
+      // Hız halkası: bırakınca yukarı fırlatır (el kayması hariç)
+      if (rp.ref && rp.ref.hiz && why !== 'slip') {
+        s.p.py += CFG.BOOST * CFG.DT;
+        s.boosts++;
+        s.events.push({ type: 'boost', x: s.p.x, y: s.p.y });
+      }
     }
     s.events.push({ type: why === 'slip' ? 'slip' : 'release', box: rp.kind === 'box', chain: s.chain });
     s.rope = null;
@@ -253,42 +261,45 @@
       }
       if (near) return { x: near.c.x, y: near.c.y, kind: near.c.kind, assisted: true };
     }
-    var th = (-150 + Math.max(0, Math.min(1, f)) * 120) * Math.PI / 180;
+    // Ekran ikiye bölünür: sol yarı sol, sağ yarı sağ. Taraf seçimi oyuncunun kararıdır.
+    var side = f < 0.5 ? -1 : 1;
+    var th = (side < 0 ? -120 : -60) * Math.PI / 180;
     var dirX = Math.cos(th), dirY = Math.sin(th);
-    var side = f < 0.42 ? -1 : f > 0.58 ? 1 : 0;
-    // Öncelik sırası:
-    //   1) bastığın taraftaki en yakın yukarı hedef
-    //   2) yoksa diğer taraftaki en yakın yukarı hedef (sol ya da sağ fark etmez, kanca yine atılır)
-    //   3) yukarıda hiç hedef yoksa bastığın taraftaki en yakın aşağı hedef, sonra herhangi bir aşağı hedef
-    // Aşağıya ancak yukarıda ulaşılacak bir şey yokken gidilir (orada bas-bırak ile fırlamak gerekir).
-    var tiers = [[], [], [], []];
-    // "Yukarı" asılı olduğun noktaya göre ölçülür: aynı yükseklikteki yan halka yukarı sayılmaz (iki halka arasında gidip gelmez).
+    // "Yukarı" asılı olduğun noktaya göre ölçülür: aynı yükseklikteki yan halka yukarı sayılmaz.
     var refY = s.rope && s.rope.kind === 'anchor' ? s.rope.y : p.y;
+    var holding = s.rope && s.rope.kind === 'anchor';
+    var upSide = [], downSide = [], anyReach = false;
     for (i = 0; i < list.length; i++) {
       c = list[i];
       if (c.ref === ignore) continue;
       var dx = c.x - p.x;
-      var sideOk = side === 0 || (side < 0 ? dx <= 15 : dx >= -15);
+      // yalnızca bastığın taraf; tam tepedeki hedef (±NEAR_V) iki taraftan da alınır
+      var sideOk = side < 0 ? dx <= CFG.NEAR_V : dx >= -CFG.NEAR_V;
+      // tam tepedeki hedef ikinci sırada: o tarafta başka hedef varsa işaret onu gösterir (iki seçenek ayrışır)
+      c.strict = side < 0 ? dx < -CFG.NEAR_V : dx > CFG.NEAR_V;
       var up = c.y < refY - 30;
-      tiers[up ? (sideOk ? 0 : 1) : (sideOk ? 2 : 3)].push(c);
+      if (sideOk) (up ? upSide : downSide).push(c);
+      else if (!anyReach && (up || !holding) && reachable(s, c, ignore)) anyReach = true;
     }
-    // Bir halkaya tutunmuşken aşağıya hiç gidilmez: yukarıda menzilde hedef yoksa ip tutulmaya devam eder
-    // (çekilirken yukarıdaki hedef birazdan menzile girer). Aşağı ve kurtarma yalnızca boştayken.
-    var holding = s.rope && s.rope.kind === 'anchor';
-    for (var tI = 0; tI < (holding ? 2 : tiers.length); tI++) {
-      var tier = tiers[tI].sort(function (u, v) { return u.d - v.d; });
+    // Öncelik: bu taraftaki en yakın yukarı hedef; tutunmuyorsan bu taraftaki en yakın aşağı hedef.
+    // Tutunurken aşağıya hiç atılmaz.
+    var tiers = holding ? [upSide] : [upSide, downSide];
+    for (var tI = 0; tI < tiers.length; tI++) {
+      var tier = tiers[tI].sort(function (u, v) { return (u.strict === v.strict) ? u.d - v.d : (u.strict ? -1 : 1); });
       for (i = 0; i < tier.length; i++) {
-        if (reachable(s, tier[i], ignore)) return { x: tier[i].x, y: tier[i].y, kind: tier[i].kind, tier: tI, assisted: true };
+        if (reachable(s, tier[i], ignore)) return { x: tier[i].x, y: tier[i].y, kind: tier[i].kind, ref: tier[i].ref, tier: tI, assisted: true };
       }
     }
-    if (holding) return { x: s.rope.x, y: s.rope.y, kind: 'none', hold: true, assisted: false };
-    // Menzilde hiç hedef yok (dipte tıkanma): kurtarma kancası en yakın yukarıdaki hedefe uzanır.
+    var missAt = { x: p.x + dirX * CFG.HOOK_MAX, y: p.y + dirY * CFG.HOOK_MAX, kind: 'none', miss: true, assisted: false };
+    // Bu tarafta hedef yok. Diğer tarafta varsa ya da tutunuyorsan: kanca bu yöne boşa gider, ip bırakılmaz.
+    if (holding || anyReach) return missAt;
+    // İki tarafta da menzilde hiç hedef yok (dipte tıkanma): kurtarma kancası en yakın yukarıdaki hedefe uzanır.
     var far = candidates(s, CFG.RESCUE_MAX).filter(function (cc) { return cc.ref !== ignore && cc.y < p.y - 12; })
       .sort(function (u, v) { return u.d - v.d; });
     for (i = 0; i < far.length; i++) {
-      if (reachable(s, far[i], ignore)) return { x: far[i].x, y: far[i].y, kind: far[i].kind, rescue: true, assisted: true };
+      if (reachable(s, far[i], ignore)) return { x: far[i].x, y: far[i].y, kind: far[i].kind, ref: far[i].ref, rescue: true, assisted: true };
     }
-    return { x: p.x + dirX * CFG.HOOK_MAX, y: p.y + dirY * CFG.HOOK_MAX, kind: 'none', assisted: false };
+    return missAt;
   }
 
   // ---------- girdi ----------
@@ -297,15 +308,18 @@
     s.pressed = true;
     // Tutunduğun ya da az önce bıraktığın noktaya yeni atış takılmasın (zincirlerken ipin yolu üstünde kalır).
     var ignore = currentIgnore(s);
-    if (s.rope) detach(s, 'repress');
+    var keep = !!(opts && opts.keep);
+    // Boş atış (bu tarafta hedef yok): kanca gidip döner, tutunduğun ip bırakılmaz.
+    if (s.rope && !keep) detach(s, 'repress');
     var dx = tx - s.p.x, dy = ty - s.p.y, d = Math.sqrt(dx * dx + dy * dy);
     if (d < 4) { dx = 0; dy = -1; d = 1; }
     var rescue = !!(opts && opts.rescue);
     s.hook = { x: s.p.x, y: s.p.y, ox: s.p.x, oy: s.p.y, dx: dx / d, dy: dy / d, state: 'fly', ignore: ignore,
-      max: rescue ? CFG.RESCUE_MAX : CFG.HOOK_MAX, rescue: rescue };
+      max: rescue ? CFG.RESCUE_MAX : CFG.HOOK_MAX, rescue: rescue, keep: keep };
     s.shots++;
+    if (keep) s.misses++;
     if (rescue) { s.rescues++; if (s.combo > 0) breakCombo(s, 'kurtarma'); }
-    s.events.push({ type: rescue ? 'rescue' : 'fire' });
+    s.events.push({ type: rescue ? 'rescue' : keep ? 'missShot' : 'fire' });
   }
 
   function release(s) {
@@ -328,6 +342,7 @@
       var nx = hk.x + hk.dx * hs * dt, ny = hk.y + hk.dy * hs * dt;
       var hit = hookRay(s, hk.x, hk.y, nx, ny, hk.ignore);
       if (hit) {
+        if ((hit.kind === 'ring' || hit.kind === 'wood' || hit.kind === 'goal' || hit.kind === 'box') && s.rope) detach(s, 'repress');
         if (hit.kind === 'ring' || hit.kind === 'wood' || hit.kind === 'goal') {
           var ax = hit.kind === 'ring' ? hit.ring.x : hit.kind === 'goal' ? s.goal.x : hit.x;
           var ay = hit.kind === 'ring' ? hit.ring.y : hit.kind === 'goal' ? s.goal.y : hit.y;

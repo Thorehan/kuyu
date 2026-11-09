@@ -193,6 +193,8 @@
     for (var i = 0; i < ev.length; i++) {
       var e = ev[i];
       if (e.type === 'fire') SFX.fire();
+      else if (e.type === 'missShot') { tone(300, 0.08, 'triangle', 0.04, 200); floatText(sim.p.x + (aim.x < 0 ? -30 : 30), sim.p.y - 26, 'bu tarafta yok', '#8fa09c', 12); }
+      else if (e.type === 'boost') { SFX.combo(8); buzz(15); burst(e.x, e.y + 8, 12, '#6fd3ff', 180, 0.45, 200); floatText(e.x, e.y - 30, 'HIZ!', '#6fd3ff', 18); }
       else if (e.type === 'rescue') { SFX.fire(); buzz(25); floatText(sim.p.x, sim.p.y - 26, 'kurtarma kancası', COL.gok, 14); }
       else if (e.type === 'attach') {
         SFX.attach(); shake = Math.max(shake, 3); buzz(e.what === 'box' ? 18 : 12);
@@ -356,6 +358,17 @@
     ctx.fillStyle = b.pressed ? COL.atesbocegi : COL.bakir; ctx.fillRect(b.x + 4, b.y - 2 + dy, b.w - 8, 5);
   }
 
+  // Hız halkası: mavi halka ve yukarı oklar. Tutun, bırakınca yukarı fırlarsın.
+  function drawSpeedRing(r, t) {
+    var a = 0.7 + 0.3 * Math.sin(t / 200 + r.y);
+    ctx.lineWidth = 2.6; ctx.strokeStyle = 'rgba(111,211,255,' + a + ')';
+    ctx.beginPath(); ctx.arc(r.x, r.y, CFG.RING_R + 2, 0, Math.PI * 2); ctx.stroke();
+    ctx.strokeStyle = 'rgba(111,211,255,' + (0.85 * a) + ')'; ctx.lineWidth = 2; ctx.lineCap = 'round';
+    for (var k = 0; k < 2; k++) {
+      var yy = r.y - 20 - k * 7 - ((t / 90) % 7);
+      ctx.beginPath(); ctx.moveTo(r.x - 6, yy + 5); ctx.lineTo(r.x, yy); ctx.lineTo(r.x + 6, yy + 5); ctx.stroke();
+    }
+  }
   // Ateşböceği halkası: halkanın içinde parlayan ateşböceği. Tutun ya da içinden geç, alınır.
   function drawFireflyRing(r, t) {
     var a = 0.75 + 0.25 * Math.sin(t / 260 + r.x);
@@ -404,6 +417,10 @@
     if (sim.rope) {
       if (sim.rope.kind === 'box') { tx = sim.rope.box.x; ty = sim.rope.box.y; }
       else { tx = sim.rope.x; ty = sim.rope.y; }
+      if (sim.hook) { // boş atış: ip dururken ikinci, ince bir kanca çizgisi
+        ctx.save(); ctx.strokeStyle = 'rgba(234,223,196,0.55)'; ctx.lineWidth = 1.5; ctx.setLineDash([4, 4]);
+        ctx.beginPath(); ctx.moveTo(p.x, p.y - 2); ctx.lineTo(sim.hook.x, sim.hook.y); ctx.stroke(); ctx.restore();
+      }
     } else if (sim.hook) { tx = sim.hook.x; ty = sim.hook.y; }
     if (tx === null) return;
     ctx.strokeStyle = COL.ip; ctx.lineWidth = 2; ctx.lineCap = 'round';
@@ -464,12 +481,20 @@
   var COL_SOL = '#2fb3a6', COL_SAG = '#f2b23a';
   function drawAimMarkers(t) {
     if (sim.status !== 'play') return;
-    var L = E.aim(sim, 0.2), R = E.aim(sim, 0.8);
+    var L = E.aim(sim, 0.25), R = E.aim(sim, 0.75);
     if (L.rescue || R.rescue) { drawRescueMarker(L.rescue ? L : R, t); return; }
     var same = L.kind !== 'none' && R.kind !== 'none' && Math.hypot(L.x - R.x, L.y - R.y) < 4;
-    if (L.kind !== 'none') marker(L, COL_SOL, -1, t);
-    if (R.kind !== 'none' && !same) marker(R, COL_SAG, 1, t);
+    if (L.kind !== 'none') marker(L, COL_SOL, -1, t); else emptySide(-1);
+    if (R.kind !== 'none' && !same) marker(R, COL_SAG, 1, t); else if (R.kind === 'none') emptySide(1);
     if (same) arrow(R.x, R.y, COL_SAG, 1);
+  }
+  // Bu tarafta hedef yok: oyuncunun o yanında soluk bir ×; o yana basmak kancayı boşa atar.
+  function emptySide(dir) {
+    var x = sim.p.x + dir * 34, y = sim.p.y - 30;
+    ctx.save();
+    ctx.globalAlpha = 0.45; ctx.strokeStyle = dir < 0 ? COL_SOL : COL_SAG; ctx.lineWidth = 2.4; ctx.lineCap = 'round';
+    ctx.beginPath(); ctx.moveTo(x - 5, y - 5); ctx.lineTo(x + 5, y + 5); ctx.moveTo(x + 5, y - 5); ctx.lineTo(x - 5, y + 5); ctx.stroke();
+    ctx.restore();
   }
   // Menzilde hedef yok: kurtarma kancasının gideceği hedef ve yol, nereye basılırsa basılsın.
   function drawRescueMarker(m, t) {
@@ -571,7 +596,7 @@
     var vh = viewH / K;
     for (var i = 0; i < sim.rects.length; i++) drawRect(sim.rects[i]);
     sim.buttons.forEach(drawButton);
-    sim.rings.forEach(function (r) { if (r.y > cam - 30 && r.y < cam + vh + 30) { drawRing(r.x, r.y); if (r.ff && !r.got) drawFireflyRing(r, t); } });
+    sim.rings.forEach(function (r) { if (r.y > cam - 30 && r.y < cam + vh + 30) { drawRing(r.x, r.y); if (r.ff && !r.got) drawFireflyRing(r, t); if (r.hiz) drawSpeedRing(r, t); } });
     sim.fireflies.forEach(function (f) { if (f.y > cam - 20 && f.y < cam + vh + 20) drawFirefly(f, t); });
     sim.boxes.forEach(drawBox);
     drawAimMarkers(t);
@@ -722,10 +747,10 @@
     var f = (ev.clientX - r.left) / Math.max(1, r.width);
     var tgt = E.aim(sim, f, w.x, w.y);
     // Tutunurken yukarıda hedef yoksa ip bırakılmaz ve aşağı atılmaz; parmak kalkınca yine bırakılır.
-    if (tgt.hold) return;
+
     var dx = tgt.x - sim.p.x, dy = tgt.y - sim.p.y, d = Math.sqrt(dx * dx + dy * dy) || 1;
     aim = { x: dx / d, y: dy / d };
-    E.press(sim, tgt.x, tgt.y, { rescue: !!tgt.rescue });
+    E.press(sim, tgt.x, tgt.y, { rescue: !!tgt.rescue, keep: !!tgt.miss });
   });
   function up(ev) {
     if (ev.pointerId !== active) return;

@@ -196,6 +196,16 @@
       }
     });
 
+    // hız halkaları: ateşböceği olmayan adımlarda, en fazla 3 adım arayla bir karar noktası kalsın
+    var hizRings = [], hizAt = {}, lastDecision = 0;
+    for (var hi = 1; hi <= nodesN - 2; hi++) {
+      if (ffAt[hi]) { lastDecision = hi; continue; }
+      if (ffAt[hi - 1] || ffAt[hi + 1] || hizAt[hi - 1]) continue;
+      if (hi - lastDecision < 2 && r() < 0.6) continue;
+      var alt2 = ffAlternative(r, allPts[hi], target(nodes[hi]), target(nodes[hi + 1]), out.rings.concat(ffRings, hizRings));
+      if (alt2) { hizRings.push(alt2); hizAt[hi] = alt2; lastDecision = hi; }
+    }
+
     // koordinatları kaydır: kova y=50'de, taban aşağıda
     var off = 50 - goal.y;
     function sh(p) { return [Math.round(p.x), Math.round(p.y + off)]; }
@@ -208,6 +218,8 @@
     route.push(['hook', Math.round(goal.x), Math.round(goal.y + off)]);
     // ateşböceklerini alan rota: karar noktalarında ateşböceği halkasına gider
     var ffRoute = route.map(function (st, k) { var a = ffAt[k]; return a ? ['hook', a.x, Math.round(a.y + off)] : st; });
+    // hız rotası: karar noktalarında hız halkasına gider
+    var hizRoute = route.map(function (st, k) { var a = hizAt[k] || ffAt[k]; return a ? ['hook', a.x, Math.round(a.y + off)] : st; });
     return {
       id: num, name: levelName(num, r), H: H, generated: true,
       hint: waterLevel ? 'Su yükseliyor. Asılı kalma, fırlayıp tutun.' : 'Az tutunarak çık: ipi erken bırak, havadayken sıradakine at.',
@@ -215,9 +227,11 @@
       water: waterLevel ? Math.min(90, 45 + num * 0.5) : 0, waterDelay: 3,
       grip: 1.8,
       rects: rects,
-      rings: out.rings.map(sh).concat(ffRings.map(function (a) { return [a.x, Math.round(a.y + off), 'ff']; })),
+      rings: out.rings.map(sh).concat(ffRings.map(function (a) { return [a.x, Math.round(a.y + off), 'ff']; }))
+        .concat(hizRings.map(function (a) { return [a.x, Math.round(a.y + off), 'hiz']; })),
       route: route,
       ffRoute: ffRoute,
+      hizRoute: hizRoute,
       par: route.length,
       flow: Math.max(3, Math.floor(route.length * 0.5))
     };
@@ -265,13 +279,15 @@
           hz.rects.slice(before).forEach(function (rc) { s.rects.push(rc); });
         }
         // ateşböceği halkası: bir önceki düğümün alternatifi (artık sıradaki hedef belli: t)
-        if (st.prevT && st.nodes.length - st.lastFF >= 2 && r() < 0.4) {
+        // her 2-3 adımda bir karar noktası: ateşböceği ya da hız halkası
+        if (st.prevT && st.nodes.length - st.lastFF >= 2 && (st.nodes.length - st.lastFF >= 3 || r() < 0.6)) {
           var near = s.rings.filter(function (rg) { return Math.abs(rg.y - st.prevT.y) < 300; });
           var alt = ffAlternative(r, st.prevHp, st.prevT, t, near);
           if (alt) {
-            var fr = { x: alt.x, y: alt.y, ff: true };
+            var isFF = r() < 0.4;
+            var fr = { x: alt.x, y: alt.y, ff: isFF, hiz: !isFF };
             s.rings.push(fr);
-            s.fireflies.push({ x: alt.x, y: alt.y, got: false, ring: fr });
+            if (isFF) s.fireflies.push({ x: alt.x, y: alt.y, got: false, ring: fr });
             st.lastFF = st.nodes.length;
           }
         }

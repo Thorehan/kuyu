@@ -23,7 +23,12 @@ Bir aşamadaki işler bitmeden sonrakine geçilmez; yeni bulunan oynanış sorun
 - [x] Dipte tıkanma: menzilde hiç hedef yokken kurtarma kancası.
 - [x] Ateşböceği halkaları: karar noktalarında, kolay alınır, es geçilebilir.
 
+- [x] Sol/sağ kararı anlamsızlaşmıştı (yalnızca sağa basarak oynanıyordu): karşı tarafa otomatik atış kalktı, boş tarafa basınca kanca boşa gider ve ip bırakılmaz, her 2–3 adımda karar noktası.
+
 ### 2. Geliştirmeler
+- [x] Hız halkası: bırakınca yukarı itiş; karar noktalarında ateşböceği halkasıyla dönüşümlü.
+- [ ] El yapımı bölümlere hız halkası (şimdilik yalnızca üretilen bölümlerde ve sonsuz kuyuda).
+- [ ] Halka çeşitleri (öneri, karar bekliyor): çürük halka (kısa süre sonra kopar), sallanan halka (zamanlama), yay halkası.
 - [x] Raunttaki en yüksek hız; bölüm sonunda gösterilir ve ödüle çarpan olur.
 - [x] Profil kartı: en yüksek hız, en yüksek bölüm, sonsuz modda en yüksek metre ve kat.
 - [ ] Ana ekrana ekleme (manifest, simge), tam ekran.
@@ -36,6 +41,7 @@ Bir aşamadaki işler bitmeden sonrakine geçilmez; yeni bulunan oynanış sorun
 - [ ] Karakter, kaçış nedeni, ateşböceklerinin anlamı.
 
 ## Yapılanlar
+- 2026-11-09 · v0.6 · Katı sol/sağ seçimi, boş atışta ip korunur, karar noktaları, hız halkası, `oyuncu.js` tarzları (sadeceSag/sadeceSol 0/74).
 - 2026-11-09 · v0.5 · Ayrıca: tutunurken aşağı çekilme engellendi (iki halka arası döngü), önbellek için `?v=` sürüm etiketi, `tools/oyuncu.js`.
 - 2026-11-09 · v0.5 · Nişan yardımı yukarı önceliği, kurtarma kancası, ateşböceği halkaları, hız çarpanı, profil kartı.
 - 2026-11-09 · `d1897b3` v0.4 · Hedef işaretleri, ilk bölüm dokunma ipucu, titreşim; engeller kalktı.

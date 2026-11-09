@@ -1,6 +1,6 @@
 # Kuyu
 
-**Funday Morning Games** · 2D mobil oyun · prototip v0.5
+**Funday Morning Games** · 2D mobil oyun · prototip v0.6
 
 Derin bir kuyunun dibindesin. Telefonu tek elle tut: ekranın soluna ya da sağına dokun, kanca o taraftaki hedefe fırlasın; basılı tut, ipe sarıl; bırak, savrul. Halkadan halkaya, ahşaptan ahşaba tırmanıp kuyudan çık.
 
@@ -18,17 +18,21 @@ Pofi ile aynı akış:
 Oyundaki menü düğmesi ana menüye döner; oyun (ve su) orada bekler. `?bolum=N` ya da `?mod=sonsuz` bağlantısı açılıştan sonra tanıtımı atlayıp doğrudan oyuna girer.
 
 ## Tek el kontrolü
-- **Hedefe dokunmak gerekmez.** Başparmağın ekranın solunda, ortasında ya da sağında basması yeter. Nişan yardımı (`engine.aim`) menzilde ve görüşte olan hedefi şu sırayla seçer:
-  1. Bastığın taraftaki **en yakın yukarı** hedef (halka, ahşap, kova, kutu).
-  2. O tarafta yoksa **diğer taraftaki** en yakın yukarı hedef; sol ya da sağ fark etmez, kanca yine atılır.
-  3. Bir halkaya tutunmuşken yukarıda menzilde hedef yoksa dokunuş **hiçbir şey yapmaz**: ip tutulur, oyuncu aşağı çekilmez. Aşağıdaki bir hedefe yalnızca boştayken (düşerken ya da yerdeyken) ve yukarıda hiçbir şey yokken gidilir.
-  4. Menzilde hiç hedef yoksa (dipte tıkanma) **kurtarma kancası**: en yakın yukarıdaki hedefe kadar uzanır (en çok 1000 birim), çift hızla uçar. Akışı bozar ve bir atış sayılır. Ekranda kesikli bir yol ve "dokun: kurtarma kancası" yazısı görünür.
-- "Yukarı", asılı olduğun noktanın en az 30 birim üstü demektir; aynı yükseklikteki yan halka yukarı sayılmaz, böylece iki halka arasında gidip gelinmez.
-- Ahşapta menzile giren en yüksek noktaya tutunulur.
-- **Hedef işaretleri:** Sola dokununca gidilecek hedefin çevresinde turkuaz, sağa dokununca gidilecek hedefin çevresinde sarı kesikli halka ve ok durur. İkisi aynı hedefse tek halka iki okla görünür.
-- **İlk bölüm ipucu:** 1. bölüm ilk kez oynanırken ekranın alt yarısı turkuaz (sol) ve sarı (sağ) olarak ikiye ayrılır, "Sola dokun / Sağa dokun" yazar. Dört tutunmadan sonra kaybolur.
-- **Titreşim:** Tutunma, ateşböceği, kapak açılması, el kayması, ölüm ve kazanmada kısa titreşim. Ayarlar'dan kapatılır. Android tarayıcılarında çalışır; iOS Safari titreşimi desteklemez.
-- Tablet ya da farede hedefin tam üstüne basılırsa doğrudan o hedef alınır.
+- **Hedefe dokunmak gerekmez, ama taraf seçmek gerekir.** Ekran ikiye bölünür: sol yarıya basınca kanca sol taraftaki hedefe, sağ yarıya basınca sağ taraftakine atılır. Sol/sağ kararı oyuncunundur; hep aynı tarafa basarak geçilemez.
+- Nişan yardımı (`engine.aim`) bastığın tarafta, menzilde ve görüşte olan hedefi şu sırayla seçer:
+  1. Bu taraftaki **en yakın yukarı** hedef (halka, ahşap, kova, kutu). Önce gerçekten o taraftakiler; tam tepedeki hedef (yatayda ±40 birim) iki taraftan da alınır ama ikinci sırada gelir. Böylece iki işaret mümkün olduğunca farklı seçenek gösterir.
+  2. Tutunmuyorsan (düşerken, yerdeyken) bu taraftaki en yakın aşağı hedef. Tutunurken aşağıya hiç atılmaz.
+  3. **Bu tarafta hedef yoksa:** kanca o yöne boşa gidip döner, tutunduğun ip **bırakılmaz**. Ceza yok; kaybedilen biraz zaman ve bir atış. İşaretlerde o tarafa soluk bir "×" konur.
+  4. **İki tarafta da menzilde hedef yoksa** (dipte tıkanma) **kurtarma kancası** en yakın yukarı hedefe uzanır (en çok 1000 birim, çift hızla). Akışı bozar, bir atış sayılır.
+- "Yukarı", asılı olduğun noktanın en az 30 birim üstü demektir; aynı yükseklikteki yan halka yukarı sayılmaz.
+- **Hedef işaretleri:** sol yarının hedefi turkuaz, sağ yarınınki sarı kesikli halka ve okla gösterilir.
+- **İlk bölüm ipucu**, **titreşim** ve tablet/fare için hedefe doğrudan dokunma önceki sürümdeki gibi.
+
+## Karar noktaları
+Her 2–3 adımda bir ana halkanın karşı tarafında ikinci bir halka durur; ikisi de ileri götürür:
+- **Ateşböceği halkası** (sarı parlar): tutunmak ya da içinden geçmek ateşböceğini alır.
+- **Hız halkası** (mavi, yukarı oklu, üretilen bölümler ve sonsuz kuyu): bırakınca 650 birim/sn yukarı itiş verir. Asılıp durduktan sonra bırakınca yaklaşık 32 m/sn (x1,25), çekilirken bırakınca en yüksek hız (57 m/sn, x1,50).
+- Üretilen bölümlerde adımların %37'si karar noktası, iki karar arası en fazla 5 adım. El yapımı bölümlerde yalnızca ateşböceği halkaları var.
 
 ## Ateşböceği halkaları
 - Ateşböcekleri artık serbest durmuyor; **halkanın içinde**. O halkaya tutunmak ya da içinden geçmek yeter.
@@ -108,7 +112,15 @@ Tek el (gerçek oyuncu) denetimi:
 ```bash
 node tools/oyuncu.js
 ```
-Bot rota bilmez; yalnızca ekrandaki sol ve sağ işarete bakar. Üç tarzda oynar: daha yukarıdaki işarete dokunur, ateşböceği halkasını gösteren işarete dokunur, ya da ipi erken bırakıp zincirler. Şu an üç tarzda da 6 el yapımı ve 74 üretilen bölümün hepsi geçiliyor; sonsuz kuyuda hiç kurtarma kancası gerekmiyor.
+Bot rota bilmez; yalnızca ekrandaki sol ve sağ işarete bakar. Sonuçlar (6 el yapımı + 74 üretilen bölüm):
+
+| Tarz | Ne yapar | Sonuç |
+|---|---|---|
+| `isaret` | daha yukarıdaki işarete dokunur | 80/80 geçer, ateşböceği 123/221, ort. hız x1,21 |
+| `ates` | ateşböceği halkası gösteren işareti seçer | 80/80 geçer, ateşböceği 214/221 (el yapımlarda hepsi) |
+| `hiz` | hız halkası gösteren işareti seçer | 80/80 geçer, ort. hız x1,27 |
+| `akis` | ipi erken bırakıp zincirler | 80/80 geçer, hız x1,50 |
+| `sadeceSag` / `sadeceSol` | hep aynı yarıya basar | **0/74 geçer** (sol/sağ kararı gerçekten gerekli) |
 
 `tools/bot.js` ayrıca her bölümde ateşböceği rotasını (`ffRoute`) oynar ve bütün ateşböceklerinin alınabildiğini doğrular.
 

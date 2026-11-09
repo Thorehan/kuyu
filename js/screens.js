@@ -11,10 +11,16 @@
   var deepLink = q.get('mod') === 'sonsuz' ? { mode: 'endless' } : q.get('bolum') ? { mode: 'level', n: parseInt(q.get('bolum'), 10) || 1 } : null;
   var save = function () { return G.save(); };
 
+  var SEKMELER = ['ekAna', 'ekBolumler', 'ekProfil', 'ekAyarlar'];
   function show(id) {
     current = id;
     EKRANLAR.forEach(function (e) { $(e).hidden = e !== id; });
     $('oyunEkrani').hidden = id !== 'oyun';
+    // alt gezinme çubuğu yalnızca menü sekmelerinde
+    $('altMenu').hidden = SEKMELER.indexOf(id) < 0;
+    document.querySelectorAll('#altMenu [data-sekme]').forEach(function (b) {
+      if (b.dataset.sekme === id) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current');
+    });
     if (id === 'ekAna' || id === 'ekTanitim') startScene(); else stopScene();
   }
 
@@ -112,7 +118,20 @@
   function home() {
     var s = save();
     $('selamAd').textContent = (s.profile && s.profile.name) || 'Tırmanıcı';
-    $('oynaNo').textContent = s.last || 1;
+    var cur = s.last || 1, curDef = G.levelDef(cur), cb = (s.best || {})[cur] || {};
+    $('oynaNo').textContent = cur;
+    $('oynaAd').textContent = curDef.name;
+    // bu bölümün hedefleri: ateşböceği noktaları + kusursuz + akış
+    var ffN = (curDef.rings || []).filter(function (r) { return r[2] === 'ff'; }).length;
+    var hd = '';
+    for (var k = 0; k < ffN; k++) hd += '<i class="' + (k < (cb.ff || 0) ? 'var' : '') + '"></i>';
+    hd += '<i class="m' + (cb.perfect ? ' var' : '') + '"></i><i class="m' + (cb.flow ? ' var' : '') + '"></i>';
+    $('oynaHedef').innerHTML = hd;
+    // üst şerit: toplam ödül ve ateşböceği
+    var tot = 0, ates = 0;
+    Object.keys(s.best || {}).forEach(function (k2) { tot += s.best[k2].reward || 0; ates += s.best[k2].ff || 0; });
+    $('toplamOdul').textContent = tot;
+    $('toplamAtes').textContent = ates;
     var rec = s.endless || {};
     $('sonsuzRekor').textContent = rec.score ? 'Rekor ' + rec.score + ' · ' + rec.meters + ' m' : 'Bölüm yok, su yükselir';
     var mc = medalCount();
@@ -122,7 +141,6 @@
   $('oynaBtn').addEventListener('click', function () { G.startLevel(save().last || 1); });
   $('sonsuzBtn').addEventListener('click', function () { G.startEndless(); });
   $('bolumlerBtn').addEventListener('click', function () { openLevels(); });
-  $('ayarBtn').addEventListener('click', function () { openSettings(); });
   $('profilBtn').addEventListener('click', function () { openProfile(); });
 
   // ---------- profil kartı ----------
@@ -150,6 +168,13 @@
     show('ekProfil');
   }
   document.querySelectorAll('[data-geri]').forEach(function (b) { b.addEventListener('click', home); });
+  document.querySelectorAll('#altMenu [data-sekme]').forEach(function (b) {
+    b.addEventListener('click', function () {
+      var t = b.dataset.sekme;
+      if (t === current) return;
+      if (t === 'ekAna') home(); else if (t === 'ekBolumler') openLevels(); else if (t === 'ekProfil') openProfile(); else openSettings();
+    });
+  });
 
   // ---------- bölümler ----------
   var listUpto = 0;

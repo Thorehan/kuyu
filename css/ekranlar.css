@@ -123,7 +123,7 @@ button.oyna:active { transform: translateY(3px); box-shadow: 0 3px 0 #a83b16; }
 .anahtar[aria-checked="true"] i { transform: translateX(22px); background: #fff; }
 
 .bildirim {
-  position: fixed; z-index: 40; left: 50%; bottom: calc(28px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%);
+  position: fixed; z-index: 40; left: 50%; bottom: calc(88px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%);
   width: max-content; max-width: min(90vw, 380px); background: #1b1d26; color: var(--yazi); border: 1px solid #30323b;
   padding: 10px 16px; border-radius: 14px; font-size: 14px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,.4);
 }
@@ -163,3 +163,41 @@ button.oyna:active { transform: translateY(3px); box-shadow: 0 3px 0 #a83b16; }
 .profil-izgara > div { display: flex; flex-direction: column; gap: 2px; padding: 10px 12px; border-radius: 12px; background: #16201f; border: 1px solid #2c3936; min-width: 0; }
 .profil-izgara small { color: var(--soluk); font-size: 12px; }
 .profil-izgara b { font-family: var(--font-oyun); font-weight: 800; font-size: 22px; line-height: 1.05; font-variant-numeric: tabular-nums; }
+
+/* ---------- ana menü düzeni (v0.9): üst bilgi şeridi, Oyna kartı, alt gezinme ---------- */
+.ust-sayac { display: flex; gap: 6px; }
+.stat-hap { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px 6px 8px; border-radius: 999px; background: rgba(22,32,31,.88); border: 1px solid #2c3936; }
+.stat-hap b { font-family: var(--font-oyun); font-weight: 800; font-size: 16px; line-height: 1; font-variant-numeric: tabular-nums; }
+.ikon-odul, .ikon-ates { width: 18px; height: 18px; border-radius: 50%; display: block; flex: none; }
+.ikon-odul { background: radial-gradient(circle at 35% 30%, #ffd98a 0 30%, #e39b2d 31% 70%, #a8661a 71%); }
+.ikon-ates { background: radial-gradient(circle, #fbffd8 0 22%, #e8f27c 23% 48%, rgba(232,242,124,.25) 49%); }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+button.oyna { padding: 10px 12px 10px 22px; min-height: 84px; }
+.oyna-sol { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; min-width: 0; }
+.oyna-baslik { font-size: 34px; line-height: .9; }
+.oyna-alt { display: flex; align-items: center; gap: 8px; font-family: var(--font-metin); font-weight: 600; font-size: 13px; color: #4a1a08; min-width: 0; }
+.oyna-alt > span:first-child { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.hedefler { display: flex; gap: 3px; flex: none; }
+.hedefler i { width: 8px; height: 8px; border-radius: 50%; background: rgba(42,15,5,.25); display: block; }
+.hedefler i.var { background: #fff3c4; box-shadow: 0 0 0 1px rgba(42,15,5,.35); }
+.hedefler i.m { border-radius: 2px; }
+
+/* alt gezinme çubuğu */
+.alt-menu {
+  position: fixed; z-index: 30; left: 0; right: 0; bottom: 0;
+  display: flex; justify-content: center; gap: 4px;
+  padding: 6px max(10px, env(safe-area-inset-right, 0px)) calc(6px + env(safe-area-inset-bottom, 0px)) max(10px, env(safe-area-inset-left, 0px));
+  background: rgba(10,16,17,.94); border-top: 1px solid #22302d;
+  -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
+}
+.alt-menu button {
+  flex: 1; max-width: 112px; flex-direction: column; gap: 2px; min-height: 52px; padding: 4px 2px;
+  background: transparent; border: none; border-radius: 12px; color: var(--soluk); font-size: 11px; font-weight: 600;
+}
+.alt-menu button svg { width: 24px; height: 24px; }
+.alt-menu button:hover { background: rgba(38,49,47,.6); }
+.alt-menu button[aria-current="page"] { color: var(--gok); background: rgba(38,49,47,.75); }
+.alt-menu button[aria-current="page"] svg { color: var(--kahraman); }
+.ekran.sekmeli { padding-bottom: calc(76px + env(safe-area-inset-bottom, 0px)); }
+.ana-alt { gap: 10px; }

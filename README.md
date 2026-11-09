@@ -1,6 +1,6 @@
 # Kuyu
 
-**Funday Morning Games** · 2D mobil oyun · prototip v0.6
+**Funday Morning Games** · 2D mobil oyun · prototip v0.7
 
 Derin bir kuyunun dibindesin. Telefonu tek elle tut: ekranın soluna ya da sağına dokun, kanca o taraftaki hedefe fırlasın; basılı tut, ipe sarıl; bırak, savrul. Halkadan halkaya, ahşaptan ahşaba tırmanıp kuyudan çık.
 
@@ -31,8 +31,8 @@ Oyundaki menü düğmesi ana menüye döner; oyun (ve su) orada bekler. `?bolum=
 ## Karar noktaları
 Her 2–3 adımda bir ana halkanın karşı tarafında ikinci bir halka durur; ikisi de ileri götürür:
 - **Ateşböceği halkası** (sarı parlar): tutunmak ya da içinden geçmek ateşböceğini alır.
-- **Hız halkası** (mavi, yukarı oklu, üretilen bölümler ve sonsuz kuyu): bırakınca 650 birim/sn yukarı itiş verir. Asılıp durduktan sonra bırakınca yaklaşık 32 m/sn (x1,25), çekilirken bırakınca en yüksek hız (57 m/sn, x1,50).
-- Üretilen bölümlerde adımların %37'si karar noktası, iki karar arası en fazla 5 adım. El yapımı bölümlerde yalnızca ateşböceği halkaları var.
+- **Hız halkası** (mavi, yukarı oklu): bırakınca 650 birim/sn yukarı itiş verir. Asılıp durduktan sonra bırakınca yaklaşık 32 m/sn (x1,25), çekilirken bırakınca en yüksek hız (57 m/sn, x1,50).
+- Üretilen bölümlerde adımların %37'si karar noktası, iki karar arası en fazla 5 adım. El yapımı bölümlerde hız halkası 2. bölümde tanıtılır (ipucu anlatır); 2, 3 ve 4. bölümde birer, 5. bölümde iki tane var. 1. bölüm yalnızca ateşböceğiyle sade kalır, 6. bölümde yer uygun değildi. 5. bölümde hız halkası ile üçüncü ateşböceğine giden yol ayrı: oyuncu hangisini istediğini seçer.
 
 ## Ateşböceği halkaları
 - Ateşböcekleri artık serbest durmuyor; **halkanın içinde**. O halkaya tutunmak ya da içinden geçmek yeter.

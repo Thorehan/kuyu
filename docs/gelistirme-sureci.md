@@ -95,7 +95,7 @@ Kullanıcı hikâyeye online'dan önce geçti; online (5) sonra.
 - [x] Bölge hikâye kartları (v0.34): yeni bölgeye ilk girişte oyunu durdurmayan kart (bölge adı + tek cümle).
 - [x] Profil → Çıra'nın yolu (v0.34): açılan bölgelerin hikâyesi, açılmayanlar kilitli.
 - [x] Menü metinleri (v0.34): "Çıra'yı fenerine geri götür", "ÇIRA'YI IŞIĞA ÇIKAR".
-- [ ] Bölge finalleri (16, 36, 56, 76): gösterişli son sahne (madende fenerler yanar, mağarada kristaller çınlar, kulede fener yeniden yanar).
+- [x] Bölge finalleri (v0.36, 16, 36, 56, 76): ilk geçişte sözsüz son sahne (ateşböcekleri yol gösterir, madende fenerler yanar, mağarada kristaller çınlar, kulede fener yeniden yanar).
 - [x] Bekçinin notları (v0.35): 12 not (bölge başına 3; 4, 9, 14, 20, 27, 34, 41, 48, 54, 61, 68, 74. bölümler), bölümün en üstteki ateşböceği halkasına asılı. Halkayı alan notu bulur; metin bölüm sonunda kartla gelir, Çıra'nın yolu'nda toplanır. Bot: 12/12 ateşböceği rotasıyla alınıyor.
 - [ ] Son: 76. bölümde fener yeniden yanar; ikinci yolculuk (77+) metinleri.
 - [?] Bekçinin adı.
@@ -103,6 +103,7 @@ Kullanıcı hikâyeye online'dan önce geçti; online (5) sonra.
 ## Yapılanlar
 - 2026-11-11 · v0.34 · Hikâye: Çıra (önsöz, bölge kartları, Çıra'nın yolu, metinler); oyun ekranı gizliyken döngü çizim yapmaz.
 - 2026-11-11 · v0.35 · Bekçinin notları: 12 not, ateşböceği yolunda; Çıra'nın yolu'nda okunur.
+- 2026-11-11 · v0.36 · Bölge finalleri: 16, 36, 56, 76. bölüm sonunda bir kez oynayan sözsüz sahne; menü düğmesi bölüm sonu sırasında sonuç kartını açar (bölüm kaydedilmeden çıkılmaz).
 - 2026-11-10 · v0.33 · Müzik brifi (Mustafa için); servis çalışanı müzik dosyalarını da internetsiz saklar.
 - 2026-11-10 · v0.32 · Ortam müziği (bölgeye ve akışa göre), Müzik ve Ses efektleri ayrı ayarlar.
 - 2026-11-10 · v0.31 · Dolap'a kahraman rengi ve kanca biçimi; beş sekme.

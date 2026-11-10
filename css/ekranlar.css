@@ -408,3 +408,7 @@ button.oyna { padding: 10px 12px 10px 22px; min-height: 84px; }
 .hk-notlar li:not(.bulundu) span { color: var(--soluk); }
 .buyuk-yazi .hk-notlar li span { font-size: 16px; }
 .buyuk-yazi .hk-notlar li em { font-size: 14px; }
+.hk-son { margin: 6px 0 0; padding: 8px 10px; border-radius: 10px; background: rgba(var(--isik), .08); display: flex; flex-direction: column; gap: 2px;
+  font-size: 14px; line-height: 1.45; color: var(--yazi); }
+.hk-son em { font-style: normal; font-family: var(--font-oyun); font-weight: 700; font-size: 14px; color: rgb(var(--isik)); }
+.buyuk-yazi .hk-son { font-size: 16px; }

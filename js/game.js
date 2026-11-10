@@ -108,7 +108,7 @@
 
   // ---------- durum ----------
   var mode = 'level', levelNo = 1, def, sim = null, paused = true, deaths = 0, cam = 0, shake = 0, parts = [], floaters = [], trail = [];
-  var winT = null, deadT = null, resultShown = false;
+  var winT = null, deadT = null, resultShown = false, finalT = null, finalBi = 0;
   var aim = { x: 0, y: -1 };
   var canvas = $('oyun'), ctx = canvas.getContext('2d');
   var K = 1, DPR = 1, viewW = 0, viewH = 0, brick = null;
@@ -133,16 +133,20 @@
   var BOLGELER = [
     { id: 'tas', ad: 'Taş Kuyu', zemin: '#121a19', taban: 30, d: [-6, 4, 1], yosun: '79,107,68', yosunP: 0.18, benek: null,
       duvar: '#141c1b', kenar: '#3a4743', isik: '191,230,238',
-      hikaye: 'Köyün eski kuyusu. Çıra fenerden düştüğünde burada uyandı; yukarıda gün ışığı, aşağıda soğuk su.' },
+      hikaye: 'Köyün eski kuyusu. Çıra fenerden düştüğünde burada uyandı; yukarıda gün ışığı, aşağıda soğuk su.',
+      final: { baslik: 'Taş Kuyu geride kaldı', metin: 'Ateşböcekleri bir araya gelip yukarıyı gösterdi. Orada eski bir maden var.' } },
     { id: 'maden', ad: 'Maden', zemin: '#1a120b', taban: 33, d: [16, 4, -10], yosun: null, yosunP: 0, benek: '214,170,90', benekP: 0.22,
       duvar: '#1b140e', kenar: '#5a4430', isik: '255,190,120',
-      hikaye: 'Fenerlerin yağı bir zamanlar bu madenden çıkarılırdı. Duvardaki eski fenerler hâlâ Çıra\'yı tanıyor.' },
+      hikaye: 'Fenerlerin yağı bir zamanlar bu madenden çıkarılırdı. Duvardaki eski fenerler hâlâ Çıra\'yı tanıyor.',
+      final: { baslik: 'Maden geride kaldı', metin: 'Çıra geçerken madenin eski fenerleri bir bir yandı. Maden onu hatırladı.' } },
     { id: 'kristal', ad: 'Kristal Mağara', zemin: '#0f0c1c', taban: 28, d: [-4, -7, 17], yosun: '120,200,210', yosunP: 0.07, benek: '180,150,255', benekP: 0.16,
       duvar: '#15121f', kenar: '#4a4268', isik: '180,150,255',
-      hikaye: 'Kristaller ışığı saklar. Çıra\'nın saçılan ışığının bir kısmı burada, taşların içinde parlıyor.' },
+      hikaye: 'Kristaller ışığı saklar. Çıra\'nın saçılan ışığının bir kısmı burada, taşların içinde parlıyor.',
+      final: { baslik: 'Kristal Mağara geride kaldı', metin: 'Kristaller sakladıkları ışığı Çıra\'ya geri verdi. Çıra hiç bu kadar parlak olmamıştı.' } },
     { id: 'kule', ad: 'Eski Kule', zemin: '#1a1b20', taban: 47, d: [3, 4, 11], yosun: '79,107,68', yosunP: 0.06, benek: null,
       duvar: '#1b1c21', kenar: '#5a5d68', isik: '200,215,255',
-      hikaye: 'Kuyunun en üstünde fener kulesi. Fener sönük; bekçi her gece pencereden Çıra\'yı bekliyor.' }
+      hikaye: 'Kuyunun en üstünde fener kulesi. Fener sönük; bekçi her gece pencereden Çıra\'yı bekliyor.',
+      final: { baslik: 'Fener yeniden yandı', metin: 'Çıra fenerine kavuştu. Bekçinin penceresinde ışık var; kuyunun her köşesi aydınlandı.' } }
   ];
   var BOLGE_ILK = [1, 17, 37, 57]; // her bölgenin açıldığı bölüm
   // Bölüm numarasından bölge: 1–16 Taş Kuyu, 17–36 Maden, 37–56 Kristal Mağara, 57–76 Eski Kule, sonra baştan (20'şer).
@@ -315,7 +319,7 @@
     sonsuzBolge = 0;
     if (mode === 'endless') MZ.sahne('tas');
     MZ.kis(false);
-    parts = []; floaters = []; trail = []; winT = null; deadT = null; resultShown = false; lastHud = ''; introOgeSayisi = 0;
+    parts = []; floaters = []; trail = []; winT = null; deadT = null; finalT = null; resultShown = false; lastHud = ''; introOgeSayisi = 0;
     $('katman').hidden = true;
     closePause(); closeIntro(true);
     paused = false; acc = 0; lastT = 0;
@@ -943,6 +947,147 @@
     drawWater(t);
     drawFloaters(dt);
     drawTouchHint(dt);
+    if (finalT !== null) drawFinal();
+  }
+
+  // ---------- bölge finalleri (docs/hikaye.md) ----------
+  // Bölgenin son bölümü (16, 36, 56, 76) ilk kez geçilince sonuç kartından önce kısa, sözsüz bir sahne oynar:
+  // Taş Kuyu'da ateşböcekleri yukarıyı gösterir, madende fenerler bir bir yanar, mağarada kristaller çınlar,
+  // kulede fener yeniden yanar. Dokunmak geçer. Sahne bir kez oynar; metni Çıra'nın yolu'nda kalır.
+  var FINAL = { 16: 0, 36: 1, 56: 2, 76: 3 }, FINAL_SURE = 7.5, finalCalan = {};
+  function finalGoruldu(bi) { return !!(save.finaller && save.finaller[BOLGELER[bi].id]); }
+  function finalBekliyor() { return mode === 'level' && FINAL[levelNo] != null && !finalGoruldu(FINAL[levelNo]); }
+  function finalBasla() { finalBi = FINAL[levelNo]; finalT = 0; finalCalan = {}; MZ.kis(true); }
+  function finalBitir() {
+    if (finalT === null) return;
+    if (!save.finaller) save.finaller = {};
+    save.finaller[BOLGELER[finalBi].id] = true; persist();
+    finalT = null; MZ.kis(false);
+    if (!resultShown) showLevelResult();
+  }
+  // Sahnenin sesleri: her biri zamanı gelince bir kez çalar
+  function sesBir(k, at, fn) { if (finalT >= at && !finalCalan[k]) { finalCalan[k] = true; fn(); } }
+  function finalSes() {
+    var i;
+    if (finalBi === 0) {
+      sesBir('a', 0.7, function () { tone(523, 0.5, 'sine', 0.06, 784); });
+      sesBir('b', 2.4, function () { tone(784, 0.6, 'triangle', 0.06, 1047); });
+    } else if (finalBi === 1) {
+      for (i = 0; i < 6; i++) (function (i) { sesBir('f' + i, 0.9 + i * 0.4, function () { tone([294, 330, 349, 392, 440, 494][i], 0.35, 'triangle', 0.07); }); })(i);
+    } else if (finalBi === 2) {
+      for (i = 0; i < KRISTAL.length; i++) (function (j) { sesBir('k' + j, kristalAn(j), function () { tone([659, 740, 831, 932, 988, 1109, 1245, 1319, 1480][j], 0.7, 'sine', 0.05); }); })(i);
+    } else {
+      sesBir('y', 0.7, function () { tone(330, 1.4, 'sine', 0.05, 660); });
+      sesBir('t', 2.3, function () { tone(523, 1.2, 'triangle', 0.06); tone(659, 1.2, 'triangle', 0.05); tone(784, 1.4, 'triangle', 0.05); buzz([20, 60, 40]); });
+    }
+  }
+  function kolay(x) { x = Math.max(0, Math.min(1, x)); return x * x * (3 - 2 * x); }
+  // Kristallerin ekrandaki yeri (oran) ve ışık dalgasının onlara varış anı
+  var KRISTAL = [[0.12, 0.62], [0.88, 0.58], [0.2, 0.42], [0.8, 0.38], [0.1, 0.24], [0.9, 0.2], [0.34, 0.14], [0.66, 0.1], [0.5, 0.3]];
+  function kristalAn(j) {
+    var k = KRISTAL[j], dx = (k[0] - 0.5) * viewW, dy = (k[1] - 0.72) * viewH;
+    return 0.8 + Math.sqrt(dx * dx + dy * dy) / (viewW * 0.55);
+  }
+  function satirla(text, maxW) {
+    var words = text.split(' '), lines = [], cur = '';
+    words.forEach(function (wd) { var t2 = cur ? cur + ' ' + wd : wd; if (ctx.measureText(t2).width > maxW && cur) { lines.push(cur); cur = wd; } else cur = t2; });
+    if (cur) lines.push(cur);
+    return lines;
+  }
+  function parilti(x, y, r, rgb, a) {
+    var g = ctx.createRadialGradient(x, y, 0, x, y, r);
+    g.addColorStop(0, 'rgba(' + rgb + ',' + a + ')'); g.addColorStop(1, 'rgba(' + rgb + ',0)');
+    ctx.fillStyle = g; ctx.fillRect(x - r, y - r, r * 2, r * 2);
+  }
+  function finalFener(x, y, u, yanik) {
+    if (yanik > 0) parilti(x, y, 60 * u * (0.6 + 0.4 * yanik), '255,190,110', 0.55 * yanik);
+    ctx.fillStyle = '#2b2118'; ctx.fillRect(x - 8 * u, y - 10 * u, 16 * u, 20 * u);
+    ctx.fillStyle = yanik > 0 ? 'rgba(255,214,150,' + (0.35 + 0.65 * yanik) + ')' : '#3a3026';
+    ctx.fillRect(x - 5 * u, y - 6 * u, 10 * u, 12 * u);
+    ctx.fillStyle = '#2b2118'; ctx.fillRect(x - 10 * u, y - 12 * u, 20 * u, 3 * u); ctx.fillRect(x - 10 * u, y + 9 * u, 20 * u, 3 * u);
+  }
+  function drawFinal() {
+    var w = viewW, h = viewH, u = Math.min(w / 360, h / 640), p = finalT, B = BOLGELER[finalBi], t = performance.now() / 1000;
+    ctx.save();
+    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+    ctx.fillStyle = 'rgba(6,9,10,' + (0.95 * kolay(p / 0.6)) + ')'; ctx.fillRect(0, 0, w, h);
+    var cx = w / 2, cy = h * 0.66, i;
+    if (finalBi === 0) {
+      // ateşböcekleri dağınık yerlerden gelip Çıra'nın üstünde yukarı akan bir yol olur; tepede maden kirişleri belirir
+      var kir = kolay((p - 2.0) / 1.2);
+      if (kir > 0) {
+        parilti(cx, h * 0.1, 120 * u, '255,190,120', 0.35 * kir);
+        ctx.globalAlpha = kir; ctx.fillStyle = '#6e4223';
+        ctx.fillRect(cx - 70 * u, h * 0.04, 12 * u, h * 0.12); ctx.fillRect(cx + 58 * u, h * 0.04, 12 * u, h * 0.12);
+        ctx.fillStyle = '#a2693a'; ctx.fillRect(cx - 80 * u, h * 0.04, 160 * u, 12 * u);
+        ctx.globalAlpha = 1;
+      }
+      for (i = 0; i < 30; i++) {
+        var sx0 = ((i * 97) % 100) / 100 * w, sy0 = ((i * 61 + 13) % 100) / 100 * h;
+        var k = kolay((p - 0.6 - i * 0.03) / 1.5);
+        var yol = (i / 30 + (p > 2.1 ? (p - 2.1) * 0.12 : 0)) % 1;
+        var tx = cx + Math.sin(i * 1.7 + t * 2) * 10 * u, ty = cy - 30 * u - yol * (cy - 30 * u - h * 0.14);
+        var fx = sx0 + (tx - sx0) * k, fy = sy0 + (ty - sy0) * k;
+        parilti(fx, fy, 9 * u, '232,242,124', 0.8);
+        ctx.fillStyle = '#fbffd8'; ctx.beginPath(); ctx.arc(fx, fy, 1.8 * u, 0, Math.PI * 2); ctx.fill();
+      }
+    } else if (finalBi === 1) {
+      // maden: iki direk, kirişler; fenerler alttan yukarı bir bir yanar
+      ctx.fillStyle = '#4a2f18'; ctx.fillRect(w * 0.1, 0, 10 * u, h); ctx.fillRect(w * 0.9 - 10 * u, 0, 10 * u, h);
+      for (i = 0; i < 6; i++) {
+        var ly = h * (0.6 - i * 0.095), lx = i % 2 ? w * 0.74 : w * 0.26, yan = kolay((p - 0.9 - i * 0.4) / 0.3);
+        ctx.fillStyle = '#6e4223'; ctx.fillRect(i % 2 ? w * 0.5 : w * 0.1, ly - 30 * u, w * 0.4, 6 * u);
+        ctx.strokeStyle = 'rgba(160,140,120,.8)'; ctx.lineWidth = 1.5 * u; ctx.beginPath(); ctx.moveTo(lx, ly - 24 * u); ctx.lineTo(lx, ly - 10 * u); ctx.stroke();
+        finalFener(lx, ly, u, yan * (0.9 + 0.1 * Math.sin(t * 9 + i)));
+      }
+    } else if (finalBi === 2) {
+      // kristal: Çıra'dan yayılan ışık dalgası kristallere değdikçe çınlarlar
+      var R = (p - 0.8) * w * 0.55;
+      if (R > 0 && R < h * 1.2) { ctx.strokeStyle = 'rgba(200,180,255,' + Math.max(0, 0.6 - R / (h * 1.4)) + ')'; ctx.lineWidth = 3 * u; ctx.beginPath(); ctx.arc(cx, cy, R, 0, Math.PI * 2); ctx.stroke(); }
+      KRISTAL.forEach(function (kr, j) {
+        var x = kr[0] * w, y = kr[1] * h, an = p - kristalAn(j), parla = an > 0 ? 0.55 + 0.45 * Math.exp(-an * 2.5) : 0;
+        if (parla) parilti(x, y, 46 * u, '180,150,255', 0.6 * parla);
+        var s2 = (14 + (j % 3) * 4) * u;
+        ctx.fillStyle = parla ? 'rgba(' + Math.round(150 + 105 * parla) + ',' + Math.round(130 + 110 * parla) + ',255,1)' : '#2e2848';
+        ctx.beginPath(); ctx.moveTo(x, y - s2 * 1.6); ctx.lineTo(x + s2 * 0.6, y); ctx.lineTo(x, y + s2 * 0.5); ctx.lineTo(x - s2 * 0.6, y); ctx.closePath(); ctx.fill();
+      });
+    } else {
+      // kule: Çıra fenere yükselir, fener yanar, ışık bütün kuyuya yayılır
+      var fy2 = h * 0.2, yuk = kolay((p - 0.7) / 1.6), tut = kolay((p - 2.3) / 0.8);
+      if (tut > 0) {
+        ctx.fillStyle = 'rgba(255,200,120,' + (0.16 * tut) + ')'; ctx.fillRect(0, 0, w, h);
+        ctx.save(); ctx.translate(cx, fy2); ctx.rotate(t * 0.15);
+        for (i = 0; i < 10; i++) { ctx.rotate(Math.PI / 5); ctx.fillStyle = 'rgba(255,214,150,' + (0.08 * tut) + ')'; ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(-12 * u, -h); ctx.lineTo(12 * u, -h); ctx.closePath(); ctx.fill(); }
+        ctx.restore();
+        parilti(cx, fy2, (60 + 200 * tut) * u, '255,200,120', 0.6 * tut);
+      }
+      ctx.fillStyle = '#1b1c21'; ctx.fillRect(cx - 34 * u, fy2 + 16 * u, 68 * u, h * 0.5);
+      ctx.fillStyle = tut > 0 ? 'rgba(255,214,150,' + (0.3 + 0.6 * tut) + ')' : '#2a2c34'; ctx.fillRect(cx + 10 * u, fy2 + 60 * u, 12 * u, 18 * u);
+      finalFener(cx, fy2, u * 1.4, tut);
+      cy = cy + (fy2 - cy) * yuk;
+      if (yuk >= 1 && tut > 0) cy = -999; // Çıra fenerin içinde
+    }
+    // Çıra
+    if (cy > 0) {
+      parilti(cx, cy, (34 + (finalBi === 2 ? 30 * kolay((p - 0.8) / 2) : 0)) * u, '255,150,80', 0.6);
+      ctx.fillStyle = COL.kahraman; ctx.beginPath(); ctx.arc(cx, cy, 9 * u, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#ffd08a'; ctx.beginPath(); ctx.arc(cx - 2.5 * u, cy - 3 * u, 3 * u, 0, Math.PI * 2); ctx.fill();
+    }
+    // metin
+    var buyuk = document.documentElement.classList.contains('buyuk-yazi'), ya = kolay((p - 2.8) / 0.6);
+    if (ya > 0) {
+      ctx.globalAlpha = ya; ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+      var ty2 = h * 0.76;
+      ctx.font = '800 ' + (buyuk ? 24 : 21) + 'px "Baloo 2", system-ui, sans-serif'; ctx.fillStyle = '#ffd08a';
+      ctx.fillText(B.final.baslik, cx, ty2);
+      ctx.font = '500 ' + (buyuk ? 17 : 15) + 'px "Figtree", system-ui, sans-serif'; ctx.fillStyle = 'rgba(231,238,233,.92)';
+      satirla(B.final.metin, Math.min(w - 48, 380)).forEach(function (ln, li) { ctx.fillText(ln, cx, ty2 + (buyuk ? 34 : 30) + li * (buyuk ? 24 : 21)); });
+    }
+    if (p > 4) {
+      ctx.globalAlpha = 0.55 + 0.25 * Math.sin(t * 3); ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic';
+      ctx.font = '600 12px "Figtree", system-ui, sans-serif'; ctx.fillStyle = '#9fb0ac'; ctx.fillText('dokun', cx, h - 20);
+    }
+    ctx.restore();
   }
 
   // ---------- döngü ----------
@@ -964,7 +1109,8 @@
       sim.p.x += (sim.goal.x - sim.p.x) * Math.min(1, dt * 8);
       sim.p.y += (sim.goal.y + 34 - sim.p.y) * Math.min(1, dt * 8);
       if (winT > 0.35) { sim.goal.y -= 420 * dt; sim.p.y = sim.goal.y + 34; }
-      if (winT > 1.1 && !resultShown) showLevelResult();
+      if (winT > 1.1 && !resultShown && finalT === null) { if (finalBekliyor()) finalBasla(); else showLevelResult(); }
+      if (finalT !== null) { finalT += dt; finalSes(); if (finalT > FINAL_SURE) finalBitir(); }
     } else if (sim.status === 'dead' && deadT !== null) {
       deadT += dt;
       if (mode === 'level' && deadT > 0.75) { istatBitir('olum'); deaths++; reset(); }
@@ -1299,7 +1445,11 @@
     $('dTitresimBtn').textContent = save.haptics === false ? 'Titreşim kapalı' : 'Titreşim açık';
   }
   // Sonuç kartı açıkken (bölüm bitti / yakalandın) duraklatmanın anlamı yok: menüye döner.
-  $('menuBtn').onclick = function () { if (sim && sim.status === 'play' && !paused) pauseGame(); else goHome(); };
+  // Bölüm sonu yürüyüşü ya da bölge finali sürerken menü düğmesi sonuç kartını açar (bölüm kaydedilmeden çıkılmasın).
+  $('menuBtn').onclick = function () {
+    if (sim && sim.status === 'won' && !resultShown) { if (finalT !== null) finalBitir(); else showLevelResult(); return; }
+    if (sim && sim.status === 'play' && !paused) pauseGame(); else goHome();
+  };
   $('devamBtn').onclick = resumeGame;
   $('bastanBtn').onclick = function () { closePause(); reset(); };
   $('dAtlaBtn').onclick = function () { closePause(); if (mode === 'level') { istatBitir('atla'); startLevel(levelNo + 1); } };
@@ -1323,6 +1473,7 @@
   canvas.addEventListener('pointerdown', function (ev) {
     ev.preventDefault();
     ac();
+    if (finalT !== null) { if (finalT > 1) finalBitir(); return; }
     if (!sim || paused || sim.status !== 'play') return;
     active = ev.pointerId;
     try { canvas.setPointerCapture(ev.pointerId); } catch (e) {}
@@ -1399,7 +1550,8 @@
       return BOLGELER.map(function (B, i) {
         var notlar = (NOT ? NOT.NOTLAR : []).filter(function (n) { return n.bolge === i; })
           .map(function (n) { return { no: n.no, bolum: n.bolum, metin: notBulundu(n.no) ? n.metin : null }; });
-        return { ad: B.ad, metin: B.hikaye, acik: i === 0 || !!gor[B.id], ilkBolum: BOLGE_ILK[i], isik: B.isik, notlar: notlar };
+        return { ad: B.ad, metin: B.hikaye, acik: i === 0 || !!gor[B.id], ilkBolum: BOLGE_ILK[i], isik: B.isik, notlar: notlar,
+          son: finalGoruldu(i) ? B.final : null };
       });
     },
     bolgeAdi: function (n) { return BOLGELER[bolgeBolum(n)].ad; },

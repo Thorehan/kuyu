@@ -40,9 +40,16 @@ Bölgeler köyün unutulmuş katmanlarıdır; Çıra her bölgede fenere biraz d
 1. **Sözsüz önsöz** (v0.34): ilk açılışta, Funday logosundan sonra. Kuyunun ağzında fener yanıyor → fenerden bir kıvılcım kopup kuyuya düşüyor → dipte Çıra gözünü açıyor → kancayı atıp gün ışığına fırlıyor (mevcut sahne).
 2. **Bölge kartları** (v0.34): yeni bölgeye ilk girişte oyunu durdurmayan kısa kart: bölge adı + yukarıdaki tek cümle.
 3. **Çıra'nın yolu** (v0.34): Profil'de açılan bölgelerin hikâye sayfaları; açılmayanlar kilitli ("17. bölümde açılır").
-4. **Bölge finalleri** (sonra): 16, 36, 56, 76. bölümler gösterişli bir sahneyle biter (madende fenerler tek tek yanar, mağarada kristaller çınlar, kulede fener yeniden yanar).
+4. **Bölge finalleri** (v0.36): 16, 36, 56, 76. bölüm ilk kez geçilince sonuç kartından önce ~7 sn'lik sözsüz sahne (dokununca geçer): Taş Kuyu'da ateşböcekleri toplanıp yukarıyı gösterir, madende fenerler bir bir yanar, mağarada kristaller çınlar, kulede Çıra fenere ulaşır ve fener yeniden yanar. Sahne bir kez oynar; başlık ve metin Çıra'nın yolu'nda kalır.
+
+   | Bölge | Başlık | Metin |
+   |---|---|---|
+   | Taş Kuyu | Taş Kuyu geride kaldı | Ateşböcekleri bir araya gelip yukarıyı gösterdi. Orada eski bir maden var. |
+   | Maden | Maden geride kaldı | Çıra geçerken madenin eski fenerleri bir bir yandı. Maden onu hatırladı. |
+   | Kristal Mağara | Kristal Mağara geride kaldı | Kristaller sakladıkları ışığı Çıra'ya geri verdi. Çıra hiç bu kadar parlak olmamıştı. |
+   | Eski Kule | Fener yeniden yandı | Çıra fenerine kavuştu. Bekçinin penceresinde ışık var; kuyunun her köşesi aydınlandı. |
 5. **Bekçinin notları** (v0.35): 12 kısa not, bölge başına 3. Her biri bir bölümün en üstteki ateşböceği halkasına asılı; gizli yol, ateşböceği yoludur. Okumak isteğe bağlı, "Çıra'nın yolu"nda toplanır. Metinler `js/notlar.js`'te; bekçi adını söylemez (ad henüz yok).
-6. **Son** (sonra): 76. bölümün sonunda Çıra kulenin fenerine ulaşır, fener yeniden yanar; kuyunun tamamı aydınlanır.
+6. **Son**: 76. bölümün finali (v0.36) fenerin yeniden yandığı sahnedir. Sonrası (77+ "İkinci yolculuk" metinleri) yazılacak.
 
 ## Metin kuralları
 - Kısa cümleler, bir kartta en çok iki cümle.

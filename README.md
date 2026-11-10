@@ -1,6 +1,6 @@
 # Kuyu
 
-**Funday Morning Games** · 2D mobil oyun · prototip v0.35
+**Funday Morning Games** · 2D mobil oyun · prototip v0.36
 
 Derin bir kuyunun dibindesin. Telefonu tek elle tut: ekranın soluna ya da sağına dokun, kanca o taraftaki hedefe fırlasın; basılı tut, ipe sarıl; bırak, savrul. Halkadan halkaya, ahşaptan ahşaba tırmanıp kuyudan çık.
 
@@ -96,7 +96,8 @@ Köyün fenerinden düşen küçük bir kor olan **Çıra**, kuyunun dibinden fe
 - **Bölge kartları:** yeni bir bölgeye ilk girişte ekranın üstünde, oyunu durdurmayan kısa kart (bölge adı + bir cümle); dokununca ya da 5 sn sonra kapanır.
 - **Çıra'nın yolu (Profil):** açılan bölgelerin hikâye sayfaları; açılmayanlar "N. bölümde açılır" diye kilitli. Taş Kuyu baştan açıktır.
 - Bekçinin notları (v0.35, `js/notlar.js`): 12 kısa not, bölge başına 3. Her biri belli bir bölümün en üstteki ateşböceği halkasına asılı ("gizli yol" = ateşböceği yolu); halkayı alan notu bulur. Not hemen kaydedilir, metni bölüm sonunda (ya da su yetişirse yeniden başlarken) kartla gösterilir. Profil → Çıra'nın yolu'nda bulunanlar okunur, bulunmayanlar bölüm numarasıyla görünür. Motor ve bölüm düzeni değişmez; `tools/bot.js` her notun ateşböceği rotasıyla alındığını denetler.
-- Sonra: bölge finalleri, fenerin yeniden yandığı son.
+- Bölge finalleri (v0.36): 16, 36, 56, 76. bölüm ilk kez geçilince sonuç kartından önce kısa, sözsüz bir sahne (ateşböcekleri yol gösterir, madende fenerler yanar, kristaller çınlar, kulede fener yeniden yanar). Dokununca geçer; bir kez oynar, metni Çıra'nın yolu'nda kalır. Kod: `game.js` → `drawFinal`.
+- Sonra: 77+ "İkinci yolculuk" metinleri, bekçinin adı.
 
 ## Müzik ve ses (v0.32)
 - **Ortam müziği** dosyasız, Web Audio ile çalınırken üretilir (`js/muzik.js`). Katmanlar: yumuşak ses halısı (akor), alçak zemin notası, akış sürerken (x2 ve üstü) giderek açılan arpej, bölgeye özel renk.

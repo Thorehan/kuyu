@@ -207,7 +207,8 @@
         (hb.acik && hb.notlar && hb.notlar.length ? '<ul class="hk-notlar">' + hb.notlar.map(function (n) {
           return n.metin ? '<li class="bulundu"><i aria-hidden="true"></i><span><em>Bekçinin notu · ' + n.bolum + '. bölüm</em>' + n.metin + '</span></li>'
             : '<li><i aria-hidden="true"></i><span><em>Bulunmadı · ' + n.bolum + '. bölüm</em>Ateşböceği yolunda bir not asılı.</span></li>';
-        }).join('') + '</ul>' : '') + '</div>';
+        }).join('') + '</ul>' : '') +
+        (hb.son ? '<p class="hk-son"><em>' + hb.son.baslik + '</em>' + hb.son.metin + '</p>' : '') + '</div>';
     }).join('');
     $('pHizNot').textContent = st.maxSpeed >= 40 ? 'Akış ustası: ipi erken bırakıp zincir kuruyorsun.' : 'İpi tam sarılmadan bırak, havadayken sıradakine tutun: hız ve ödül artar.';
     $('pBolum').textContent = done.length ? Math.max.apply(null, done) : '–';

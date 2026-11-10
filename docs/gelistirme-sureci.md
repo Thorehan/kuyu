@@ -65,7 +65,7 @@ Karar (2026-11-10): oyunda güçlendirme yok, **harcamalar yalnızca kozmetik**.
   - 7. bölümde yay, sarkaç ve rüzgâr şeridi aynı bölümde ilk kez çıkıyordu: yeni oyuncu art arda 3 tanıtım kartıyla kesiliyordu. Artık el yapımı 1–6. bölümler dışında bir koşuda en çok bir yeni öğe kartı; kalanı sonraki bölümlerde (7, 8, 9. bölümler birer yeni şey öğretir). Acil kartlar (boş atış, kurtarma, su, akış, el yorulması) sınırsız.
   - Servis çalışanı internetsiz açılışta en eski kayıtlı sürümü açıyordu (v0.22'de düzeltildi).
 - [ ] Erişilebilirlik: işaretlerde renk dışında yön oku zaten var (sol ◀, sağ ▶); kalan: yazı boyutu ayarı.
-- [ ] Ana menüde bugünün görev ilerlemesi (ör. "Görevler 1/3") kısa gösterim.
+- [x] Ana menüde görev şeridi (v0.24): Oyna kartının üstünde "Görevler 1/3", üç küçük ilerleme çubuğu ve tamamlanmaya en yakın görev ("10 ateşböceği topla · 6/10"); alınmamış ödül varsa altın renkte "Ödül hazır", hepsi bittiyse yeni görevlere kalan süre. Dokununca Görevler açılır. Menü sahnesindeki kahraman artık logo ile şerit arasındaki boşlukta sallanır.
 - [ ] Sonuç kartında Dolap'a kısa yol: yeni bir ürüne yetecek ateşböceği birikince "Dolap'ta X alınabilir".
 
 ### 4. Görsellik (şimdilik öncelik değil)
@@ -92,6 +92,7 @@ Karar (2026-11-10): oyunda güçlendirme yok, **harcamalar yalnızca kozmetik**.
 - [ ] Hikâyenin meta ile bağı (bölgeler, kozmetikler).
 
 ## Yapılanlar
+- 2026-11-10 · v0.24 · Ana menüde görev şeridi.
 - 2026-11-10 · v0.23 · UI/UX denetimi (360×640): sonuç kartı kısa ekranda taşmıyor ve kaydırılabiliyor; tanıtım kartı sınırı (koşu başına bir yeni öğe kartı).
 - 2026-11-10 · v0.22 · Servis çalışanı düzeltmesi: internetsiz açılışta en eski kayıtlı sürüm açılıyordu ve önbellek her sürümde şişiyordu; artık dosya başına tek (en son) kayıt.
 - 2026-11-10 · v0.22 · Ekonomi, günlük giriş, Dolap, video ile ikiye katlama; görev ödülleri ateşböceği. Düzeltme: Sonsuz/Günlük'te toplanan ateşböcekleri sayılmıyordu (görevler dahil).

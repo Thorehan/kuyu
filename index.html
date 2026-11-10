@@ -16,8 +16,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&family=Figtree:wght@400;600&display=swap">
-<link rel="stylesheet" href="css/kuyu.css?v=0.23">
-<link rel="stylesheet" href="css/ekranlar.css?v=0.23">
+<link rel="stylesheet" href="css/kuyu.css?v=0.24">
+<link rel="stylesheet" href="css/ekranlar.css?v=0.24">
 </head>
 <body>
 <div class="app" id="oyunEkrani" hidden>
@@ -69,7 +69,7 @@
   <img id="acilisLogo" class="marka-logo" src="assets/funday-morning-logo.webp" alt="Funday Morning Games">
   <div class="yukleme" aria-hidden="true"><div id="yuklemeDolgu"></div></div>
   <div class="yukleme-not" id="yuklemeNot">Yükleniyor…</div>
-  <div class="ek-surum">Kuyu v0.23</div>
+  <div class="ek-surum">Kuyu v0.24</div>
 </section>
 
 <!-- Giriş: yalnızca ilk açılışta -->
@@ -110,6 +110,11 @@
   </div>
   <div class="ana-logo"><h1>Kuyu</h1><span>Kancayla tırman, gün ışığına çık</span></div>
   <div class="ana-alt">
+    <button type="button" class="ana-gorev" id="anaGorevBtn" aria-label="Bugünün görevleri">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="3.5" width="14" height="17" rx="2.4" fill="none" stroke="currentColor" stroke-width="2"/><path d="M8.5 9l1.6 1.6 3-3M8.5 15.5h7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span class="ag-yazi"><b id="anaGorevBaslik">Görevler 0/3</b><span id="anaGorevAlt">Bugünün görevleri</span></span>
+      <span class="ag-cubuk" id="anaGorevCubuk" aria-hidden="true"></span>
+    </button>
     <button type="button" class="oyna" id="oynaBtn">
       <span class="oyna-sol">
         <span class="oyna-baslik">Oyna</span>
@@ -230,7 +235,7 @@
     <div class="ayar-satir" id="tamEkranSatir"><div><b>Tam ekran</b><span id="tamEkranYazi">Tarayıcı çubukları gizlenir. Ana ekrana eklersen oyun kendiliğinden tam ekran açılır.</span></div><button type="button" id="tamEkranBtn">Aç</button></div>
     <button type="button" id="tanitimBtn">Tanıtımı yeniden izle</button>
     <button type="button" id="ipucuSifirBtn">Tanıtım kartlarını yeniden göster</button>
-    <p class="surum">Kuyu v0.23 · prototip · Funday Morning Games</p>
+    <p class="surum">Kuyu v0.24 · prototip · Funday Morning Games</p>
   </div>
 </section>
 
@@ -265,12 +270,12 @@
 
 <div class="bildirim" id="bildirim" role="status" hidden></div>
 
-<script src="js/engine.js?v=0.23"></script>
-<script src="js/levels.js?v=0.23"></script>
-<script src="js/gen.js?v=0.23"></script>
-<script src="js/gorevler.js?v=0.23"></script>
-<script src="js/ekonomi.js?v=0.23"></script>
-<script src="js/game.js?v=0.23"></script>
-<script src="js/screens.js?v=0.23"></script>
+<script src="js/engine.js?v=0.24"></script>
+<script src="js/levels.js?v=0.24"></script>
+<script src="js/gen.js?v=0.24"></script>
+<script src="js/gorevler.js?v=0.24"></script>
+<script src="js/ekonomi.js?v=0.24"></script>
+<script src="js/game.js?v=0.24"></script>
+<script src="js/screens.js?v=0.24"></script>
 </body>
 </html>

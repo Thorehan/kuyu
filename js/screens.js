@@ -136,6 +136,7 @@
     $('toplamAtes').textContent = G.cuzdan().ates; // harcanabilir bakiye
     var rec = s.endless || {};
     $('sonsuzRekor').textContent = rec.score ? 'Rekor ' + rec.score + ' · ' + rec.meters + ' m' : 'Bölüm yok, su yükselir';
+    renderAnaGorev();
     var di = G.dailyInfo();
     $('gunlukBilgi').textContent = di.tries ? 'Bugün en iyi ' + di.best + ' puan' : 'Bugünün kuyusu hazır';
     $('gunlukSeri').hidden = !di.streak;
@@ -146,6 +147,31 @@
     if (gd.hazir && girisSorulan !== G.dailyInfo().key) { girisSorulan = G.dailyInfo().key; openGiris(); }
   }
   var girisSorulan = null;
+  // Ana menüdeki görev şeridi: kaç görev bitti, tamamlanmaya en yakın görev, alınmamış ödül, yenilenmeye kalan süre.
+  function renderAnaGorev() {
+    var list = G.gorevler(), bitti = 0, bekleyen = 0, cubuk = '';
+    list.forEach(function (m) {
+      if (m.done) bitti++;
+      if (m.done && !m.claimed) bekleyen++;
+      cubuk += '<i class="' + (m.claimed ? 'alindi' : m.done ? 'bitti' : '') + '"><i style="width:' + Math.round(m.prog / m.target * 100) + '%"></i></i>';
+    });
+    var alt;
+    if (bekleyen) alt = bekleyen === 1 ? 'Ödül hazır · almak için dokun' : bekleyen + ' ödül hazır · almak için dokun';
+    else if (bitti === list.length) {
+      var left = G.yeniGune(), hh = Math.floor(left / 3600000), mm = Math.floor(left % 3600000 / 60000);
+      alt = 'Hepsi tamam ✓ · yenileri ' + (hh ? hh + ' sa ' : '') + mm + ' dk sonra';
+    } else {
+      // tamamlanmaya en yakın görev
+      var en = list.filter(function (m) { return !m.done; }).sort(function (a, b) { return b.prog / b.target - a.prog / a.target; })[0];
+      alt = window.KuyuGorev.missionText(en) + ' · ' + en.prog + '/' + en.target;
+    }
+    $('anaGorevBaslik').textContent = 'Görevler ' + bitti + '/' + list.length;
+    $('anaGorevAlt').textContent = alt;
+    $('anaGorevCubuk').innerHTML = cubuk;
+    $('anaGorevBtn').classList.toggle('hazir', bekleyen > 0);
+    $('anaGorevBtn').setAttribute('aria-label', 'Bugünün görevleri: ' + bitti + ' / ' + list.length + ' tamam. ' + alt);
+  }
+  $('anaGorevBtn').addEventListener('click', function () { openTasks(); });
   $('oynaBtn').addEventListener('click', function () { G.startLevel(save().last || 1); });
   $('sonsuzBtn').addEventListener('click', function () { G.startEndless(); });
   $('gunlukBtn').addEventListener('click', function () { G.startDaily(); });
@@ -529,6 +555,13 @@
 
     // halkalar
     var ringY = current === 'ekAna' ? h * 0.47 : h * 0.52;
+    if (current === 'ekAna') {
+      // kahraman logo ile alttaki kartlar (görev şeridi) arasındaki boşlukta sallansın, arkalarına girmesin
+      var cvTop = sceneCanvas.getBoundingClientRect().top;
+      var lb = document.querySelector('#ekAna .ana-logo').getBoundingClientRect().bottom - cvTop;
+      var at = document.querySelector('#ekAna .ana-alt').getBoundingClientRect().top - cvTop;
+      ringY = Math.max(lb + 16 * u, Math.min(ringY, at - 46 * u - 13 * u - 12));
+    }
     ring(ctx, cx, ringY, 11 * u);
     ring(ctx, cx - 110 * u, ringY + 150 * u, 9 * u);
     ring(ctx, cx + 105 * u, ringY - 140 * u, 9 * u);

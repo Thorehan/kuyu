@@ -13,6 +13,8 @@ if (a.length === 4) G.ENDLESS_WATER = { base: a[0], perM: a[1], perS: a[2], cap:
 const W = G.ENDLESS_WATER;
 const LIMIT = 1200; // 20 dk
 
+// Yay halkası fırlattıysa oyuncu tepe noktasında sıradakine dokunur.
+const springApex = s => !s.rope && !s.hook && s.springs > 0 && s.p.y - s.p.py > -0.4;
 function runFor(s, sec, until) { for (let i = 0; i < Math.round(sec / C.DT); i++) { E.step(s); if (s.status !== 'play') return; if (until && until()) return; } }
 const speed = p => Math.hypot(p.x - p.px, p.y - p.py) / C.DT;
 const ok = x => x.kind !== 'none';
@@ -30,7 +32,7 @@ function run(seed, profile) {
     runFor(s, 0.8, () => s.rope || !s.hook);
     if (s.status !== 'play') break;
     if (profile === 'usta') runFor(s, 1.2, () => s.rope && s.rope.len <= 70);
-    else { runFor(s, 1.6, () => s.rope && s.rope.len <= C.MIN_LEN + 0.01 && speed(s.p) < 120); runFor(s, react); }
+    else { runFor(s, 1.6, () => (s.rope && s.rope.len <= C.MIN_LEN + 0.01 && speed(s.p) < 120) || springApex(s)); runFor(s, react); }
   }
   return { t: s.t, m: E.meters(s), score: E.finalScore(s), dead: s.status === 'dead' };
 }

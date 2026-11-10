@@ -35,6 +35,9 @@
     UP_ANGLE: 45,       // nişan: bundan düz açıdaki hedef "yanda" sayılır (derece)
     NEAR_V: 40,         // yatayda bu kadar yakın (tam tepedeki) hedef iki taraftan da alınır
     GATE_W: 56,         // rüzgâr şeridi: merkezden sağa-sola bu kadar (toplam 112 birim genişlik)
+    YAY_V: 820,         // yay halkası: ulaşınca okun yönüne bu hızla fırlatır (birim/sn)
+    YAY_FLOAT: 1.0,     // fırlatmanın tepesinde bu kadar süzülürsün (yavaş oyuncuya dokunma zamanı)
+    YAY_FALL: 70,       // süzülürken en çok bu hızla alçalırsın (birim/sn)
     BOOST: 650,         // hız halkasından bırakınca eklenen yukarı hız (birim/sn)
     WATER_GRACE: 1.0,   // ilk halkaya tutunduktan bu kadar sonra su yükselmeye başlar
     RESCUE_MAX: 1000,   // kurtarma kancası: menzilde hedef yokken en yakın yukarıdaki hedefe bu kadar uzağa atılır
@@ -57,7 +60,11 @@
       def: def, H: H, endless: !!def.endless, rects: rects, t: 0, status: 'play',
       p: { x: sx, y: sy, px: sx, py: sy },
       pressed: false, hook: null, rope: null, lastAnchor: null,
-      rings: (def.rings || []).map(function (r) { return { x: r[0], y: r[1], ff: r[2] === 'ff', hiz: r[2] === 'hiz', kapi: r[2] === 'kapi' }; }),
+      rings: (def.rings || []).map(function (r) {
+        var o = { x: r[0], y: r[1], ff: r[2] === 'ff', hiz: r[2] === 'hiz', kapi: r[2] === 'kapi' };
+        if (r[2] === 'yay') o.yay = r[3] || 0; // okun dikeyden açısı (derece, eksi sol)
+        return o;
+      }),
       goal: def.goal ? { x: def.goal[0], y: def.goal[1] } : null,
       boxes: (def.boxes || []).map(function (b) { return { x: b[0], y: b[1], px: b[0], py: b[1] }; }),
       buttons: (def.buttons || []).map(function (b) { return { x: b[0], y: b[1], w: b[2], h: 8, pressed: false }; }),
@@ -70,7 +77,7 @@
       grounded: false,
       // akış ve skor
       hang: 0, air: 0, chain: false, combo: 0, maxCombo: 0, hooks: 0, shots: 0, slips: 0,
-      startY: sy, topY: sy, bonus: 0, fireflyPts: 0, maxSpeed: 0, rescues: 0, misses: 0, boosts: 0, gates: 0
+      startY: sy, topY: sy, bonus: 0, fireflyPts: 0, maxSpeed: 0, rescues: 0, misses: 0, boosts: 0, gates: 0, springs: 0, float: 0
     };
     // Ateşböcekleri halkaların içinde: o halkaya tutunmak ya da içinden geçmek yeter.
     s.rings.forEach(function (rg) { if (rg.ff) s.fireflies.push({ x: rg.x, y: rg.y, got: false, ring: rg }); });
@@ -380,6 +387,14 @@
 
     // oyuncu
     integrate(p, dt);
+    // Yay süzülmesi: fırlatmanın tepesinden sonra yavaşça alçalırsın (ipe ya da kancaya kadar)
+    if (s.float > 0) {
+      if (s.rope || s.hook) s.float = 0;
+      else if (p.y - p.py >= 0) {
+        s.float -= dt;
+        if (p.y - p.py > CFG.YAY_FALL * dt) p.py = p.y - CFG.YAY_FALL * dt;
+      }
+    }
     var rp = s.rope;
     if (rp && rp.kind === 'anchor') {
       rp.len = Math.max(CFG.MIN_LEN, rp.len - CFG.REEL * dt);
@@ -392,8 +407,10 @@
           p.px = p.x - vx; p.py = p.y - vy;
         }
       }
+      // Yay halkası: ulaştığın an seni okun yönüne fırlatır; ip kendiliğinden bırakılır, akış sürer.
+      if (atMin && rp.ref && rp.ref.yay != null) { launchSpring(s, rp.ref); rp = null; }
       // tutunma gücü ve akış
-      if (atMin) {
+      else if (atMin) {
         s.hang += dt;
         if (s.hang > CFG.COMBO_HANG && s.combo > 0) breakCombo(s, 'asılı');
         if (s.hang > s.grip) { s.slips++; detach(s, 'slip'); }
@@ -479,6 +496,15 @@
       if (p.y + CFG.R * 0.5 > s.water) return die(s, 'su');
     }
     if (!s.endless && p.y > s.H + 220) return die(s, 'düşüş');
+  }
+
+  function launchSpring(s, rg) {
+    var a = rg.yay * Math.PI / 180, vx = Math.sin(a) * CFG.YAY_V, vy = -Math.cos(a) * CFG.YAY_V, p = s.p;
+    detach(s, 'yay');               // asılı kalma 0: zincir sürer
+    p.px = p.x - vx * CFG.DT; p.py = p.y - vy * CFG.DT;
+    s.springs++;
+    s.float = CFG.YAY_FLOAT;
+    s.events.push({ type: 'yay', x: rg.x, y: rg.y });
   }
 
   function passGate(s, gt) {

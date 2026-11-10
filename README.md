@@ -1,6 +1,6 @@
 # Kuyu
 
-**Funday Morning Games** · 2D mobil oyun · prototip v0.18
+**Funday Morning Games** · 2D mobil oyun · prototip v0.19
 
 Derin bir kuyunun dibindesin. Telefonu tek elle tut: ekranın soluna ya da sağına dokun, kanca o taraftaki hedefe fırlasın; basılı tut, ipe sarıl; bırak, savrul. Halkadan halkaya, ahşaptan ahşaba tırmanıp kuyudan çık.
 
@@ -50,6 +50,15 @@ Yeni bir şey ilk kez karşına çıktığında oyun kısa süre durur, ekranın
 - Halkalar **karar noktalarında**: ana yoldaki bir halkanın karşı tarafında, aynı yükseklik civarında. Oradan sıradaki halkaya da ulaşılabilir. İstemeyen ana halkaya gidip es geçer.
 - İşaret ateşböceği halkasını gösteriyorsa o yana dokunmak yeter. Gerçek oyuncu gibi oynayan bot ateşböceklerinin 215/221'ini yalnızca işaretlere bakarak topluyor.
 - El yapımı bölümlerde 3 (Kutu bölümünde 2), üretilen bölümlerin 73/74'ünde 3, sonsuz kuyuda ara ara.
+
+## Yay halkası (v0.19)
+Yeşil halka; çevresinde sıkışmış yay ve fırlatacağı yönü gösteren ok.
+- Kancayı at: ip seni her zamanki hızla çeker (çekme hızı değişmez). **Halkaya ulaştığın an** seni okun yönüne 820 birim/sn ile fırlatır; ip kendiliğinden bırakılır, bırakmak gerekmez.
+- Asılı kalma süresi sıfır sayılır: akış zinciri sürer. Havadayken sıradakine dokun.
+- **Tepede 1 sn süzülürsün** (en çok 70 birim/sn alçalarak): yavaş oyuncunun dokunacak zamanı olsun, düşüp suya yakalanmasın. Süzülme kanca atınca biter.
+- Ok sıradaki hedefe bakar (dikeyden en çok 40°). Üretici ana yoldaki halkalardan karar noktası olmayanları en az 4 adım arayla yay yapar; rastgele sayı kullanmaz. El yapımı 1–6. bölümlerde yay yok.
+- Ayarlar: `CFG.YAY_V`, `CFG.YAY_FLOAT`, `CFG.YAY_FALL`; üreticide `YAY_GAP`.
+- Botlarla: asılarak oynayan her yayda fırlayıp akışa girer (en uzun akış x4,2 → x5,4, rüzgâr şeridi 67 → 105/164). Akışla oynayan halkaya varmadan sıradakine geçtiği için yay neredeyse hiç tetiklenmez. Fırlatma hızı serbest uçuş sayıldığı için asılarak oynayanın hız çarpanı da yükselir (ort. x1,22 → x1,34), hız halkası gibi.
 
 ## Rüzgâr şeridi (v0.18)
 Yolun üstünde, bir halkadan sıradakine giden hatta duran yatay şerit (112 birim genişlik). Tutunulmaz, kancayı durdurmaz.

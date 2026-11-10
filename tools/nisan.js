@@ -8,6 +8,8 @@ const LEVELS = require('../js/levels.js');
 const G = require('../js/gen.js');
 const C = E.CFG;
 
+// Yay halkası fırlattıysa oyuncu tepe noktasında sıradakine dokunur.
+const springApex = s => !s.rope && !s.hook && s.springs > 0 && s.p.y - s.p.py > -0.4;
 function runFor(s, sec, until) { for (let i = 0; i < Math.round(sec / C.DT); i++) { E.step(s); if (s.status !== 'play') return; if (until && until()) return; } }
 const speed = p => Math.hypot(p.x - p.px, p.y - p.py) / C.DT;
 
@@ -51,7 +53,7 @@ function play(def, where, maxT, style) {
     if (s.status !== 'play') break;
     if (style === 'akis') runFor(s, 1.2, () => s.rope && s.rope.len <= 70);
     else if (style === 'hava') { runFor(s, 1.2, () => s.rope && s.rope.len <= 70); E.release(s); runFor(s, 0.12); }
-    else runFor(s, 1.6, () => s.rope && s.rope.len <= C.MIN_LEN + 0.01 && speed(s.p) < 120);
+    else runFor(s, 1.6, () => (s.rope && s.rope.len <= C.MIN_LEN + 0.01 && speed(s.p) < 120) || springApex(s));
   }
   return s;
 }

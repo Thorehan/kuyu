@@ -11,6 +11,8 @@ const trace = args.includes('--trace');
 const only = args[0] && /^\d+$/.test(args[0]) ? +args[0] : null;
 const genMax = args.includes('--gen') ? +args[args.indexOf('--gen') + 1] : 80;
 
+// Yay halkası fırlattıysa oyuncu tepe noktasında sıradakine dokunur.
+const springApex = s => !s.rope && !s.hook && s.springs > 0 && s.p.y - s.p.py > -0.4;
 function runFor(s, sec, until) {
   const n = Math.round(sec / C.DT);
   for (let i = 0; i < n; i++) {
@@ -70,7 +72,7 @@ function play(def, style, route) {
       runFor(s, 1.2, () => s.rope && s.rope.len <= 70);
       log.push(`${tag} -> akış x${s.combo} (${s.p.x.toFixed(0)},${s.p.y.toFixed(0)})`);
     } else {
-      runFor(s, 1.6, () => s.rope && s.rope.len <= C.MIN_LEN + 0.01 && speed(s.p) < 120);
+      runFor(s, 1.6, () => (s.rope && s.rope.len <= C.MIN_LEN + 0.01 && speed(s.p) < 120) || springApex(s));
       log.push(`${tag} -> asılı (${s.p.x.toFixed(0)},${s.p.y.toFixed(0)}) t=${s.t.toFixed(2)}`);
     }
   }
@@ -148,7 +150,7 @@ if (!only) {
         if (!s.rope && s.status === 'play') { E.release(s); runFor(s, 0.35); E.press(s, t.x, t.y); runFor(s, 0.6, () => s.rope || !s.hook); }
         if (!s.rope) { why = `tutunamadı #${i}`; break; }
         if (style === 'akis') runFor(s, 1.2, () => s.rope && s.rope.len <= 70);
-        else runFor(s, 1.6, () => s.rope && s.rope.len <= C.MIN_LEN + 0.01 && speed(s.p) < 120);
+        else runFor(s, 1.6, () => (s.rope && s.rope.len <= C.MIN_LEN + 0.01 && speed(s.p) < 120) || springApex(s));
         i++;
         if (E.meters(s) > 1500) break;
       }

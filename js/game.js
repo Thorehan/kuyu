@@ -244,6 +244,10 @@
       else if (e.type === 'slip') { SFX.slip(); buzz(30); floatText(sim.p.x, sim.p.y - 24, 'el kaydı!', COL.kahraman, 15); }
       else if (e.type === 'clink') { SFX.clink(); burst(e.x, e.y, 7, '#e9f3f0', 220, 0.25, 0); }
       else if (e.type === 'firefly') { SFX.firefly(); buzz([8, 40, 8]); burst(e.x, e.y, 16, COL.atesbocegi, 160, 0.6, -40); if (mode === 'endless') floatText(e.x, e.y - 10, '+25', COL.atesbocegi, 14); }
+      else if (e.type === 'yay') {
+        tone(220, 0.22, 'triangle', 0.08, 880); buzz(18); shake = Math.max(shake, 3);
+        burst(e.x, e.y, 12, 'rgb(' + YAY_COL + ')', 200, 0.45, 300); floatText(e.x, e.y - 22, 'YAY!', 'rgb(' + YAY_COL + ')', 17);
+      }
       else if (e.type === 'kapi') {
         SFX.combo(e.combo + 3); buzz(10); burst(e.x, e.y, 14, COL.atesbocegi, 170, 0.5, -60);
         var kp = Math.min(e.combo, CFG.COMBO_CAP) * CFG.COMBO_PTS;
@@ -411,6 +415,29 @@
       var yy = r.y - 20 - k * 7 - ((t / 90) % 7);
       ctx.beginPath(); ctx.moveTo(r.x - 6, yy + 5); ctx.lineTo(r.x, yy); ctx.lineTo(r.x + 6, yy + 5); ctx.stroke();
     }
+  }
+  // Yay halkası: yeşil halka, çevresinde yay sargısı ve fırlatacağı yönü gösteren ok.
+  var YAY_COL = '155,227,122';
+  function drawSpringRing(r, t) {
+    var a = r.yay * Math.PI / 180, ux = Math.sin(a), uy = -Math.cos(a);
+    var pulse = 0.75 + 0.25 * Math.sin(t / 180 + r.x);
+    ctx.lineWidth = 2.6; ctx.strokeStyle = 'rgba(' + YAY_COL + ',' + pulse + ')';
+    ctx.beginPath(); ctx.arc(r.x, r.y, CFG.RING_R + 2, 0, Math.PI * 2); ctx.stroke();
+    // halkanın altında sıkışmış yay sargısı (okun tersine)
+    ctx.lineWidth = 1.8; ctx.lineCap = 'round';
+    ctx.beginPath();
+    for (var k = 0; k <= 12; k++) {
+      var d = CFG.RING_R + 4 + k * 1.2, side = (k % 2 ? 1 : -1) * 4;
+      var px = r.x - ux * d + uy * side * -1, py = r.y - uy * d + ux * side;
+      if (k === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+    }
+    ctx.stroke();
+    // ok: okun yönünde, hafifçe ileri geri
+    var off = 20 + 3 * Math.sin(t / 140 + r.y), ax = r.x + ux * off, ay = r.y + uy * off;
+    ctx.strokeStyle = 'rgba(' + YAY_COL + ',' + (0.9 * pulse) + ')'; ctx.lineWidth = 2.4;
+    ctx.beginPath();
+    ctx.moveTo(ax - ux * 7 - uy * 6, ay - uy * 7 + ux * 6); ctx.lineTo(ax, ay); ctx.lineTo(ax - ux * 7 + uy * 6, ay - uy * 7 - ux * 6);
+    ctx.stroke();
   }
   // Rüzgâr şeridi: yolun üstünde yatay şerit. Akış sürerken (x2+) altın renginde yanar ve yukarı akan rüzgâr
   // çizgileri gösterir; akış yokken soluk ve kesiklidir. Geçilince söner.
@@ -667,7 +694,7 @@
     var vh = viewH / K;
     for (var i = 0; i < sim.rects.length; i++) drawRect(sim.rects[i]);
     sim.buttons.forEach(drawButton);
-    sim.rings.forEach(function (r) { if (r.y > cam - 30 && r.y < cam + vh + 30) { if (r.kapi) { drawGate(r, t); return; } drawRing(r.x, r.y); if (r.ff && !r.got) drawFireflyRing(r, t); if (r.hiz) drawSpeedRing(r, t); } });
+    sim.rings.forEach(function (r) { if (r.y > cam - 30 && r.y < cam + vh + 30) { if (r.kapi) { drawGate(r, t); return; } drawRing(r.x, r.y); if (r.yay != null) drawSpringRing(r, t); if (r.ff && !r.got) drawFireflyRing(r, t); if (r.hiz) drawSpeedRing(r, t); } });
     sim.fireflies.forEach(function (f) { if (f.y > cam - 20 && f.y < cam + vh + 20) drawFirefly(f, t); });
     sim.boxes.forEach(drawBox);
     drawAimMarkers(t);
@@ -886,6 +913,8 @@
       i: '<svg viewBox="0 0 64 64"><circle cx="32" cy="18" r="7" fill="#f26a3a"/><path d="M4 40c6-5 10-5 14 0s10 5 14 0 10-5 14 0 10 5 14 0V60H4z" fill="#1c6a72"/><path d="M4 40c6-5 10-5 14 0s10 5 14 0 10-5 14 0 10 5 14 0" fill="none" stroke="#5fc3c9" stroke-width="3"/><path d="M32 34v-6" stroke="#5fc3c9" stroke-width="3" stroke-linecap="round"/><path d="M28 31l4-4 4 4" fill="none" stroke="#5fc3c9" stroke-width="3" stroke-linecap="round"/></svg>' },
     akis: { t: 'Akış!', m: 'İpi tam sarılmadan bırakıp havadayken sıradakine tutundun. Zincir uzadıkça Akış madalyası ve puan gelir; uzun asılı kalmak zinciri bitirir.',
       i: '<svg viewBox="0 0 64 64"><path d="M6 40C14 22 22 22 30 40S46 58 58 30" fill="none" stroke="#e8f27c" stroke-width="5" stroke-linecap="round"/><text x="40" y="22" fill="#e8f27c" font-family="Baloo 2, sans-serif" font-weight="800" font-size="16">x2</text></svg>' },
+    yay: { t: 'Yay halkası', m: 'Bu halkaya tutun: ulaştığın an seni okun yönüne fırlatır, bırakmana gerek yok. Tepede kısa süzülürsün; o sırada sıradakine dokun, akış sürer.',
+      i: '<svg viewBox="0 0 64 64"><circle cx="32" cy="38" r="12" fill="none" stroke="#9be37a" stroke-width="4"/><path d="M26 54l12-3-12-3 12-3" fill="none" stroke="#9be37a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M24 18l8-8 8 8" fill="none" stroke="#9be37a" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></svg>' },
     kapi: { t: 'Rüzgâr şeridi', m: 'Akışın sürerken (x2 ve üstü) şeridin içinden yukarı geç: akış bir artar, puan gelir. Akış yoksa şerit söner; geçmek zorunda değilsin.',
       i: '<svg viewBox="0 0 64 64"><path d="M8 40h48" stroke="#e8f27c" stroke-width="4" stroke-linecap="round"/><circle cx="8" cy="40" r="4" fill="#e8f27c"/><circle cx="56" cy="40" r="4" fill="#e8f27c"/><path d="M20 32v-10M32 30v-14M44 32v-10" stroke="#e8f27c" stroke-width="2.5" stroke-linecap="round" opacity=".75"/><circle cx="32" cy="52" r="6" fill="#f26a3a"/></svg>' },
     bos: { t: 'Bu tarafta hedef yok', m: 'Kanca boşa gitti ama ipin bırakılmadı. Turkuaz (sol) ya da sarı (sağ) işaretin olduğu yana dokun.',
@@ -904,6 +933,7 @@
     if (!save.seen.ff && sim.rings.some(function (r) { return r.ff && !r.got && inView(r.y); })) wantIntro('ff');
     if (!save.seen.hiz && sim.rings.some(function (r) { return r.hiz && inView(r.y); })) wantIntro('hiz');
     if (!save.seen.kapi && sim.rings.some(function (r) { return r.kapi && !r.got && inView(r.y); })) wantIntro('kapi');
+    if (!save.seen.yay && sim.rings.some(function (r) { return r.yay != null && inView(r.y); })) wantIntro('yay');
     if (!save.seen.ahsap && sim.rects.some(function (r) { return r.type === 'w' && inView(r.y + r.h / 2); })) wantIntro('ahsap');
     if (!save.seen.kutu && sim.boxes.length && sim.boxes.some(function (b) { return inView(b.y); })) wantIntro('kutu');
     if (!save.seen.kurtarma && !sim.rope && !sim.hook && E.aim(sim, 0.25).rescue) wantIntro('kurtarma');

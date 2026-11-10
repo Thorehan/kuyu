@@ -12,6 +12,8 @@ const LEVELS = require('../js/levels.js');
 const G = require('../js/gen.js');
 const C = E.CFG;
 
+// Yay halkası fırlattıysa oyuncu tepe noktasında sıradakine dokunur.
+const springApex = s => !s.rope && !s.hook && s.springs > 0 && s.p.y - s.p.py > -0.4;
 function runFor(s, sec, until) { for (let i = 0; i < Math.round(sec / C.DT); i++) { E.step(s); if (s.status !== 'play') return; if (until && until()) return; } }
 const speed = p => Math.hypot(p.x - p.px, p.y - p.py) / C.DT;
 const ok = a => a.kind !== 'none';
@@ -48,7 +50,7 @@ function play(def, style, maxT) {
     if (s.status !== 'play') break;
     if (pick.miss) { runFor(s, 0.3); continue; }
     if (style === 'akis') runFor(s, 1.2, () => s.rope && s.rope.len <= 70);
-    else runFor(s, 1.6, () => s.rope && s.rope.len <= C.MIN_LEN + 0.01 && speed(s.p) < 120);
+    else runFor(s, 1.6, () => (s.rope && s.rope.len <= C.MIN_LEN + 0.01 && speed(s.p) < 120) || springApex(s));
   }
   return { s, taps };
 }
@@ -75,16 +77,16 @@ for (let n = 7; n <= 80; n++) {
     const m = sum[st];
     if (r.s.status === 'won') m.won++; else if (!st.startsWith('sadece')) { bad++; console.log('  ' + line(`${n}. ${def.name} [${st}]`, r)); }
     m.ff += E.fireflyCount(r.s); m.ffT += r.s.fireflies.length; m.mult += E.speedMult(r.s); m.boosts += r.s.boosts;
-    m.gates += r.s.gates; m.gatesT += r.s.rings.filter(g => g.kapi).length; m.combo += r.s.maxCombo;
+    m.gates += r.s.gates; m.gatesT += r.s.rings.filter(g => g.kapi).length; m.combo += r.s.maxCombo; m.springs = (m.springs || 0) + r.s.springs;
   }
 }
-for (const st of STYLES) { const m = sum[st]; console.log(`[${st.padEnd(9)}] geçilen ${m.won}/74, ateşböceği ${m.ff}/${m.ffT}, hız halkası kullanımı ${m.boosts}, ortalama hız çarpanı x${(m.mult / 74).toFixed(2)}, rüzgâr şeridi ${m.gates}/${m.gatesT}, ort. en uzun akış x${(m.combo / 74).toFixed(1)}`); }
+for (const st of STYLES) { const m = sum[st]; console.log(`[${st.padEnd(9)}] geçilen ${m.won}/74, ateşböceği ${m.ff}/${m.ffT}, hız halkası kullanımı ${m.boosts}, ortalama hız çarpanı x${(m.mult / 74).toFixed(2)}, rüzgâr şeridi ${m.gates}/${m.gatesT}, yay ${m.springs}, ort. en uzun akış x${(m.combo / 74).toFixed(1)}`); }
 console.log('\n== Sonsuz kuyu ==');
 for (const st of ['isaret', 'hiz', 'akis', 'sadeceSag']) {
   const res = [];
   for (let seed = 1; seed <= 5; seed++) {
     const r = play(G.createEndless(seed), st, 120);
-    res.push(`tohum ${seed}: ${E.meters(r.s)} m, puan ${E.finalScore(r.s)} (x${E.speedMult(r.s).toFixed(2)}), hız halkası ${r.s.boosts}, şerit ${r.s.gates}, boş ${r.s.misses}, ${r.s.status}`);
+    res.push(`tohum ${seed}: ${E.meters(r.s)} m, puan ${E.finalScore(r.s)} (x${E.speedMult(r.s).toFixed(2)}), hız halkası ${r.s.boosts}, şerit ${r.s.gates}, yay ${r.s.springs}, boş ${r.s.misses}, ${r.s.status}`);
   }
   console.log(`[${st}]`); res.forEach(l => console.log('  ' + l));
 }

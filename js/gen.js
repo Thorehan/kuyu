@@ -171,6 +171,15 @@
     return g;
   }
 
+  // ---------- yay halkaları ----------
+  // Ana yoldaki bazı halkalar yay olur: ulaşınca seni okun yönüne fırlatır. Ok sıradaki hedefe bakar
+  // (dikeyden en çok 40°). Karar noktası olmayan halkalar, en az 4 adım arayla; rastgele sayı kullanmaz.
+  var YAY_GAP = 4;
+  function yayAngle(from, to) {
+    var a = Math.atan2(to.x - from.x, from.y - to.y) * 180 / Math.PI;
+    return Math.round(clamp(a, -40, 40));
+  }
+
   // ---------- sonlu bölüm ----------
   function createLevel(num) {
     var r = rng(num * 7919 + 13);
@@ -226,6 +235,16 @@
       if (gg) { gates.push(gg); lastGate = gi; }
     }
 
+    // yay halkaları
+    var lastYay = -9;
+    for (var yi = 2; yi < nodesN - 1; yi++) {
+      if (nodes[yi].kind !== 'ring' || altAt(yi) || altAt(yi + 1) || yi - lastYay < YAY_GAP) continue;
+      var yr = out.rings.filter(function (rg) { return rg.x === nodes[yi].x && rg.y === nodes[yi].y; })[0];
+      if (!yr) continue;
+      yr.yay = yayAngle(nodes[yi], target(nodes[yi + 1]));
+      lastYay = yi;
+    }
+
     // koordinatları kaydır: kova y=50'de, taban aşağıda
     var off = 50 - goal.y;
     function sh(p) { return [Math.round(p.x), Math.round(p.y + off)]; }
@@ -246,7 +265,7 @@
       start: [180, Math.round(off - 20)], goal: sh(goal),
       water: waterLevel ? Math.min(90, 45 + num * 0.5) : 0,
       rects: rects,
-      rings: out.rings.map(sh).concat(ffRings.map(function (a) { return [a.x, Math.round(a.y + off), 'ff']; }))
+      rings: out.rings.map(function (p) { var a = sh(p); if (p.yay != null) a.push('yay', p.yay); return a; }).concat(ffRings.map(function (a) { return [a.x, Math.round(a.y + off), 'ff']; }))
         .concat(hizRings.map(function (a) { return [a.x, Math.round(a.y + off), 'hiz']; }))
         .concat(gates.map(function (a) { return [a.x, Math.round(a.y + off), 'kapi']; })),
       route: route,
@@ -266,7 +285,7 @@
   function createEndless(seed) {
     var r = rng(seed >>> 0);
     var startY = 0;
-    var st = { hp: { x: 180, y: startY }, prevKind: null, nodes: [], frontier: startY, segs: [], anchors: [], prevHp: null, prevT: null, lastFF: -9, altPrev: true, lastGate: -9 };
+    var st = { hp: { x: 180, y: startY }, prevKind: null, nodes: [], frontier: startY, segs: [], anchors: [], prevHp: null, prevT: null, lastFF: -9, altPrev: true, lastGate: -9, lastYay: -9, prevRing: null };
     var def = {
       id: 'sonsuz', name: 'Sonsuz Kuyu', endless: true, seed: seed,
       hint: 'Su durmadan yükselir. Sağa ya da sola dokunarak tırman; ipi erken bırakıp zincirlersen ekstra puan.',
@@ -295,6 +314,7 @@
         placeNode(out, n);
         out.rects.forEach(function (rc) { rc.dir = rc.dir || 'u'; s.rects.push(rc); });
         out.rings.forEach(function (rg) { s.rings.push(rg); });
+        var curRing = n.kind === 'ring' ? out.rings[0] : null;
         // engeller bir önceki asılma noktası ile bu tutunma noktası arasına
         if (m > 6) {
           var hz = { rects: [], rings: [], panels: s.panels };
@@ -322,8 +342,13 @@
           var gg = gateOn(st.prevHp, st.prevT, s.rings.filter(function (rg) { return Math.abs(rg.y - st.prevT.y) < 300; }));
           if (gg) { s.rings.push({ x: gg.x, y: gg.y, kapi: true }); st.lastGate = st.nodes.length; }
         }
+        // yay halkası: bir önceki ana halka (prevT), karar noktası değilse; oku bu düğüme (t) bakar
+        var kPrev = st.nodes.length - 1;
+        if (st.prevRing && !altNow && kPrev >= 2 && kPrev - st.lastYay >= YAY_GAP) {
+          st.prevRing.yay = yayAngle(st.prevRing, t); st.lastYay = kPrev;
+        }
         st.altPrev = altNow;
-        st.prevHp = st.hp; st.prevT = t;
+        st.prevHp = st.hp; st.prevT = t; st.prevRing = curRing;
         st.nodes.push(n);
         st.hp = hangOf(n);
         st.frontier = t.y;

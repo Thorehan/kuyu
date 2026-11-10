@@ -5,13 +5,13 @@
   var G = window.KuyuGame;
   var $ = function (id) { return document.getElementById(id); };
   var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  var EKRANLAR = ['ekAcilis', 'ekGiris', 'ekTanitim', 'ekAna', 'ekBolumler', 'ekAyarlar', 'ekProfil', 'ekGorevler', 'ekDolap'];
+  var EKRANLAR = ['ekAcilis', 'ekGiris', 'ekTanitim', 'ekAna', 'ekBolumler', 'ekAyarlar', 'ekProfil', 'ekGorevler', 'ekDolap', 'ekIstat'];
   var current = 'ekAcilis';
   var q = new URLSearchParams(location.search);
   var deepLink = q.get('mod') === 'gunluk' ? { mode: 'daily' } : q.get('mod') === 'sonsuz' ? { mode: 'endless' } : q.get('bolum') ? { mode: 'level', n: parseInt(q.get('bolum'), 10) || 1 } : null;
   var save = function () { return G.save(); };
 
-  var SEKMELER = ['ekAna', 'ekBolumler', 'ekGorevler', 'ekDolap', 'ekProfil', 'ekAyarlar'];
+  var SEKMELER = ['ekAna', 'ekBolumler', 'ekGorevler', 'ekDolap', 'ekProfil', 'ekAyarlar', 'ekIstat'];
   function show(id) {
     current = id;
     EKRANLAR.forEach(function (e) { $(e).hidden = e !== id; });
@@ -494,6 +494,49 @@
     toast('Adın kaydedildi: ' + name);
   });
   $('tanitimBtn').addEventListener('click', runIntro);
+
+  // ---------- oyun istatistikleri (js/istatistik.js) ----------
+  function kutu(etiket, deger) { return '<div><small>' + etiket + '</small><b>' + deger + '</b></div>'; }
+  function openIstat() {
+    var o = G.istatOzet(), b = o.bolumler, h = o.halka;
+    $('istatBas').textContent = o.baslangic + ' tarihinden beri bu cihazda oynadıkların. Hiçbir yere gönderilmez.';
+    $('istatGenel').innerHTML = kutu('Oynama süresi', String(o.toplamSureDk).replace('.', ',') + ' dk') + kutu('Bölüm denemesi', b.deneme) +
+      kutu('Geçiş', b.gecis) + kutu('Ölüm', b.olum) + kutu('Atlanan', b.atla) + kutu('Yarıda bırakılan', b.terk);
+    $('istatZor').innerHTML = o.zorlanilan.length ? o.zorlanilan.map(function (z) {
+      var parca = [z.deneme + ' deneme', z.gecis + ' geçiş'];
+      if (z.olum) parca.push(z.olum + ' ölüm (çoğu %' + z.olumYerOrtanca + ' yükseklikte)');
+      if (z.atla) parca.push(z.atla + ' atlama');
+      if (z.terk) parca.push(z.terk + ' yarıda');
+      return '<div class="istat-satir"><b>' + z.n + '. bölüm</b><span>' + parca.join(' · ') + '</span></div>';
+    }).join('') : '<p class="bos">Henüz zorlanılan bölüm yok.</p>';
+    function kosuSatir(ad, k) {
+      if (!k.kosu) return '<div class="istat-satir"><b>' + ad + '</b><span>Henüz koşu yok</span></div>';
+      return '<div class="istat-satir"><b>' + ad + '</b><span>' + k.kosu + ' koşu · ortanca ' + k.ortancaMetre + ' m · en iyi ' + k.enIyiMetre + ' m · en uzun akış x' + k.enUzunAkis + '</span>' +
+        '<small>Son koşular: ' + k.sonMetreler.join(', ') + ' m</small></div>';
+    }
+    $('istatKosu').innerHTML = kosuSatir('Sonsuz Kuyu', o.sonsuz) + kosuSatir('Günlük Kuyu', o.gunluk);
+    $('istatHalka').innerHTML = kutu('Hız halkası', h.hiz) + kutu('Rüzgâr şeridi', h.serit) + kutu('Yay', h.yay) + kutu('Geçit', h.gecit) +
+      kutu('Sarkaç', h.sarkac) + kutu('Boş atış', h.bos) + kutu('Kurtarma', h.kurtarma) + kutu('El kayması', h.kayma) + kutu('Atış', h.atis);
+    $('istatSifirla').textContent = 'İstatistiği sıfırla'; sifirSor = false;
+    var eskiMetin = document.querySelector('.istat-metin'); if (eskiMetin) eskiMetin.remove();
+    show('ekIstat'); $('ekIstat').scrollTop = 0;
+  }
+  var sifirSor = false;
+  $('istatBtn').addEventListener('click', openIstat);
+  $('istatKopyala').addEventListener('click', function () {
+    var metin = JSON.stringify({ oyun: 'Kuyu', surum: (document.querySelector('.surum') || {}).textContent, istatistik: G.istatOzet() }, null, 1);
+    function yedek() { // pano izni yoksa metni seçili bir kutuda göster
+      var eski = document.querySelector('.istat-metin'); if (eski) eski.remove();
+      var ta = document.createElement('textarea'); ta.value = metin; ta.className = 'istat-metin'; ta.readOnly = true;
+      $('istatKopyala').after(ta); ta.focus(); ta.select(); toast('Metin seçildi; uzun basıp kopyala.');
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(metin).then(function () { toast('İstatistik panoya kopyalandı'); }, yedek);
+    else yedek();
+  });
+  $('istatSifirla').addEventListener('click', function () {
+    if (!sifirSor) { sifirSor = true; $('istatSifirla').textContent = 'Emin misin? Silmek için tekrar dokun'; return; }
+    G.istatSifirla(); toast('İstatistik sıfırlandı'); openIstat();
+  });
   $('ipucuSifirBtn').addEventListener('click', function () { G.resetIntros(); toast('Tanıtım kartları yeni şeyleri ilk gördüğünde yeniden çıkacak.'); });
 
   document.addEventListener('keydown', function (e) {

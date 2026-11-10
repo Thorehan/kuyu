@@ -1,0 +1,33 @@
+// Yerel istatistik testi: node tools/istatistik-test.js
+const S = require('../js/istatistik.js');
+let bad = 0;
+const ok = (c, m) => { if (!c) { bad++; console.log('HATA:', m); } };
+const save = {};
+S.ensure(save);
+const sayac = { t: 10, boosts: 1, gates: 2, springs: 1, portals: 0, swings: 1, misses: 3, rescues: 1, slips: 0, shots: 12 };
+S.bolum(save, 7, 'olum', Object.assign({}, sayac, { t: 5, ilerleme: 0.4 }));
+S.bolum(save, 7, 'olum', Object.assign({}, sayac, { t: 6, ilerleme: 0.6 }));
+S.bolum(save, 7, 'gecis', Object.assign({}, sayac, { t: 20 }));
+S.bolum(save, 8, 'atla', Object.assign({}, sayac, { t: 3 }));
+S.bolum(save, 2, 'gecis', Object.assign({}, sayac, { t: 8 }));
+const b7 = save.istat.bolum[7];
+ok(b7.deneme === 3 && b7.olum === 2 && b7.gecis === 1 && b7.enIyiSure === 20, 'bölüm 7 sayıları');
+ok(b7.olumYer.join() === '40,60', 'ölüm yerleri yüzde');
+S.kosu(save, 'sonsuz', Object.assign({}, sayac, { t: 80, metre: 450, akis: 9 }));
+S.kosu(save, 'sonsuz', Object.assign({}, sayac, { t: 70, metre: 300, akis: 4 }));
+S.kosu(save, 'gunluk', Object.assign({}, sayac, { t: 60, metre: 500, akis: 12 }));
+const o = S.ozet(save);
+ok(o.bolumler.deneme === 5 && o.bolumler.atla === 1, 'toplam deneme ve atla');
+ok(o.zorlanilan[0].n === 8 || o.zorlanilan[0].n === 7, 'zorlanılan bölümler sıralı');
+ok(o.zorlanilan.every(z => z.n !== 2), 'sorunsuz bölüm zorlanılanlarda yok');
+ok(o.sonsuz.kosu === 2 && o.sonsuz.enIyiMetre === 450 && o.gunluk.enUzunAkis === 12, 'koşu özetleri');
+ok(o.halka.serit === 16 && o.halka.atis === 96, 'halka toplamları (8 koşu)');
+ok(Math.abs(o.toplamSureDk - (5 + 6 + 20 + 3 + 8 + 80 + 70 + 60) / 60) < 0.1, 'toplam süre');
+// metre listesi sınırlı
+for (let i = 0; i < 40; i++) S.kosu(save, 'sonsuz', { t: 1, metre: i });
+ok(save.istat.sonsuz.metreler.length === 30, 'metre listesi en çok 30');
+ok(JSON.stringify(save.istat).length < 20000, 'kayıt küçük');
+S.sifirla(save);
+ok(S.ozet(save).bolumler.deneme === 0, 'sıfırlama');
+console.log(bad ? bad + ' hata' : 'Tamam: yerel istatistik');
+process.exit(bad ? 1 : 0);

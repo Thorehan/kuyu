@@ -1,7 +1,7 @@
 /* Kuyu — ekranlar, çizim, ses ve girdi. Kurallar js/engine.js, bölümler js/levels.js ve js/gen.js. */
 (function () {
   'use strict';
-  var E = window.KuyuEngine, HAND = window.KuyuLevels, GEN = window.KuyuGen, GOREV = window.KuyuGorev, EKO = window.KuyuEkonomi, CFG = E.CFG;
+  var E = window.KuyuEngine, HAND = window.KuyuLevels, GEN = window.KuyuGen, GOREV = window.KuyuGorev, EKO = window.KuyuEkonomi, IST = window.KuyuIstat, CFG = E.CFG;
   var $ = function (id) { return document.getElementById(id); };
   var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -20,6 +20,7 @@
   if (!save.seen) save.seen = {};
   GOREV.ensure(save);
   EKO.ensure(save);
+  IST.ensure(save);
   function persist() { try { localStorage.setItem(KEY, JSON.stringify(save)); } catch (e) {} }
 
   // ---------- dolap görünümü (js/ekonomi.js) ----------
@@ -148,7 +149,27 @@
   }
 
   // ---------- akış ----------
+  // ---------- yerel istatistik (js/istatistik.js) ----------
+  // Her koşu tek sonla kaydedilir: gecis, olum, atla, terk (yarıda bırakma) ya da kosu (Sonsuz/Günlük bitti).
+  function istatBitir(tur) {
+    if (!sim || sim._istat) return;
+    if (tur === 'terk' && (sim.status !== 'play' || sim.t < 1)) return; // 1 sn'den kısa denemeler sayılmaz
+    sim._istat = true;
+    var c = { t: sim.t, boosts: sim.boosts, gates: sim.gates, springs: sim.springs, portals: sim.portals, swings: sim.swings,
+      misses: sim.misses, rescues: sim.rescues, slips: sim.slips, shots: sim.shots };
+    if (mode === 'level') {
+      var top = sim.goal ? sim.startY - sim.goal.y : 0;
+      c.ilerleme = top > 0 ? Math.max(0, Math.min(1, (sim.startY - sim.p.y) / top)) : 0;
+      IST.bolum(save, levelNo, tur, c);
+    } else {
+      c.metre = E.meters(sim); c.akis = sim.maxCombo;
+      IST.kosu(save, dailyKey ? 'gunluk' : 'sonsuz', c);
+    }
+    persist();
+  }
+
   function startLevel(n) {
+    istatBitir('terk');
     dailyKey = null;
     mode = 'level';
     levelNo = Math.max(1, Math.floor(n) || 1);
@@ -161,6 +182,7 @@
     reset();
   }
   function startEndless(daily) {
+    istatBitir('terk');
     mode = 'endless';
     dailyKey = daily ? todayKey() : null;
     deaths = 0;
@@ -171,6 +193,7 @@
   }
   function newEndlessDef() { return GEN.createEndless(dailyKey ? dailySeed(dailyKey) : (Date.now() ^ (Math.random() * 1e9)) >>> 0); }
   function reset() {
+    istatBitir('terk'); // Baştan başla / Yeni koşu
     if (mode === 'endless') def = newEndlessDef();
     sim = E.createSim(def);
     parts = []; floaters = []; trail = []; winT = null; deadT = null; resultShown = false; lastHud = ''; introOgeSayisi = 0;
@@ -781,7 +804,7 @@
       if (winT > 1.1 && !resultShown) showLevelResult();
     } else if (sim.status === 'dead' && deadT !== null) {
       deadT += dt;
-      if (mode === 'level' && deadT > 0.75) { deaths++; reset(); }
+      if (mode === 'level' && deadT > 0.75) { istatBitir('olum'); deaths++; reset(); }
       else if (mode === 'endless' && deadT > 0.6 && !resultShown) showEndlessResult();
     }
     handleEvents();
@@ -873,6 +896,7 @@
   }
   function showLevelResult() {
     resultShown = true;
+    istatBitir('gecis');
     var cuzdanOnce = save.cuzdan.ates;
     var ff = E.fireflyCount(sim), ffT = sim.fireflies.length, time = sim.t;
     // Kusursuz: boş atışlar (o tarafta hedef yokken basmak) sayılmaz; kurtarma kancası sayılır.
@@ -924,6 +948,7 @@
   }
   function showEndlessResult() {
     resultShown = true;
+    istatBitir('kosu');
     var cuzdanOnce = save.cuzdan.ates;
     var raw = E.score(sim), mult = E.speedMult(sim), sc = E.finalScore(sim), m = E.meters(sim);
     var speed = E.speedMs(sim.maxSpeed);
@@ -977,12 +1002,14 @@
   // ---------- ekranlar ----------
   // Menü, açılış ve giriş js/screens.js içinde. Oyun ana menüye dönünce durur (su da durur).
   function goLevels() {
+    istatBitir('terk');
     closePause();
     paused = true;
     if (sim) E.release(sim);
     if (window.KuyuScreens && window.KuyuScreens.levels) window.KuyuScreens.levels(); else goHome();
   }
   function goHome() {
+    istatBitir('terk');
     closePause();
     paused = true;
     if (sim) E.release(sim);
@@ -1100,7 +1127,7 @@
   $('menuBtn').onclick = function () { if (sim && sim.status === 'play' && !paused) pauseGame(); else goHome(); };
   $('devamBtn').onclick = resumeGame;
   $('bastanBtn').onclick = function () { closePause(); reset(); };
-  $('dAtlaBtn').onclick = function () { closePause(); if (mode === 'level') startLevel(levelNo + 1); };
+  $('dAtlaBtn').onclick = function () { closePause(); if (mode === 'level') { istatBitir('atla'); startLevel(levelNo + 1); } };
   $('anaMenuBtn').onclick = function () { goHome(); };
   $('dSesBtn').onclick = function () { save.mute = !save.mute; persist(); setMuteIcon(); syncPauseToggles(); };
   $('dTitresimBtn').onclick = function () { save.haptics = save.haptics === false; persist(); syncPauseToggles(); };
@@ -1185,6 +1212,8 @@
     handCount: HAND.length,
     toggleMute: function () { save.mute = !save.mute; persist(); setMuteIcon(); return save.mute; },
     resetIntros: function () { save.seen = {}; persist(); },
+    istatOzet: function () { return IST.ozet(save); },
+    istatSifirla: function () { IST.sifirla(save); persist(); },
     toggleBuyukYazi: function () { save.buyukYazi = !save.buyukYazi; persist(); return save.buyukYazi; },
     toggleHaptics: function () { save.haptics = save.haptics === false; persist(); if (save.haptics) buzz(20); return save.haptics; },
     unlockAudio: function () { ac(); },

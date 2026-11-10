@@ -38,7 +38,7 @@ Altı başlık, geliştirme sırasıyla aynı. `[~]` üzerinde çalışılıyor,
   4. [x] **Sarkaç halka** (v0.21): tepedeki pimden zincirle asılı, ±55 birim, 2,6 sn'de bir salınım. Hangi taraftaysa o tarafın işareti onu gösterir; uzaksa beklemek yeter. Tutununca seni de sallar. Ana yoldaki ortadaki halkalardan (x 100–260) 5 adım arayla. Motor hatası düzeltildi: sarkaç kancanın üstüne kayınca kanca içinden geçip ıskalıyordu.
   - Çürük halka zorluk olduğu için ertelendi.
 - [ ] 4. bölüme üçüncü ateşböceği (kutu bulmacası yüzünden yer yok; bölüm düzeni değişmeli).
-- [ ] Yerel istatistik: bölüm başına süre, boş atış, ölüm (denge için).
+- [x] Yerel istatistik (v0.28): Ayarlar → Oyun istatistikleri. Bölüm başına deneme, geçiş, ölüm (yüksekliğin yüzde kaçında), atlama, yarıda bırakma, en iyi süre, boş atış, kurtarma; Sonsuz/Günlük koşu metreleri (son 30), en uzun akış; halka kullanımı ve toplam oynama süresi. "Panoya kopyala" ile JSON paylaşılır (telefon denemesinden sonra bana gönder, denge buna göre ayarlanır). Yalnızca cihazda; sıfırlama iki dokunuşla.
 - Dokunulmayacak: Sonsuz Kuyu su temposu (karar 2026-11-09).
 
 ### 2. Oyun içi akış / alış-satış
@@ -92,6 +92,7 @@ Karar (2026-11-10): oyunda güçlendirme yok, **harcamalar yalnızca kozmetik**.
 - [ ] Hikâyenin meta ile bağı (bölgeler, kozmetikler).
 
 ## Yapılanlar
+- 2026-11-10 · v0.28 · Yerel istatistik sayfası ve panoya kopyalama.
 - 2026-11-10 · v0.27 · Büyük yazı ayarı; sonuç kartında Dolap kısa yolu (v0.26).
 - 2026-11-10 · v0.25 · Dolap: ilk dokunuş önizleme, satın alma ayrı "Al" düğmesiyle (oyuncu geri bildirimi: dokununca hemen satın alınıyordu).
 - 2026-11-10 · v0.24 · Ana menüde görev şeridi.

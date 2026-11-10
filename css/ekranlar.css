@@ -362,3 +362,15 @@ button.oyna { padding: 10px 12px 10px 22px; min-height: 84px; }
 .buyuk-yazi .alt-menu button { font-size: 12.5px; }
 .buyuk-yazi .takvim .gun small, .buyuk-yazi .takvim .gun em, .buyuk-yazi .bolum-rozet small, .buyuk-yazi .g-zor, .buyuk-yazi .bkart .etiket { font-size: 12.5px; }
 .buyuk-yazi .serit .bilgi span { font-size: 13px; }
+
+/* ---------- Oyun istatistikleri (v0.28) ---------- */
+.profil-izgara.uclu { grid-template-columns: repeat(3, 1fr); }
+.profil-izgara.uclu b { font-size: 19px; }
+.istat-liste { display: flex; flex-direction: column; gap: 6px; }
+.istat-satir { display: flex; flex-direction: column; gap: 2px; padding: 9px 12px; border-radius: 12px; background: #16201f; border: 1px solid #2c3936; }
+.istat-satir b { font-family: var(--font-oyun); font-weight: 600; font-size: 15px; }
+.istat-satir span { font-size: 13px; color: var(--yazi); opacity: .85; }
+.istat-satir small { font-size: 12px; color: var(--soluk); }
+.istat-metin { width: 100%; min-height: 160px; border-radius: 12px; background: #101817; color: var(--yazi); border: 1px solid #2c3936; font: 12px/1.4 ui-monospace, monospace; padding: 8px; }
+.buyuk-yazi .istat-satir span { font-size: 15px; }
+.buyuk-yazi .istat-satir small { font-size: 14px; }

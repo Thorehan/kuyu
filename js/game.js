@@ -132,14 +132,19 @@
   // kuyunun yüksekliğinden gelir (her 500 m'de bir; sınır kuyunun içinde görünür).
   var BOLGELER = [
     { id: 'tas', ad: 'Taş Kuyu', zemin: '#121a19', taban: 30, d: [-6, 4, 1], yosun: '79,107,68', yosunP: 0.18, benek: null,
-      duvar: '#141c1b', kenar: '#3a4743', isik: '191,230,238' },
+      duvar: '#141c1b', kenar: '#3a4743', isik: '191,230,238',
+      hikaye: 'Köyün eski kuyusu. Çıra fenerden düştüğünde burada uyandı; yukarıda gün ışığı, aşağıda soğuk su.' },
     { id: 'maden', ad: 'Maden', zemin: '#1a120b', taban: 33, d: [16, 4, -10], yosun: null, yosunP: 0, benek: '214,170,90', benekP: 0.22,
-      duvar: '#1b140e', kenar: '#5a4430', isik: '255,190,120' },
+      duvar: '#1b140e', kenar: '#5a4430', isik: '255,190,120',
+      hikaye: 'Fenerlerin yağı bir zamanlar bu madenden çıkarılırdı. Duvardaki eski fenerler hâlâ Çıra\'yı tanıyor.' },
     { id: 'kristal', ad: 'Kristal Mağara', zemin: '#0f0c1c', taban: 28, d: [-4, -7, 17], yosun: '120,200,210', yosunP: 0.07, benek: '180,150,255', benekP: 0.16,
-      duvar: '#15121f', kenar: '#4a4268', isik: '180,150,255' },
+      duvar: '#15121f', kenar: '#4a4268', isik: '180,150,255',
+      hikaye: 'Kristaller ışığı saklar. Çıra\'nın saçılan ışığının bir kısmı burada, taşların içinde parlıyor.' },
     { id: 'kule', ad: 'Eski Kule', zemin: '#1a1b20', taban: 47, d: [3, 4, 11], yosun: '79,107,68', yosunP: 0.06, benek: null,
-      duvar: '#1b1c21', kenar: '#5a5d68', isik: '200,215,255' }
+      duvar: '#1b1c21', kenar: '#5a5d68', isik: '200,215,255',
+      hikaye: 'Kuyunun en üstünde fener kulesi. Fener sönük; bekçi her gece pencereden Çıra\'yı bekliyor.' }
   ];
+  var BOLGE_ILK = [1, 17, 37, 57]; // her bölgenin açıldığı bölüm
   // Bölüm numarasından bölge: 1–16 Taş Kuyu, 17–36 Maden, 37–56 Kristal Mağara, 57–76 Eski Kule, sonra baştan (20'şer).
   function bolgeBolum(n) { return n <= 16 ? 0 : (1 + Math.floor((n - 17) / 20)) % BOLGELER.length; }
   var SONSUZ_BOLGE_M = 500;
@@ -286,7 +291,8 @@
     var B = BOLGELER[bi];
     if (bi === 0 || save.bolgeler[B.id]) return;
     save.bolgeler[B.id] = true; persist();
-    if (window.KuyuScreens && window.KuyuScreens.toast) window.KuyuScreens.toast('Yeni bölge: ' + B.ad + (ek ? ' · ' + ek : ''), 2600);
+    // hikâye kartı: bölge adı + tek cümle (docs/hikaye.md); oyunu durdurmaz
+    if (window.KuyuScreens && window.KuyuScreens.hikaye) window.KuyuScreens.hikaye('Yeni bölge · ' + B.ad + (ek ? ' · ' + ek : ''), B.hikaye);
   }
   var sonsuzBolge = 0;
 
@@ -904,6 +910,8 @@
   function frame(t) {
     requestAnimationFrame(frame);
     if (paused || !sim) { lastT = 0; return; }
+    // oyun ekranı gizliyse (menüye başka yoldan geçildi) çizme ve ilerleme: boyutu 0 tuvale çizim hata verir, pil harcar
+    if (canvas.offsetParent === null) { lastT = 0; return; }
     var dt = Math.min(0.05, (t - (lastT || t)) / 1000); lastT = t;
     if (sim.status === 'play') {
       acc += dt;
@@ -1344,6 +1352,11 @@
     muzikSahne: function (s) { MZ.sahne(s); MZ.kis(false); },
     toggleMute: function () { save.mute = !save.mute; persist(); setMuteIcon(); return save.mute; },
     resetIntros: function () { save.seen = {}; persist(); },
+    // Çıra'nın yolu (Profil): açılan bölgelerin hikâyesi; Taş Kuyu baştan açık
+    hikaye: function () {
+      var gor = save.bolgeler || {};
+      return BOLGELER.map(function (B, i) { return { ad: B.ad, metin: B.hikaye, acik: i === 0 || !!gor[B.id], ilkBolum: BOLGE_ILK[i], isik: B.isik }; });
+    },
     bolgeAdi: function (n) { return BOLGELER[bolgeBolum(n)].ad; },
     istatOzet: function () { return IST.ozet(save); },
     istatSifirla: function () { IST.sifirla(save); persist(); },

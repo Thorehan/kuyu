@@ -27,6 +27,16 @@
     if (SEKMELER.indexOf(id) >= 0) $('gorevNokta').hidden = !G.gorevBekleyen();
   }
 
+  // Hikâye kartı: ekranın üstünde, oyunu durdurmaz; dokununca ya da birkaç saniye sonra kapanır.
+  var hikayeT = null;
+  function hikaye(baslik, metin, ms) {
+    $('hkBaslik').textContent = baslik; $('hkMetin').textContent = metin;
+    $('hikayeKart').hidden = false; $('hikayeKart').classList.remove('gizlen');
+    clearTimeout(hikayeT);
+    hikayeT = setTimeout(hikayeKapat, ms || 5200);
+  }
+  function hikayeKapat() { $('hikayeKart').classList.add('gizlen'); setTimeout(function () { $('hikayeKart').hidden = true; }, 300); }
+  $('hikayeKart').addEventListener('click', function () { clearTimeout(hikayeT); hikayeKapat(); });
   var toastT = null;
   function toast(msg, ms) {
     var b = $('bildirim');
@@ -97,9 +107,11 @@
     $('sunar').classList.remove('goster');
     $('ekTanitim').classList.add('gun');
     if (G.sfx && !save().mute) {
-      setTimeout(function () { if (introStage === 2) G.sfx.fire(); }, 300);
-      setTimeout(function () { if (introStage === 2) G.sfx.attach(); }, 450);
-      setTimeout(function () { if (introStage === 2) G.sfx.won(); }, 1350);
+      var o = reduceMotion ? 0 : ONSOZ * 1000;
+      setTimeout(function () { if (introStage === 2) G.sfx.firefly(); }, reduceMotion ? 0 : 1150); // kor dibe iner
+      setTimeout(function () { if (introStage === 2) G.sfx.fire(); }, o + 300);
+      setTimeout(function () { if (introStage === 2) G.sfx.attach(); }, o + 450);
+      setTimeout(function () { if (introStage === 2) G.sfx.won(); }, o + 1350);
     }
   }
   $('ekTanitim').addEventListener('click', function () {
@@ -189,6 +201,10 @@
     $('pAd').textContent = (s.profile && s.profile.name) || 'Tırmanıcı';
     $('pHesap').textContent = 'Misafir · ilerleme bu cihazda';
     $('pHiz').textContent = fmt(st.maxSpeed, 1) + ' m/sn';
+    $('hikayeListe').innerHTML = G.hikaye().map(function (hb) {
+      return '<div class="hk-sayfa' + (hb.acik ? '' : ' kilitli') + '" style="--isik:' + hb.isik + '"><b>' + hb.ad + '</b>' +
+        '<span>' + (hb.acik ? hb.metin : hb.ilkBolum + '. bölümde açılır') + '</span></div>';
+    }).join('');
     $('pHizNot').textContent = st.maxSpeed >= 40 ? 'Akış ustası: ipi erken bırakıp zincir kuruyorsun.' : 'İpi tam sarılmadan bırak, havadayken sıradakine tutun: hız ve ödül artar.';
     $('pBolum').textContent = done.length ? Math.max.apply(null, done) : '–';
     $('pGecilen').textContent = done.length;
@@ -658,9 +674,25 @@
 
     var r = 13 * u, rope = 46 * u;
     if (current === 'ekTanitim') {
-      var k = reduceMotion ? 9 : (now - sceneT0) / 1000;
-      var startY = h * 0.9, ringX = cx;
-      if (k < 0.3) { hero(ctx, cx, startY, r, { x: 0, y: -1 }); }
+      // Önsöz (docs/hikaye.md): kuyunun ağzında fener → bir kıvılcım kopup düşer → dipte Çıra gözünü açar.
+      var k0 = reduceMotion ? 99 : (now - sceneT0) / 1000, k = k0 - ONSOZ;
+      var startY = h * 0.9, ringX = cx, fx = cx, fyF = h * 0.07;
+      fener(ctx, fx, fyF, u, t, k0 < ONSOZ ? 1 : 0.6);
+      if (k0 < ONSOZ) {
+        if (k0 > 0.35 && k0 < 1.15) { // kıvılcım düşüyor
+          var dk = (k0 - 0.35) / 0.8, sy = fyF + 14 * u + (startY - fyF - 14 * u) * dk * dk;
+          var sg = ctx.createRadialGradient(fx, sy, 0, fx, sy, 14 * u);
+          sg.addColorStop(0, 'rgba(255,200,120,0.9)'); sg.addColorStop(1, 'rgba(255,160,80,0)');
+          ctx.fillStyle = sg; ctx.fillRect(fx - 14 * u, sy - 14 * u, 28 * u, 28 * u);
+          ctx.strokeStyle = 'rgba(255,170,90,0.5)'; ctx.lineWidth = 2 * u; ctx.beginPath(); ctx.moveTo(fx, sy - 30 * u * dk); ctx.lineTo(fx, sy); ctx.stroke();
+          ctx.fillStyle = '#ffd08a'; ctx.beginPath(); ctx.arc(fx, sy, 3 * u, 0, 6.29); ctx.fill();
+        } else if (k0 >= 1.15) { // iner, parlar, Çıra uyanır
+          var wk = Math.min(1, (k0 - 1.15) / 0.4), gl = ctx.createRadialGradient(cx, startY, 0, cx, startY, 40 * u * (1.2 - wk * 0.4));
+          gl.addColorStop(0, 'rgba(255,190,110,' + (0.5 * (1 - wk * 0.5)) + ')'); gl.addColorStop(1, 'rgba(255,190,110,0)');
+          ctx.fillStyle = gl; ctx.fillRect(cx - 50 * u, startY - 50 * u, 100 * u, 100 * u);
+          hero(ctx, cx, startY, r * (0.4 + 0.6 * wk), { x: 0, y: wk < 0.7 ? 1 : -1 });
+        }
+      } else if (k < 0.3) { hero(ctx, cx, startY, r, { x: 0, y: -1 }); }
       else if (k < 0.45) { // kanca uçuyor
         var hk = ease((k - 0.3) / 0.15);
         ctx.strokeStyle = '#eadfc4'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(cx, startY); ctx.lineTo(cx, startY + (ringY - startY) * hk); ctx.stroke();
@@ -700,6 +732,18 @@
       bg.addColorStop(0, 'rgba(13,20,22,0)'); bg.addColorStop(1, 'rgba(13,20,22,.75)');
       ctx.fillStyle = bg; ctx.fillRect(0, h * 0.55, w, h * 0.45);
     }
+  }
+  // Kuyunun ağzındaki fener (önsöz)
+  var ONSOZ = 1.7;
+  function fener(ctx, x, y, u, t, parlak) {
+    var fl = (0.85 + 0.15 * Math.sin(t * 9)) * parlak;
+    var g = ctx.createRadialGradient(x, y, 2, x, y, 70 * u);
+    g.addColorStop(0, 'rgba(255,200,120,' + (0.5 * fl) + ')'); g.addColorStop(1, 'rgba(255,200,120,0)');
+    ctx.fillStyle = g; ctx.fillRect(x - 70 * u, y - 70 * u, 140 * u, 140 * u);
+    ctx.strokeStyle = 'rgba(160,140,120,0.8)'; ctx.lineWidth = 1.5 * u; ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, y - 10 * u); ctx.stroke();
+    ctx.fillStyle = '#2b2118'; ctx.fillRect(x - 8 * u, y - 10 * u, 16 * u, 20 * u);
+    ctx.fillStyle = 'rgba(255,214,150,' + Math.min(1, 0.6 + 0.4 * fl) + ')'; ctx.fillRect(x - 5 * u, y - 6 * u, 10 * u, 12 * u);
+    ctx.fillStyle = '#2b2118'; ctx.fillRect(x - 10 * u, y - 12 * u, 20 * u, 3 * u); ctx.fillRect(x - 10 * u, y + 9 * u, 20 * u, 3 * u);
   }
   function trailUp(ctx, x, y, r, a) {
     ctx.strokeStyle = 'rgba(232,242,124,' + (0.55 * a) + ')'; ctx.lineCap = 'round';
@@ -745,7 +789,8 @@
     },
     levels: function () { openLevels(); },
     showGame: function () { show('oyun'); },
-    toast: toast
+    toast: toast,
+    hikaye: hikaye
   };
 
   boot();

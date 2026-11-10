@@ -16,8 +16,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&family=Figtree:wght@400;600&display=swap">
-<link rel="stylesheet" href="css/kuyu.css?v=0.33">
-<link rel="stylesheet" href="css/ekranlar.css?v=0.33">
+<link rel="stylesheet" href="css/kuyu.css?v=0.34">
+<link rel="stylesheet" href="css/ekranlar.css?v=0.34">
 </head>
 <body>
 <div class="app" id="oyunEkrani" hidden>
@@ -72,7 +72,7 @@
   <img id="acilisLogo" class="marka-logo" src="assets/funday-morning-logo.webp" alt="Funday Morning Games">
   <div class="yukleme" aria-hidden="true"><div id="yuklemeDolgu"></div></div>
   <div class="yukleme-not" id="yuklemeNot">Yükleniyor…</div>
-  <div class="ek-surum">Kuyu v0.33</div>
+  <div class="ek-surum">Kuyu v0.34</div>
 </section>
 
 <!-- Giriş: yalnızca ilk açılışta -->
@@ -95,7 +95,7 @@
   <div class="sunar" id="sunar"><img src="assets/funday-morning-logo.webp" alt="Funday Morning Games"><span>sunar</span></div>
   <div class="tanitim-baslik">
     <h1>Kuyu</h1>
-    <span class="alt-hap">KANCAYLA TIRMAN</span>
+    <span class="alt-hap">ÇIRA'YI IŞIĞA ÇIKAR</span>
     <div class="dokun">Başlamak için dokun</div>
   </div>
   <div class="tanitim-imza">© 2026 Funday Morning Games</div>
@@ -111,7 +111,7 @@
       <span class="stat-hap" title="Ateşböceği: Dolap'ta harcanır"><i class="ikon-ates" aria-hidden="true"></i><b id="toplamAtes">0</b><span class="sr">ateşböceği</span></span>
     </div>
   </div>
-  <div class="ana-logo"><h1>Kuyu</h1><span>Kancayla tırman, gün ışığına çık</span></div>
+  <div class="ana-logo"><h1>Kuyu</h1><span>Çıra'yı fenerine geri götür</span></div>
   <div class="ana-alt">
     <button type="button" class="ana-gorev" id="anaGorevBtn" aria-label="Bugünün görevleri">
       <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="3.5" width="14" height="17" rx="2.4" fill="none" stroke="currentColor" stroke-width="2"/><path d="M8.5 9l1.6 1.6 3-3M8.5 15.5h7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -210,6 +210,9 @@
   <div class="sayfa-ic">
     <div class="profil-kart">
       <div class="profil-bas"><span class="avatar buyuk" aria-hidden="true"></span><div><b id="pAd">Tırmanıcı</b><span id="pHesap">Misafir · bu cihaz</span></div></div>
+      <h3>Çıra'nın yolu</h3>
+      <p class="not">Fenerden düşen küçük kor Çıra, kuyunun dibinden fenerine dönüyor. Yeni bölgeler açıldıkça hikâye ilerler.</p>
+      <div class="hikaye-liste" id="hikayeListe"></div>
       <div class="profil-hiz"><small>En yüksek hız</small><b id="pHiz">0 m/sn</b><span id="pHizNot">Akışla, ipi erken bırakarak hızlanırsın.</span></div>
       <h3>Bölümler</h3>
       <div class="profil-izgara">
@@ -265,7 +268,7 @@
     <button type="button" id="istatBtn">Oyun istatistikleri</button>
     <button type="button" id="tanitimBtn">Tanıtımı yeniden izle</button>
     <button type="button" id="ipucuSifirBtn">Tanıtım kartlarını yeniden göster</button>
-    <p class="surum">Kuyu v0.33 · prototip · Funday Morning Games</p>
+    <p class="surum">Kuyu v0.34 · prototip · Funday Morning Games</p>
   </div>
 </section>
 
@@ -298,16 +301,17 @@
   </div>
 </div>
 
+<div class="hikaye-kart" id="hikayeKart" role="status" hidden><b id="hkBaslik"></b><span id="hkMetin"></span></div>
 <div class="bildirim" id="bildirim" role="status" hidden></div>
 
-<script src="js/engine.js?v=0.33"></script>
-<script src="js/levels.js?v=0.33"></script>
-<script src="js/gen.js?v=0.33"></script>
-<script src="js/gorevler.js?v=0.33"></script>
-<script src="js/ekonomi.js?v=0.33"></script>
-<script src="js/istatistik.js?v=0.33"></script>
-<script src="js/muzik.js?v=0.33"></script>
-<script src="js/game.js?v=0.33"></script>
-<script src="js/screens.js?v=0.33"></script>
+<script src="js/engine.js?v=0.34"></script>
+<script src="js/levels.js?v=0.34"></script>
+<script src="js/gen.js?v=0.34"></script>
+<script src="js/gorevler.js?v=0.34"></script>
+<script src="js/ekonomi.js?v=0.34"></script>
+<script src="js/istatistik.js?v=0.34"></script>
+<script src="js/muzik.js?v=0.34"></script>
+<script src="js/game.js?v=0.34"></script>
+<script src="js/screens.js?v=0.34"></script>
 </body>
 </html>

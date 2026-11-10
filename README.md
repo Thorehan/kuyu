@@ -1,6 +1,6 @@
 # Kuyu
 
-**Funday Morning Games** · 2D mobil oyun · prototip v0.33
+**Funday Morning Games** · 2D mobil oyun · prototip v0.34
 
 Derin bir kuyunun dibindesin. Telefonu tek elle tut: ekranın soluna ya da sağına dokun, kanca o taraftaki hedefe fırlasın; basılı tut, ipe sarıl; bırak, savrul. Halkadan halkaya, ahşaptan ahşaba tırmanıp kuyudan çık.
 
@@ -89,6 +89,13 @@ Yolun üstünde, bir halkadan sıradakine giden hatta duran yatay şerit (112 bi
 - **Bölüm ödülü** = (100 + 25 × ateşböceği + 50 Kusursuz + 50 Akış) × hız çarpanı.
 - **Bölüm sonu kartı** ekranın altından açılır: ödül sayarak gelir ve hesabı yazılır, üç madalya (bu oyunda ilk kez kazanılan "YENİ" etiketiyle), süre ve en yüksek hız (kırılan rekorlar "REKOR" etiketiyle), büyük "Bölüm N ›" düğmesi, Tekrar ve Bölümler. Sonsuz Kuyu sonucu da aynı yapıda.
 - **Sonsuz Kuyu puanı** = (metre + akış bonusu + ateşböcekleri) × hız çarpanı.
+
+## Hikâye: Çıra (v0.34)
+Köyün fenerinden düşen küçük bir kor olan **Çıra**, kuyunun dibinden fenerine dönmeye çalışır. Su onu söndürebilecek tek şeydir; kancalı ip fenerin fitili, ateşböcekleri düşerken saçılan ışığıdır. Bütün metinler ve kurallar `docs/hikaye.md` içinde.
+- **Sözsüz önsöz:** tanıtım sahnesinin başında kuyunun ağzında fener yanar, bir kıvılcım kopup kuyuya düşer, dipte Çıra gözünü açar; ardından kancayı atıp gün ışığına fırlar. Ayarlar → "Tanıtımı yeniden izle" ile tekrar izlenir.
+- **Bölge kartları:** yeni bir bölgeye ilk girişte ekranın üstünde, oyunu durdurmayan kısa kart (bölge adı + bir cümle); dokununca ya da 5 sn sonra kapanır.
+- **Çıra'nın yolu (Profil):** açılan bölgelerin hikâye sayfaları; açılmayanlar "N. bölümde açılır" diye kilitli. Taş Kuyu baştan açıktır.
+- Sonra: bölge finalleri, bekçinin notları (gizli yollarda), fenerin yeniden yandığı son.
 
 ## Müzik ve ses (v0.32)
 - **Ortam müziği** dosyasız, Web Audio ile çalınırken üretilir (`js/muzik.js`). Katmanlar: yumuşak ses halısı (akor), alçak zemin notası, akış sürerken (x2 ve üstü) giderek açılan arpej, bölgeye özel renk.
@@ -298,6 +305,7 @@ Bot rota bilmez; yalnızca ekrandaki sol ve sağ işarete bakar. Sonuçlar (6 el
 | `docs/gelistirme-sureci.md` | Geliştirme sırası, kalıcı kararlar, yapılanlar |
 | `docs/telefon-testi.md` | Telefonda 10 dakikalık deneme listesi |
 | `docs/muzik-brifi.md` | Mustafa için müzik brifi (parçalar, tempo, ton, teslim) |
+| `docs/hikaye.md` | Hikâye: Çıra (öncül, karakterler, bölge metinleri, anlatım, metin kuralları) |
 | `sw.js`, `manifest.webmanifest` | Ana ekrana kurulum ve internetsiz açılış |
 | `tools/kontrol.js` | Duman testi: sözdizimi, sayfa bağlantıları, servis çalışanı listesi, sürüm etiketi |
 | `tools/tempo.js` | Sonsuz Kuyu su temposu ölçümü |

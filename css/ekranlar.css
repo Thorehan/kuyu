@@ -378,3 +378,22 @@ button.oyna { padding: 10px 12px 10px 22px; min-height: 84px; }
 /* Dolap: beş bölüm sekmesi dar ekranda alt satıra geçebilir (v0.31) */
 #ekDolap .filtre { flex-wrap: wrap; gap: 5px; }
 #ekDolap .filtre button { padding: 0 10px; }
+
+/* ---------- Hikâye: Çıra (v0.34) ---------- */
+.hikaye-kart { position: fixed; z-index: 45; left: 50%; top: calc(64px + env(safe-area-inset-top, 0px)); transform: translateX(-50%);
+  width: min(92vw, 400px); display: flex; flex-direction: column; gap: 3px; padding: 12px 16px; border-radius: 16px;
+  background: rgba(24,20,16,.94); border: 1px solid #6a4a2a; box-shadow: 0 12px 34px rgba(0,0,0,.45); cursor: pointer;
+  animation: hikayeGir .35s cubic-bezier(.2, .9, .3, 1) both; transition: opacity .3s, transform .3s; }
+.hikaye-kart.gizlen { opacity: 0; transform: translate(-50%, -8px); }
+.hikaye-kart b { font-family: var(--font-oyun); font-weight: 700; font-size: 16px; color: #ffd08a; }
+.hikaye-kart span { font-size: 14px; line-height: 1.45; color: var(--yazi); }
+@keyframes hikayeGir { from { opacity: 0; transform: translate(-50%, -12px); } }
+@media (prefers-reduced-motion: reduce) { .hikaye-kart { animation: none; transition: none; } }
+.hikaye-liste { display: flex; flex-direction: column; gap: 8px; }
+.hk-sayfa { display: flex; flex-direction: column; gap: 3px; padding: 10px 12px 10px 14px; border-radius: 12px; background: #16201f; border: 1px solid #2c3936;
+  box-shadow: inset 3px 0 0 rgba(var(--isik), .8); }
+.hk-sayfa b { font-family: var(--font-oyun); font-weight: 600; font-size: 16px; }
+.hk-sayfa span { font-size: 14px; line-height: 1.45; color: var(--yazi); opacity: .9; }
+.hk-sayfa.kilitli { box-shadow: inset 3px 0 0 #2c3936; }
+.hk-sayfa.kilitli b, .hk-sayfa.kilitli span { color: var(--soluk); opacity: .8; }
+.buyuk-yazi .hikaye-kart span, .buyuk-yazi .hk-sayfa span { font-size: 16px; }

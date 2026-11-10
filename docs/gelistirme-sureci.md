@@ -87,15 +87,21 @@ Karar (2026-11-10): oyunda güçlendirme yok, **harcamalar yalnızca kozmetik**.
 - [ ] Arkadaş rekorları ve "bu kuyuyu benimle oyna" paylaşım bağlantısı.
 - [?] Yayın: Unity'ye taşıma zamanı, mağaza hesabı, yalnızca seçilen ödüllü reklam (Pofi kuralı).
 
-### 6. Oyun hikâyesi (en son ele alınır)
-- [ ] Kahraman kim, adı ne?
-- [ ] Kuyuya nasıl düştü, neden yukarı kaçıyor; su neyi temsil ediyor?
-- [ ] Ateşböcekleri ne işe yarıyor (yol mu gösteriyor, kuyuyu mu aydınlatıyor)? Toplama ile bağlantısı.
-- [ ] Kuyunun ağzındaki dünya; kova kimin?
-- [ ] Anlatım biçimi: tanıtım sahnesi, bölge geçiş kartları, kısa diyaloglar.
-- [ ] Hikâyenin meta ile bağı (bölgeler, kozmetikler).
+### 6. Oyun hikâyesi (karar 2026-11-10: "Çıra", ayrıntılar `docs/hikaye.md`)
+Kullanıcı hikâyeye online'dan önce geçti; online (5) sonra.
+- [x] Kahraman: Çıra, köyün fenerinden düşen küçük kor. Su onu söndürebilecek tek şey; ip fenerin fitili; ateşböcekleri saçılan ışığı; kova fener bekçisinin.
+- [x] Bölgelerin hikâyedeki yeri: köyün unutulmuş katmanları (taş kuyu, maden, kristal mağara, fener kulesi).
+- [x] Sözsüz önsöz (v0.34): tanıtım sahnesinin başında fener → kıvılcım düşer → Çıra dipte uyanır → gün ışığına fırlar.
+- [x] Bölge hikâye kartları (v0.34): yeni bölgeye ilk girişte oyunu durdurmayan kart (bölge adı + tek cümle).
+- [x] Profil → Çıra'nın yolu (v0.34): açılan bölgelerin hikâyesi, açılmayanlar kilitli.
+- [x] Menü metinleri (v0.34): "Çıra'yı fenerine geri götür", "ÇIRA'YI IŞIĞA ÇIKAR".
+- [ ] Bölge finalleri (16, 36, 56, 76): gösterişli son sahne (madende fenerler yanar, mağarada kristaller çınlar, kulede fener yeniden yanar).
+- [ ] Bekçinin notları: gizli yollarda toplanan kısa notlar, Çıra'nın yolu'nda okunur.
+- [ ] Son: 76. bölümde fener yeniden yanar; ikinci yolculuk (77+) metinleri.
+- [?] Bekçinin adı.
 
 ## Yapılanlar
+- 2026-11-11 · v0.34 · Hikâye: Çıra (önsöz, bölge kartları, Çıra'nın yolu, metinler); oyun ekranı gizliyken döngü çizim yapmaz.
 - 2026-11-10 · v0.33 · Müzik brifi (Mustafa için); servis çalışanı müzik dosyalarını da internetsiz saklar.
 - 2026-11-10 · v0.32 · Ortam müziği (bölgeye ve akışa göre), Müzik ve Ses efektleri ayrı ayarlar.
 - 2026-11-10 · v0.31 · Dolap'a kahraman rengi ve kanca biçimi; beş sekme.

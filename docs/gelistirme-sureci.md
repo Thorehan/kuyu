@@ -92,6 +92,7 @@ Karar (2026-11-10): oyunda güçlendirme yok, **harcamalar yalnızca kozmetik**.
 - [ ] Hikâyenin meta ile bağı (bölgeler, kozmetikler).
 
 ## Yapılanlar
+- 2026-11-10 · v0.25 · Dolap: ilk dokunuş önizleme, satın alma ayrı "Al" düğmesiyle (oyuncu geri bildirimi: dokununca hemen satın alınıyordu).
 - 2026-11-10 · v0.24 · Ana menüde görev şeridi.
 - 2026-11-10 · v0.23 · UI/UX denetimi (360×640): sonuç kartı kısa ekranda taşmıyor ve kaydırılabiliyor; tanıtım kartı sınırı (koşu başına bir yeni öğe kartı).
 - 2026-11-10 · v0.22 · Servis çalışanı düzeltmesi: internetsiz açılışta en eski kayıtlı sürüm açılıyordu ve önbellek her sürümde şişiyordu; artık dosya başına tek (en son) kayıt.

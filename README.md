@@ -1,6 +1,6 @@
 # Kuyu
 
-**Funday Morning Games** · 2D mobil oyun · prototip v0.24
+**Funday Morning Games** · 2D mobil oyun · prototip v0.25
 
 Derin bir kuyunun dibindesin. Telefonu tek elle tut: ekranın soluna ya da sağına dokun, kanca o taraftaki hedefe fırlasın; basılı tut, ipe sarıl; bırak, savrul. Halkadan halkaya, ahşaptan ahşaba tırmanıp kuyudan çık.
 
@@ -104,7 +104,7 @@ Oyunda güçlendirme yok; harcamalar yalnızca kozmetik. Para birimi **ateşböc
 - Eski kayıtlarda başlangıç bakiyesi, bölümlerde daha önce toplanan ateşböcekleridir. v0.22'den önce görevlerden gelen ödül puanları toplam ödülde kalır.
 - **Günlük giriş:** Ana menüye günün ilk gelişinde takvim açılır; "Sonra" denirse Görevler sekmesinin üstünden açılır. Gün kaçırınca sıfırlanmaz, kaldığın günden devam eder; 7. günden sonra başa döner. Gün sınırı Günlük Kuyu ile aynı (Türkiye saati).
 - **Video ile ikiye katla:** Yalnızca oyuncu seçerse (Pofi kuralı). Web sürümünde reklam yok: 3 saniyelik, "deneme sürümünde reklam yok" yazan bir bekleme ekranı çıkar. Unity'de gerçek ödüllü reklam buraya bağlanır.
-- **Dolap** (alt menü): üstte bakiye ve kuşanılan görünümle sallanan kahraman; Atkı / İp / Uçuş izi sekmeleri. Ürüne dokun: sahipsen kuşanır, değilsen satın alıp kuşanır; bakiye yetmezse kaç eksik olduğunu söyler.
+- **Dolap** (alt menü): üstte bakiye ve kuşanılan görünümle sallanan kahraman; Atkı / İp / Uçuş izi sekmeleri. Sahip olmadığın ürüne dokunmak **önizlemedir** (v0.25): kahraman o renge bürünür, ürün "Önizleme" diye işaretlenir ve önizlemenin altında "Al · fiyat" ile "Vazgeç" çubuğu açılır. Satın alma yalnızca "Al" ile olur (alınca kuşanılır); bakiye yetmezse düğmede kaç eksik olduğu yazar. Sahip olduğun ürüne dokunmak doğrudan kuşanır.
   - Atkı: Turkuaz (bedava), Kiraz 40, Mor 40, Altın 70, Gece 70, Pembe 100, Gökkuşağı 300 (renk döner).
   - İp: Keten (bedava), Gök 30, Zümrüt 50, Altın 60, Ateş 90.
   - Uçuş izi: Atkı rengi (bedava), Kar 40, Mor 60, Altın 80, Gökkuşağı 250. Akış sürerken iz yine sarı yanar (oyun geri bildirimi).

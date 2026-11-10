@@ -332,3 +332,18 @@ button.oyna { padding: 10px 12px 10px 22px; min-height: 84px; }
 .ana-gorev.hazir { border-color: #5b5f2e; background: linear-gradient(160deg, rgba(66,58,28,.92), rgba(38,36,22,.92)); }
 .ana-gorev.hazir > svg { color: var(--atesbocegi); }
 .ana-gorev.hazir .ag-yazi span { color: #ffd98a; }
+
+/* Dolap: önizleme ve satın alma çubuğu (v0.25) */
+.d-urun.onizlenen { border-color: var(--atesbocegi); box-shadow: 0 0 0 1px var(--atesbocegi) inset; }
+.d-durum.onizleme { color: var(--atesbocegi); font-weight: 700; }
+.satin-cubuk { display: flex; align-items: center; gap: 8px; padding: 8px 10px; border-radius: 14px; background: #262818; border: 1px solid #5b5f2e; }
+.satin-cubuk[hidden] { display: none; }
+.sc-urun { flex: 1; min-width: 0; display: flex; align-items: center; gap: 8px; }
+.sc-urun .renk { width: 28px; height: 28px; border-radius: 50%; border: 2px solid rgba(255,255,255,.18); flex: none; }
+.sc-urun > span { display: flex; flex-direction: column; min-width: 0; }
+.sc-urun b { font-size: 15px; }
+.sc-urun small { color: var(--soluk); font-size: 12px; }
+.satin-cubuk #scAl { min-height: 42px; padding: 0 14px; white-space: nowrap; display: inline-flex; align-items: center; gap: 4px; }
+.satin-cubuk #scAl .ikon-ates { width: 15px; height: 15px; }
+.satin-cubuk #scAl:disabled { opacity: .55; }
+.satin-cubuk .metin-btn { min-height: 42px; padding: 0 6px; }

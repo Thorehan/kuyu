@@ -304,8 +304,10 @@
   $('girisKapat').addEventListener('click', closeGiris);
 
   // ---------- dolap ----------
-  var dolapTur = 'atki', previewRaf = 0;
-  function openDolap() { renderDolap(); show('ekDolap'); $('ekDolap').scrollTop = 0; }
+  // Sahip olunmayan ürüne ilk dokunuş ÖNİZLEMEdir: kahraman o renge bürünür, altta "Al · fiyat" çubuğu açılır.
+  // Satın alma yalnızca o çubuktaki "Al" ile olur. Sahip olunan ürüne dokunmak doğrudan kuşanır.
+  var dolapTur = 'atki', previewRaf = 0, onizleme = null;
+  function openDolap() { onizleme = null; renderDolap(); show('ekDolap'); $('ekDolap').scrollTop = 0; }
   function swatch(it) {
     var c = it.renk === 'gokkusagi' ? 'conic-gradient(#ff5d5d, #ffd35d, #7ce36a, #5dd6ff, #9b6bff, #ff5d5d)' : it.renk === 'atki' ? 'linear-gradient(135deg, #2fb3a6 50%, #e2445c 50%)' : it.renk;
     return '<span class="renk" style="background:' + c + '" aria-hidden="true"></span>';
@@ -315,22 +317,41 @@
     $('dolapBakiye').textContent = bak;
     document.querySelectorAll('[data-dolap]').forEach(function (b) { b.setAttribute('aria-selected', b.dataset.dolap === dolapTur ? 'true' : 'false'); });
     $('dolapListe').innerHTML = window.KuyuEkonomi.KATALOG.filter(function (it) { return it.tur === dolapTur; }).map(function (it) {
-      var has = sahip.indexOf(it.id) >= 0, on = kus[it.tur] === it.id, durum;
-      if (on) durum = '<span class="d-durum kusanili">Kuşanıldı</span>';
+      var has = sahip.indexOf(it.id) >= 0, on = kus[it.tur] === it.id, bak2 = onizleme === it.id, durum;
+      if (bak2) durum = '<span class="d-durum onizleme">Önizleme</span>';
+      else if (on) durum = '<span class="d-durum kusanili">Kuşanıldı</span>';
       else if (has) durum = '<span class="d-durum">Kuşan</span>';
       else durum = '<span class="d-durum fiyat' + (bak < it.fiyat ? ' yetmez' : '') + '"><i class="ikon-ates" aria-hidden="true"></i>' + it.fiyat + '</span>';
-      return '<button type="button" class="d-urun' + (on ? ' secili' : '') + '" data-urun="' + it.id + '" aria-label="' + it.ad + (on ? ', kuşanıldı' : has ? ', kuşan' : ', ' + it.fiyat + ' ateşböceği') + '">' +
+      return '<button type="button" class="d-urun' + (bak2 ? ' onizlenen' : on && !onizlemeTur(it.tur) ? ' secili' : '') + '" data-urun="' + it.id + '" aria-label="' + it.ad + (bak2 ? ', önizleniyor' : on ? ', kuşanıldı' : has ? ', kuşan' : ', ' + it.fiyat + ' ateşböceği, önizlemek için dokun') + '">' +
         swatch(it) + '<b>' + it.ad + '</b>' + durum + '</button>';
     }).join('');
+    renderSatinCubuk(bak);
   }
+  function onizlemeTur(tur) { var it = onizleme && window.KuyuEkonomi.item(onizleme); return it && it.tur === tur; }
+  function renderSatinCubuk(bak) {
+    var it = onizleme && window.KuyuEkonomi.item(onizleme);
+    $('satinCubuk').hidden = !it;
+    if (!it) return;
+    $('scUrun').innerHTML = swatch(it) + '<span><b>' + it.ad + '</b><small>' + window.KuyuEkonomi.TURLER[it.tur] + '</small></span>';
+    var yeter = bak >= it.fiyat;
+    $('scAl').disabled = !yeter;
+    $('scAl').innerHTML = yeter ? 'Al · <i class="ikon-ates" aria-hidden="true"></i>' + it.fiyat : (it.fiyat - bak) + ' eksik';
+    $('scAl').setAttribute('aria-label', yeter ? it.ad + ' satın al, ' + it.fiyat + ' ateşböceği' : it.fiyat - bak + ' ateşböceği eksik');
+  }
+  $('scVazgec').addEventListener('click', function () { onizleme = null; renderDolap(); });
+  $('scAl').addEventListener('click', function () {
+    var it = onizleme && window.KuyuEkonomi.item(onizleme); if (!it) return;
+    var r = G.satinAl(it.id);
+    if (r.ok) { onizleme = null; if (G.sfx) G.sfx.won(); toast(it.ad + ' alındı ve kuşanıldı'); }
+    else if (r.neden === 'yetersiz') toast(r.eksik + ' ateşböceği eksik. Bölüm, Sonsuz Kuyu, görev ve günlük girişten toplanır.');
+    renderDolap();
+  });
   document.querySelectorAll('[data-dolap]').forEach(function (b) { b.addEventListener('click', function () { dolapTur = b.dataset.dolap; renderDolap(); }); });
   $('dolapListe').addEventListener('click', function (e) {
     var b = e.target.closest('[data-urun]'); if (!b) return;
-    var id = b.dataset.urun, it = window.KuyuEkonomi.item(id);
-    if (save().dolap.sahip.indexOf(id) >= 0) { G.kusan(id); renderDolap(); return; }
-    var r = G.satinAl(id);
-    if (r.ok) { if (G.sfx) G.sfx.won(); toast(it.ad + ' alındı ve kuşanıldı'); }
-    else if (r.neden === 'yetersiz') toast(r.eksik + ' ateşböceği eksik. Bölüm, Sonsuz Kuyu, görev ve günlük girişten toplanır.');
+    var id = b.dataset.urun;
+    if (save().dolap.sahip.indexOf(id) >= 0) { onizleme = null; G.kusan(id); renderDolap(); return; }
+    onizleme = id; // ilk dokunuş: yalnızca önizleme
     renderDolap();
   });
   // önizleme: halkada sallanan kahraman, kuşanılan atkı, ip ve iz
@@ -341,7 +362,8 @@
     var c = cv.getContext('2d');
     cancelAnimationFrame(previewRaf);
     (function tick(now) {
-      var t = now / 1000, L = G.gorunum();
+      var t = now / 1000, L = Object.assign({}, G.gorunum()), oz = onizleme && window.KuyuEkonomi.item(onizleme);
+      if (oz) L[oz.tur] = oz.renk;
       c.setTransform(dpr, 0, 0, dpr, 0, 0);
       c.fillStyle = '#121b1a'; c.fillRect(0, 0, w, h);
       var cx = w / 2, ringY = 26, rope = 78, r = 16;

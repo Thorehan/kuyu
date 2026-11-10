@@ -34,6 +34,7 @@
     UP_RISE: 60,        // nişan: bundan az yükselen hedef "yanda" sayılır (3 m)
     UP_ANGLE: 45,       // nişan: bundan düz açıdaki hedef "yanda" sayılır (derece)
     NEAR_V: 40,         // yatayda bu kadar yakın (tam tepedeki) hedef iki taraftan da alınır
+    GATE_W: 56,         // rüzgâr şeridi: merkezden sağa-sola bu kadar (toplam 112 birim genişlik)
     BOOST: 650,         // hız halkasından bırakınca eklenen yukarı hız (birim/sn)
     WATER_GRACE: 1.0,   // ilk halkaya tutunduktan bu kadar sonra su yükselmeye başlar
     RESCUE_MAX: 1000,   // kurtarma kancası: menzilde hedef yokken en yakın yukarıdaki hedefe bu kadar uzağa atılır
@@ -56,7 +57,7 @@
       def: def, H: H, endless: !!def.endless, rects: rects, t: 0, status: 'play',
       p: { x: sx, y: sy, px: sx, py: sy },
       pressed: false, hook: null, rope: null, lastAnchor: null,
-      rings: (def.rings || []).map(function (r) { return { x: r[0], y: r[1], ff: r[2] === 'ff', hiz: r[2] === 'hiz' }; }),
+      rings: (def.rings || []).map(function (r) { return { x: r[0], y: r[1], ff: r[2] === 'ff', hiz: r[2] === 'hiz', kapi: r[2] === 'kapi' }; }),
       goal: def.goal ? { x: def.goal[0], y: def.goal[1] } : null,
       boxes: (def.boxes || []).map(function (b) { return { x: b[0], y: b[1], px: b[0], py: b[1] }; }),
       buttons: (def.buttons || []).map(function (b) { return { x: b[0], y: b[1], w: b[2], h: 8, pressed: false }; }),
@@ -69,7 +70,7 @@
       grounded: false,
       // akış ve skor
       hang: 0, air: 0, chain: false, combo: 0, maxCombo: 0, hooks: 0, shots: 0, slips: 0,
-      startY: sy, topY: sy, bonus: 0, fireflyPts: 0, maxSpeed: 0, rescues: 0, misses: 0, boosts: 0
+      startY: sy, topY: sy, bonus: 0, fireflyPts: 0, maxSpeed: 0, rescues: 0, misses: 0, boosts: 0, gates: 0
     };
     // Ateşböcekleri halkaların içinde: o halkaya tutunmak ya da içinden geçmek yeter.
     s.rings.forEach(function (rg) { if (rg.ff) s.fireflies.push({ x: rg.x, y: rg.y, got: false, ring: rg }); });
@@ -116,7 +117,7 @@
     function consider(tt, hit) { if (tt != null && (!best || tt < best.t)) { hit.t = tt; best = hit; } }
     for (i = 0; i < s.rings.length; i++) {
       var rg = s.rings[i];
-      if (rg === ignore || rg.y < minY || rg.y > maxY) continue;
+      if (rg === ignore || rg.kapi || rg.y < minY || rg.y > maxY) continue;
       consider(segCircle(x0, y0, x1, y1, rg.x, rg.y, CFG.RING_R + 2), { kind: 'ring', ring: rg });
     }
     if (s.goal) consider(segCircle(x0, y0, x1, y1, s.goal.x, s.goal.y, 16), { kind: 'goal' });
@@ -226,7 +227,7 @@
   function candidates(s, range) {
     var p = s.p, R = (range || CFG.HOOK_MAX) - 4, out = [], i;
     function add(x, y, kind, ref) { var d = dist(p.x, p.y, x, y); if (d <= R && d > 18) out.push({ x: x, y: y, kind: kind, ref: ref, d: d }); }
-    for (i = 0; i < s.rings.length; i++) { var rg = s.rings[i]; if (Math.abs(rg.y - p.y) <= R) add(rg.x, rg.y, 'ring', rg); }
+    for (i = 0; i < s.rings.length; i++) { var rg = s.rings[i]; if (!rg.kapi && Math.abs(rg.y - p.y) <= R) add(rg.x, rg.y, 'ring', rg); }
     if (s.goal) add(s.goal.x, s.goal.y, 'goal', 'goal');
     for (i = 0; i < s.boxes.length; i++) add(s.boxes[i].x, s.boxes[i].y, 'box', s.boxes[i]);
     for (i = 0; i < s.rects.length; i++) {
@@ -444,6 +445,17 @@
       }
     }
 
+    // Rüzgâr şeritleri (kapı) yolun üstünde durur; yalnızca akış sürerken (x2 ve üstü) içinden geçmek sayılır:
+    // akış bir artar, havada kalma süresi tazelenir. Asılı kalıp akışı bozan için kapı sönüktür.
+    var moving = !s.rope || (s.rope.kind === 'anchor' && s.rope.len > CFG.MIN_LEN + 1);
+    if (moving && s.combo >= 2) {
+      for (i = 0; i < s.rings.length; i++) {
+        var gt = s.rings[i];
+        // şeridi aşağıdan yukarı geçmek: bu adımda çizginin altından üstüne çıktıysan ve şerit genişliğindeysen
+        if (gt.kapi && !gt.got && p.py > gt.y && p.y <= gt.y && Math.abs(p.x - gt.x) < CFG.GATE_W) passGate(s, gt);
+      }
+    }
+
     if (p.y < s.topY) s.topY = p.y;
     // Raunttaki en yüksek hız: ipte değilken, yukarı ya da yana giderken. Kancanın çekme hızı ve düşüş sayılmaz.
     if (!s.rope) {
@@ -467,6 +479,16 @@
       if (p.y + CFG.R * 0.5 > s.water) return die(s, 'su');
     }
     if (!s.endless && p.y > s.H + 220) return die(s, 'düşüş');
+  }
+
+  function passGate(s, gt) {
+    gt.got = true;
+    s.gates++;
+    s.combo++;
+    s.air = 0;        // havada kalma süresi tazelenir
+    if (s.combo > s.maxCombo) s.maxCombo = s.combo;
+    if (s.combo >= 2) s.bonus += Math.min(s.combo, CFG.COMBO_CAP) * CFG.COMBO_PTS;
+    s.events.push({ type: 'kapi', x: gt.x, y: gt.y, combo: s.combo });
   }
 
   function collectRing(s, rg) {

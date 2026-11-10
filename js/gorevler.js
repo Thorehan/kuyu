@@ -17,6 +17,7 @@
     kusursuz: { ad: function (n) { return n === 1 ? 'Bir bölümü Kusursuz geç' : n + ' bölümü Kusursuz geç'; }, how: 'sum', key: 'perfect', only: 'level', t: [1, 2, 4] },
     metre:    { ad: function (n) { return 'Tek koşuda ' + n + ' m tırman (Sonsuz ya da Günlük)'; }, how: 'max', key: 'meters', only: 'endless', t: [150, 300, 550] },
     gunluk:   { ad: function (n) { return n === 1 ? 'Günlük Kuyu\'yu oyna' : 'Günlük Kuyu\'da ' + n + ' deneme yap'; }, how: 'sum', key: 'one', only: 'daily', t: [1, 2, 3] },
+    serit:    { ad: function (n) { return n + ' rüzgâr şeridinden geç'; }, how: 'sum', key: 'gates', t: [2, 5, 9] },
     hizMs:    { ad: function (n) { return 'Bir koşuda ' + n + ' m/sn hıza çık'; }, how: 'max', key: 'speed', t: [25, 40, 52] }
   };
   var KINDS = Object.keys(MISSIONS);

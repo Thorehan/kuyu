@@ -244,6 +244,11 @@
       else if (e.type === 'slip') { SFX.slip(); buzz(30); floatText(sim.p.x, sim.p.y - 24, 'el kaydı!', COL.kahraman, 15); }
       else if (e.type === 'clink') { SFX.clink(); burst(e.x, e.y, 7, '#e9f3f0', 220, 0.25, 0); }
       else if (e.type === 'firefly') { SFX.firefly(); buzz([8, 40, 8]); burst(e.x, e.y, 16, COL.atesbocegi, 160, 0.6, -40); if (mode === 'endless') floatText(e.x, e.y - 10, '+25', COL.atesbocegi, 14); }
+      else if (e.type === 'kapi') {
+        SFX.combo(e.combo + 3); buzz(10); burst(e.x, e.y, 14, COL.atesbocegi, 170, 0.5, -60);
+        var kp = Math.min(e.combo, CFG.COMBO_CAP) * CFG.COMBO_PTS;
+        floatText(e.x, e.y - 18, 'RÜZGÂR · AKIŞ x' + e.combo + (mode === 'endless' ? '  +' + kp : ''), COL.atesbocegi, 14);
+      }
       else if (e.type === 'gateOpen') { SFX.gate(); buzz(35); shake = Math.max(shake, 5); }
       else if (e.type === 'waterStart') { wantIntro('su'); floatText(sim.p.x, sim.p.y + 40, 'su yükseliyor', COL.suAcik, 14); }
       else if (e.type === 'dead') {
@@ -405,6 +410,33 @@
     for (var k = 0; k < 2; k++) {
       var yy = r.y - 20 - k * 7 - ((t / 90) % 7);
       ctx.beginPath(); ctx.moveTo(r.x - 6, yy + 5); ctx.lineTo(r.x, yy); ctx.lineTo(r.x + 6, yy + 5); ctx.stroke();
+    }
+  }
+  // Rüzgâr şeridi: yolun üstünde yatay şerit. Akış sürerken (x2+) altın renginde yanar ve yukarı akan rüzgâr
+  // çizgileri gösterir; akış yokken soluk ve kesiklidir. Geçilince söner.
+  function drawGate(r, t) {
+    if (r.got) return;
+    var hw = CFG.GATE_W, on = sim.combo >= 2;
+    var a = on ? 0.75 + 0.25 * Math.sin(t / 160 + r.x) : 0.28;
+    var col = on ? '232,242,124' : '191,230,238';
+    if (on) {
+      var gl = ctx.createLinearGradient(0, r.y - 26, 0, r.y + 6);
+      gl.addColorStop(0, 'rgba(232,242,124,0)'); gl.addColorStop(1, 'rgba(232,242,124,' + (0.16 * a) + ')');
+      ctx.fillStyle = gl; ctx.fillRect(r.x - hw, r.y - 26, hw * 2, 32);
+    }
+    ctx.lineCap = 'round';
+    ctx.strokeStyle = 'rgba(' + col + ',' + a + ')'; ctx.lineWidth = on ? 3 : 2;
+    if (!on) ctx.setLineDash([6, 7]);
+    ctx.beginPath(); ctx.moveTo(r.x - hw, r.y); ctx.lineTo(r.x + hw, r.y); ctx.stroke();
+    ctx.setLineDash([]);
+    // uç direkleri
+    ctx.fillStyle = 'rgba(' + col + ',' + Math.min(1, a + 0.15) + ')';
+    ctx.beginPath(); ctx.arc(r.x - hw, r.y, 3.2, 0, Math.PI * 2); ctx.arc(r.x + hw, r.y, 3.2, 0, Math.PI * 2); ctx.fill();
+    // yukarı akan rüzgâr çizgileri
+    ctx.strokeStyle = 'rgba(' + col + ',' + (on ? 0.7 * a : 0.18) + ')'; ctx.lineWidth = 1.6;
+    for (var k = 0; k < 4; k++) {
+      var xx = r.x - hw * 0.66 + k * hw * 0.44, ph = ((t / (on ? 9 : 22) + k * 13) % 22);
+      ctx.beginPath(); ctx.moveTo(xx, r.y - 4 - ph); ctx.lineTo(xx, r.y - 12 - ph); ctx.stroke();
     }
   }
   // Ateşböceği halkası: halkanın içinde parlayan ateşböceği. Tutun ya da içinden geç, alınır.
@@ -635,7 +667,7 @@
     var vh = viewH / K;
     for (var i = 0; i < sim.rects.length; i++) drawRect(sim.rects[i]);
     sim.buttons.forEach(drawButton);
-    sim.rings.forEach(function (r) { if (r.y > cam - 30 && r.y < cam + vh + 30) { drawRing(r.x, r.y); if (r.ff && !r.got) drawFireflyRing(r, t); if (r.hiz) drawSpeedRing(r, t); } });
+    sim.rings.forEach(function (r) { if (r.y > cam - 30 && r.y < cam + vh + 30) { if (r.kapi) { drawGate(r, t); return; } drawRing(r.x, r.y); if (r.ff && !r.got) drawFireflyRing(r, t); if (r.hiz) drawSpeedRing(r, t); } });
     sim.fireflies.forEach(function (f) { if (f.y > cam - 20 && f.y < cam + vh + 20) drawFirefly(f, t); });
     sim.boxes.forEach(drawBox);
     drawAimMarkers(t);
@@ -752,7 +784,7 @@
     noteStats(speed, reward);
     if (levelNo + 1 > save.maxLevel) save.maxLevel = levelNo + 1;
     persist();
-    var kaz = recordRun({ mode: 'level', won: true, ff: ff, boosts: sim.boosts, maxCombo: sim.maxCombo, speed: speed, perfect: perfect });
+    var kaz = recordRun({ mode: 'level', won: true, ff: ff, boosts: sim.boosts, gates: sim.gates, maxCombo: sim.maxCombo, speed: speed, perfect: perfect });
     $('kart').className = 'kart sonuc';
     $('kart').innerHTML =
       '<div class="sonuc-bas"><h2>Gün ışığı!</h2><span>' + levelNo + '. ' + def.name + (first ? ' · ilk kez geçildi' : deaths ? ' · ' + (deaths + 1) + '. deneme' : '') + '</span></div>' +
@@ -803,7 +835,7 @@
       recLine = 'Rekor ' + save.endless.score + ' puan · en yüksek ' + save.endless.meters + ' m';
     }
     noteStats(speed, 0);
-    var kaz = recordRun({ mode: dailyKey ? 'daily' : 'endless', ff: E.fireflyCount(sim), boosts: sim.boosts, maxCombo: sim.maxCombo, meters: m, speed: speed });
+    var kaz = recordRun({ mode: dailyKey ? 'daily' : 'endless', ff: E.fireflyCount(sim), boosts: sim.boosts, gates: sim.gates, maxCombo: sim.maxCombo, meters: m, speed: speed });
     $('kart').className = 'kart sonuc';
     $('kart').innerHTML =
       '<div class="sonuc-bas"><h2>' + title + '</h2><span>' + sub + '</span></div>' +
@@ -854,6 +886,8 @@
       i: '<svg viewBox="0 0 64 64"><circle cx="32" cy="18" r="7" fill="#f26a3a"/><path d="M4 40c6-5 10-5 14 0s10 5 14 0 10-5 14 0 10 5 14 0V60H4z" fill="#1c6a72"/><path d="M4 40c6-5 10-5 14 0s10 5 14 0 10-5 14 0 10 5 14 0" fill="none" stroke="#5fc3c9" stroke-width="3"/><path d="M32 34v-6" stroke="#5fc3c9" stroke-width="3" stroke-linecap="round"/><path d="M28 31l4-4 4 4" fill="none" stroke="#5fc3c9" stroke-width="3" stroke-linecap="round"/></svg>' },
     akis: { t: 'Akış!', m: 'İpi tam sarılmadan bırakıp havadayken sıradakine tutundun. Zincir uzadıkça Akış madalyası ve puan gelir; uzun asılı kalmak zinciri bitirir.',
       i: '<svg viewBox="0 0 64 64"><path d="M6 40C14 22 22 22 30 40S46 58 58 30" fill="none" stroke="#e8f27c" stroke-width="5" stroke-linecap="round"/><text x="40" y="22" fill="#e8f27c" font-family="Baloo 2, sans-serif" font-weight="800" font-size="16">x2</text></svg>' },
+    kapi: { t: 'Rüzgâr şeridi', m: 'Akışın sürerken (x2 ve üstü) şeridin içinden yukarı geç: akış bir artar, puan gelir. Akış yoksa şerit söner; geçmek zorunda değilsin.',
+      i: '<svg viewBox="0 0 64 64"><path d="M8 40h48" stroke="#e8f27c" stroke-width="4" stroke-linecap="round"/><circle cx="8" cy="40" r="4" fill="#e8f27c"/><circle cx="56" cy="40" r="4" fill="#e8f27c"/><path d="M20 32v-10M32 30v-14M44 32v-10" stroke="#e8f27c" stroke-width="2.5" stroke-linecap="round" opacity=".75"/><circle cx="32" cy="52" r="6" fill="#f26a3a"/></svg>' },
     bos: { t: 'Bu tarafta hedef yok', m: 'Kanca boşa gitti ama ipin bırakılmadı. Turkuaz (sol) ya da sarı (sağ) işaretin olduğu yana dokun.',
       i: '<svg viewBox="0 0 64 64"><circle cx="20" cy="40" r="11" fill="none" stroke="#2fb3a6" stroke-width="3.5" stroke-dasharray="5 4"/><path d="M44 30l10 10M54 30L44 40" stroke="#f2b23a" stroke-width="4" stroke-linecap="round" opacity=".7"/></svg>' },
     kurtarma: { t: 'Kurtarma kancası', m: 'Menzilde hiç hedef kalmadı. Ekrana dokun: kanca en yakın yukarı halkaya kadar uzanır.',
@@ -869,6 +903,7 @@
     // ekranda ilk kez görünenler
     if (!save.seen.ff && sim.rings.some(function (r) { return r.ff && !r.got && inView(r.y); })) wantIntro('ff');
     if (!save.seen.hiz && sim.rings.some(function (r) { return r.hiz && inView(r.y); })) wantIntro('hiz');
+    if (!save.seen.kapi && sim.rings.some(function (r) { return r.kapi && !r.got && inView(r.y); })) wantIntro('kapi');
     if (!save.seen.ahsap && sim.rects.some(function (r) { return r.type === 'w' && inView(r.y + r.h / 2); })) wantIntro('ahsap');
     if (!save.seen.kutu && sim.boxes.length && sim.boxes.some(function (b) { return inView(b.y); })) wantIntro('kutu');
     if (!save.seen.kurtarma && !sim.rope && !sim.hook && E.aim(sim, 0.25).rescue) wantIntro('kurtarma');

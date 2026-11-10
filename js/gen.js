@@ -160,6 +160,17 @@
     return null;
   }
 
+  // ---------- rüzgâr şeritleri ----------
+  // Yolun üstünde, bir asılma noktasından (from) sıradaki hedefe (to) giden hattın %40'ında yatay şerit.
+  // Yalnızca karar noktası olmayan adımlara konur (yol tek, oyuncu oradan geçer). Rastgele sayı kullanmaz:
+  // mevcut bölümler, adları ve Günlük Kuyu tohumları değişmez.
+  var GATE_FR = 0.4;
+  function gateOn(from, to, rings) {
+    var g = { x: Math.round(lerp(from.x, to.x, GATE_FR)), y: Math.round(lerp(from.y, to.y, GATE_FR)) };
+    if (rings.some(function (rg) { return Math.hypot(rg.x - g.x, rg.y - g.y) < 50; })) return null;
+    return g;
+  }
+
   // ---------- sonlu bölüm ----------
   function createLevel(num) {
     var r = rng(num * 7919 + 13);
@@ -206,6 +217,15 @@
       if (alt2) { hizRings.push(alt2); hizAt[hi] = alt2; lastDecision = hi; }
     }
 
+    // rüzgâr şeritleri: karar noktası olmayan adımlarda, en az bir adım arayla
+    var gates = [], lastGate = -9;
+    function altAt(k) { return ffAt[k] || hizAt[k]; }
+    for (var gi = 2; gi < nodesN; gi++) {
+      if (altAt(gi) || altAt(gi - 1) || gi - lastGate < 2) continue;
+      var gg = gateOn(allPts[gi], target(nodes[gi]), out.rings.concat(ffRings, hizRings));
+      if (gg) { gates.push(gg); lastGate = gi; }
+    }
+
     // koordinatları kaydır: kova y=50'de, taban aşağıda
     var off = 50 - goal.y;
     function sh(p) { return [Math.round(p.x), Math.round(p.y + off)]; }
@@ -227,7 +247,8 @@
       water: waterLevel ? Math.min(90, 45 + num * 0.5) : 0,
       rects: rects,
       rings: out.rings.map(sh).concat(ffRings.map(function (a) { return [a.x, Math.round(a.y + off), 'ff']; }))
-        .concat(hizRings.map(function (a) { return [a.x, Math.round(a.y + off), 'hiz']; })),
+        .concat(hizRings.map(function (a) { return [a.x, Math.round(a.y + off), 'hiz']; }))
+        .concat(gates.map(function (a) { return [a.x, Math.round(a.y + off), 'kapi']; })),
       route: route,
       ffRoute: ffRoute,
       hizRoute: hizRoute,
@@ -245,7 +266,7 @@
   function createEndless(seed) {
     var r = rng(seed >>> 0);
     var startY = 0;
-    var st = { hp: { x: 180, y: startY }, prevKind: null, nodes: [], frontier: startY, segs: [], anchors: [], prevHp: null, prevT: null, lastFF: -9 };
+    var st = { hp: { x: 180, y: startY }, prevKind: null, nodes: [], frontier: startY, segs: [], anchors: [], prevHp: null, prevT: null, lastFF: -9, altPrev: true, lastGate: -9 };
     var def = {
       id: 'sonsuz', name: 'Sonsuz Kuyu', endless: true, seed: seed,
       hint: 'Su durmadan yükselir. Sağa ya da sola dokunarak tırman; ipi erken bırakıp zincirlersen ekstra puan.',
@@ -295,6 +316,13 @@
             st.lastFF = st.nodes.length;
           }
         }
+        // rüzgâr şeridi: bir önceki adım (prevHp → prevT) karar noktası değilse
+        var altNow = st.lastFF === st.nodes.length;
+        if (st.prevT && st.prevHp && !altNow && !st.altPrev && st.nodes.length - st.lastGate >= 2) {
+          var gg = gateOn(st.prevHp, st.prevT, s.rings.filter(function (rg) { return Math.abs(rg.y - st.prevT.y) < 300; }));
+          if (gg) { s.rings.push({ x: gg.x, y: gg.y, kapi: true }); st.lastGate = st.nodes.length; }
+        }
+        st.altPrev = altNow;
         st.prevHp = st.hp; st.prevT = t;
         st.nodes.push(n);
         st.hp = hangOf(n);

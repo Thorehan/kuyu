@@ -67,7 +67,7 @@ for (const def of LEVELS) for (const st of STYLES) {
 }
 console.log('\n== Üretilen 7..80 ==');
 const sum = {};
-STYLES.forEach(st => { sum[st] = { won: 0, ff: 0, ffT: 0, mult: 0, boosts: 0 }; });
+STYLES.forEach(st => { sum[st] = { won: 0, ff: 0, ffT: 0, mult: 0, boosts: 0, gates: 0, gatesT: 0, combo: 0 }; });
 for (let n = 7; n <= 80; n++) {
   const def = G.createLevel(n);
   for (const st of STYLES) {
@@ -75,15 +75,16 @@ for (let n = 7; n <= 80; n++) {
     const m = sum[st];
     if (r.s.status === 'won') m.won++; else if (!st.startsWith('sadece')) { bad++; console.log('  ' + line(`${n}. ${def.name} [${st}]`, r)); }
     m.ff += E.fireflyCount(r.s); m.ffT += r.s.fireflies.length; m.mult += E.speedMult(r.s); m.boosts += r.s.boosts;
+    m.gates += r.s.gates; m.gatesT += r.s.rings.filter(g => g.kapi).length; m.combo += r.s.maxCombo;
   }
 }
-for (const st of STYLES) { const m = sum[st]; console.log(`[${st.padEnd(9)}] geçilen ${m.won}/74, ateşböceği ${m.ff}/${m.ffT}, hız halkası kullanımı ${m.boosts}, ortalama hız çarpanı x${(m.mult / 74).toFixed(2)}`); }
+for (const st of STYLES) { const m = sum[st]; console.log(`[${st.padEnd(9)}] geçilen ${m.won}/74, ateşböceği ${m.ff}/${m.ffT}, hız halkası kullanımı ${m.boosts}, ortalama hız çarpanı x${(m.mult / 74).toFixed(2)}, rüzgâr şeridi ${m.gates}/${m.gatesT}, ort. en uzun akış x${(m.combo / 74).toFixed(1)}`); }
 console.log('\n== Sonsuz kuyu ==');
 for (const st of ['isaret', 'hiz', 'akis', 'sadeceSag']) {
   const res = [];
   for (let seed = 1; seed <= 5; seed++) {
     const r = play(G.createEndless(seed), st, 120);
-    res.push(`tohum ${seed}: ${E.meters(r.s)} m, puan ${E.finalScore(r.s)} (x${E.speedMult(r.s).toFixed(2)}), hız halkası ${r.s.boosts}, boş ${r.s.misses}, ${r.s.status}`);
+    res.push(`tohum ${seed}: ${E.meters(r.s)} m, puan ${E.finalScore(r.s)} (x${E.speedMult(r.s).toFixed(2)}), hız halkası ${r.s.boosts}, şerit ${r.s.gates}, boş ${r.s.misses}, ${r.s.status}`);
   }
   console.log(`[${st}]`); res.forEach(l => console.log('  ' + l));
 }

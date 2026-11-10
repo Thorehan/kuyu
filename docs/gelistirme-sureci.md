@@ -12,6 +12,9 @@ Bu belge geliştirme sırasını, kararları ve yapılanları tutar. Claude her 
 
 Bir aşamadaki işler bitmeden sonrakine geçilmez; yeni bulunan oynanış sorunları her zaman öne alınır.
 
+## Geri dönüş noktaları
+- `geri-donus-v0.17` (2026-11-10): oyun başarılı, halka türleri ve mağaza öncesi. GitHub'da etiket olarak duruyor; dönmek gerekirse o noktadan devam edilir.
+
 ## Kalıcı kararlar
 - **Mobil oyun, tek elle oynanır.** İmleç yok; başparmak ekranın alt kısmında kalır. Her yeni özellik 375 px telefonda tek el ile denenir.
 - **Görsel tasarım şimdilik bu haliyle devam eder.** İleride yapılacak görsel düzenleme bu yapının (renkler, yazı tipleri, ekran düzeni, sahne çizimi) üzerine yapılır; baştan tasarım yok.
@@ -28,7 +31,12 @@ Altı başlık, geliştirme sırasıyla aynı. `[~]` üzerinde çalışılıyor,
 **Bitenler:** tek el sol/sağ kontrolü ve nişan yardımı, kurtarma kancası, ateşböceği ve hız halkaları (karar noktaları), akış, hız çarpanı, su ilk halkadan sonra, bölümlerde el kayması yok, Kusursuz'da boş atış sayılmaz.
 - [x] Nişan: yandaki halka yukarıdakinin önüne geçmesin (v0.17). Yukarıdaki hedefler dik ve yandakiler (sığ) diye ayrılır; yan = 3 m'den az yükselen ya da 45°'den düz açıdaki hedef. Önce bu taraftaki dik hedef, yoksa yandaki. Havadayken/ip sarılırken yan seçim %4,8 → %1,2 (`node tools/nisan.js`); kalanlar açıkça yukarıdaki yakın halkalar.
 - [ ] Telefon denemesi sonuçlarına göre düzeltmeler (`docs/telefon-testi.md`, sende).
-- [?] Yeni halka türleri: sallanan halka (zamanlama), yay halkası (sabit fırlatma). Çürük halka zorluk olduğu için ertelendi.
+- [~] Yeni halka türleri (2026-11-10 sırası; hepsinde ceza yok, kaçıran yalnızca bonusu kaçırır, uçuş hızı değişmez):
+  1. [x] **Rüzgâr şeridi** (v0.18): yolun üstünde yatay şerit; akış x2 ve üstündeyken içinden yukarı geçmek akışı +1 yapar ve puan verir, akış yokken söner. Karar noktası olmayan adımlara konur.
+  2. [ ] **Yay halkası**: tutunduğun an ipi beklemeden okun yönüne fırlatır; zincire ritim katar.
+  3. [ ] **Geçit çifti**: aynı renkli iki halka; birine tutununca öbüründen çıkarsın. Kestirme ve gizli ateşböceği yolları.
+  4. [ ] **Sarkaç halka**: zincirde sallanır; hangi taraftaysa o tarafın işareti onu gösterir. Sol/sağ kararına zamanlama katar, beklemek yeter.
+  - Çürük halka zorluk olduğu için ertelendi.
 - [ ] 4. bölüme üçüncü ateşböceği (kutu bulmacası yüzünden yer yok; bölüm düzeni değişmeli).
 - [ ] Yerel istatistik: bölüm başına süre, boş atış, ölüm (denge için).
 - Dokunulmayacak: Sonsuz Kuyu su temposu (karar 2026-11-09).
@@ -36,10 +44,11 @@ Altı başlık, geliştirme sırasıyla aynı. `[~]` üzerinde çalışılıyor,
 ### 2. Oyun içi akış / alış-satış
 - [x] Günlük Kuyu: herkes aynı gün aynı tohumla aynı sonsuz kuyu (online skor tablosunun zemini). v0.15
 - [x] Görevler ve başarımlar: günde 3 görev (kolay/orta/zor, ödül puanı), 9 başarım × 3 kademe, Görevler sekmesi. v0.16
-- [?] Ödül puanı ve ateşböceği ne işe yarayacak: iki para birimi mi, tek mi; neyle kazanılır, neye harcanır.
-- [ ] Ekonomi tablosu: bölüm, görev ve Sonsuz koşusundan saatte ne kadar kazanılıyor; fiyatlar buna göre.
-- [ ] Mağaza mantığı (satın al, kuşan, sahip olunanlar); görünümleri 4. aşamada çizilir.
-- [?] Ödüllü reklam yalnızca oyuncu seçerse (Pofi kuralı): ör. günlük görev ödülünü ikiye katla.
+Karar (2026-11-10): oyunda güçlendirme yok, **harcamalar yalnızca kozmetik**. Sıra:
+1. [ ] Ekonomi: harcanabilir para (cüzdan), neyle kazanılır (bölüm, görev, Sonsuz, günlük giriş), fiyat tablosu. Saatte kazanç bot ölçümüyle.
+2. [ ] Günlük giriş ödülü: 7 günlük takvim, 7. gün büyük ödül; "video izle, ikiye katla" (yalnızca oyuncu seçerse, Pofi kuralı). Web sürümünde reklam yok, yer tutucu; gerçek reklam Unity'de.
+3. [ ] Mağaza ve dolap mantığı: satın al, kuşan, sahip olunanlar; ilk ürünler basit renk değişimleri (atkı, ip, iz). Asıl görünümler 4. aşamada çizilir.
+4. [ ] Görev ödüllerine de "video ile ikiye katla".
 
 ### 3. UI / UX
 - [x] **Ana menü düzeni (v0.9):** üst şerit (profil + toplam ödül + ateşböceği), Oyna kartında sıradaki bölümün adı ve hedefleri, başparmak bölgesinde modlar, alt gezinme çubuğu (Ana sayfa / Bölümler / Profil / Ayarlar). Görevler v0.16'da eklendi; Dolap 4. aşamada.
@@ -75,6 +84,7 @@ Altı başlık, geliştirme sırasıyla aynı. `[~]` üzerinde çalışılıyor,
 - [ ] Hikâyenin meta ile bağı (bölgeler, kozmetikler).
 
 ## Yapılanlar
+- 2026-11-10 · v0.18 · Rüzgâr şeridi (ilk yeni halka türü), tanıtım kartı, "rüzgâr şeridinden geç" görevi. Geri dönüş noktası: `geri-donus-v0.17`.
 - 2026-11-10 · v0.17 · Nişan: yandaki sığ halka yukarıdakinin önüne geçmiyor; `tools/nisan.js` denetimi. Geliştirme sırası altı aşamaya çıktı.
 - 2026-11-10 · v0.16 · Görevler ve başarımlar: günlük 3 görev, ödül alma, 9 başarım (Bronz/Gümüş/Altın), alt menüde Görevler sekmesi, sonuç kartında kazanımlar.
 - 2026-11-10 · v0.15 · Günlük Kuyu: günün tohumu (İstanbul saati), günün en iyisi, deneme sayısı, seri; ana menü kartı ve profil.

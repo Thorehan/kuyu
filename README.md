@@ -1,6 +1,6 @@
 # Kuyu
 
-**Funday Morning Games** · 2D mobil oyun · prototip v0.17
+**Funday Morning Games** · 2D mobil oyun · prototip v0.18
 
 Derin bir kuyunun dibindesin. Telefonu tek elle tut: ekranın soluna ya da sağına dokun, kanca o taraftaki hedefe fırlasın; basılı tut, ipe sarıl; bırak, savrul. Halkadan halkaya, ahşaptan ahşaba tırmanıp kuyudan çık.
 
@@ -43,13 +43,20 @@ Her 2–3 adımda bir ana halkanın karşı tarafında ikinci bir halka durur; i
 - Üretilen bölümlerde adımların %37'si karar noktası, iki karar arası en fazla 5 adım. El yapımı bölümlerde hız halkası 2. bölümde tanıtılır (ipucu anlatır); 2, 3 ve 4. bölümde birer, 5. bölümde iki tane var. 1. bölüm yalnızca ateşböceğiyle sade kalır, 6. bölümde yer uygun değildi. 5. bölümde hız halkası ile üçüncü ateşböceğine giden yol ayrı: oyuncu hangisini istediğini seçer.
 
 ## Tanıtım kartları
-Yeni bir şey ilk kez karşına çıktığında oyun kısa süre durur, ekranın altında bir kart açılır (simge, başlık, bir iki cümle, "Anladım"; karta dokunmak da kapatır). Kartlar: ateşböceği halkası, hız halkası, ahşap, kutu ve düğme, su yükseliyor, akış, boş atış, kurtarma kancası, el yorulur (Sonsuz Kuyu). Her biri bir kez gösterilir; Ayarlar → "Tanıtım kartlarını yeniden göster" ile sıfırlanır.
+Yeni bir şey ilk kez karşına çıktığında oyun kısa süre durur, ekranın altında bir kart açılır (simge, başlık, bir iki cümle, "Anladım"; karta dokunmak da kapatır). Kartlar: ateşböceği halkası, hız halkası, rüzgâr şeridi, ahşap, kutu ve düğme, su yükseliyor, akış, boş atış, kurtarma kancası, el yorulur (Sonsuz Kuyu). Her biri bir kez gösterilir; Ayarlar → "Tanıtım kartlarını yeniden göster" ile sıfırlanır.
 
 ## Ateşböceği halkaları
 - Ateşböcekleri artık serbest durmuyor; **halkanın içinde**. O halkaya tutunmak ya da içinden geçmek yeter.
 - Halkalar **karar noktalarında**: ana yoldaki bir halkanın karşı tarafında, aynı yükseklik civarında. Oradan sıradaki halkaya da ulaşılabilir. İstemeyen ana halkaya gidip es geçer.
 - İşaret ateşböceği halkasını gösteriyorsa o yana dokunmak yeter. Gerçek oyuncu gibi oynayan bot ateşböceklerinin 215/221'ini yalnızca işaretlere bakarak topluyor.
 - El yapımı bölümlerde 3 (Kutu bölümünde 2), üretilen bölümlerin 73/74'ünde 3, sonsuz kuyuda ara ara.
+
+## Rüzgâr şeridi (v0.18)
+Yolun üstünde, bir halkadan sıradakine giden hatta duran yatay şerit (112 birim genişlik). Tutunulmaz, kancayı durdurmaz.
+- **Akış x2 ve üstündeyken** şeridi aşağıdan yukarı geçersen akış +1 olur ve havada kalma süresi tazelenir; Sonsuz Kuyu'da akış puanı gelir. Şerit o anda altın renginde yanar.
+- Akış yokken şerit soluk ve kesiklidir, geçmek bir şey vermez. Ceza yok.
+- Üretici şeridi yalnızca karar noktası olmayan adımlara koyar (yol tek), en az bir adım arayla; rastgele sayı kullanmaz, mevcut bölümler ve Günlük Kuyu tohumları değişmez. El yapımı 1–6. bölümlerde şerit yok.
+- Botlarla (74 üretilen bölümde 164 şerit): akışla oynayan %79'unu, asılarak oynayan ~%40'ını, tek tarafa basan hiçbirini almaz.
 
 ## Hız ve ödül
 - **En yüksek hız:** Raunt boyunca ipte değilken, yukarı ya da yana giderken ulaşılan en yüksek hız (m/sn). Kancanın çekme hızı ve düşüş sayılmaz. Bekleyerek oynayan yaklaşık 5–6 m/sn, ipi erken bırakıp zincirleyen 40–57 m/sn.
@@ -75,6 +82,7 @@ Görev türleri ve kolay / orta / zor hedefleri:
 | Tek koşuda N m (Sonsuz ya da Günlük) | 150 / 300 / 550 | tek koşu |
 | Günlük Kuyu denemesi | 1 / 2 / 3 | gün boyu toplam |
 | Bir koşuda N m/sn hız | 25 / 40 / 52 | tek koşu |
+| Rüzgâr şeridinden geç | 2 / 5 / 9 | gün boyu toplam |
 
 Hedefler botların ölçtüğü oynanışa göre seçildi. Ortalama oyuncu Sonsuz Kuyu'da yaklaşık 450 m çıkıyor. Bir hız halkası yaklaşık 33 m/sn veriyor, x1,50 çarpanda hız yaklaşık 57 m/sn.
 

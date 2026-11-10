@@ -1,6 +1,6 @@
 # Kuyu
 
-**Funday Morning Games** · 2D mobil oyun · prototip v0.32
+**Funday Morning Games** · 2D mobil oyun · prototip v0.33
 
 Derin bir kuyunun dibindesin. Telefonu tek elle tut: ekranın soluna ya da sağına dokun, kanca o taraftaki hedefe fırlasın; basılı tut, ipe sarıl; bırak, savrul. Halkadan halkaya, ahşaptan ahşaba tırmanıp kuyudan çık.
 
@@ -297,6 +297,7 @@ Bot rota bilmez; yalnızca ekrandaki sol ve sağ işarete bakar. Sonuçlar (6 el
 | `tools/oyuncu.js` | Gerçek oyuncu gibi tek elle oynayan bot (yalnızca işaretlere bakar) |
 | `docs/gelistirme-sureci.md` | Geliştirme sırası, kalıcı kararlar, yapılanlar |
 | `docs/telefon-testi.md` | Telefonda 10 dakikalık deneme listesi |
+| `docs/muzik-brifi.md` | Mustafa için müzik brifi (parçalar, tempo, ton, teslim) |
 | `sw.js`, `manifest.webmanifest` | Ana ekrana kurulum ve internetsiz açılış |
 | `tools/kontrol.js` | Duman testi: sözdizimi, sayfa bağlantıları, servis çalışanı listesi, sürüm etiketi |
 | `tools/tempo.js` | Sonsuz Kuyu su temposu ölçümü |

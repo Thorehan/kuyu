@@ -76,7 +76,7 @@ Karar (2026-11-10): oyunda güçlendirme yok, **harcamalar yalnızca kozmetik**.
 - [x] Bölgelere özel müzik (v0.32, üretilen); gerçek parçalar müzik kararına bağlı.
 - [ ] Görsel düzenleme: bu yapının üzerine; baştan tasarım yok.
 - [x] Ortam müziği (v0.32): dosyasız, Web Audio ile üretilir (`js/muzik.js`). Bölgeye göre tema (Taş Kuyu La minör sakin, Maden sıcak ve damlalı, Kristal Mağara yankılı çan, Eski Kule org), menüde daha sakin sürüm; akış sürerken arpej katmanı açılır; duraklatınca ve sonuç kartında kısılır, telefon arka plandayken susar. Ayarlar'da Müzik ve Ses efektleri ayrı; duraklatma panelinde Müzik ve Efekt düğmeleri.
-- [?] Gerçek müzik: Mustafa'dan istenecek mi? Gelirse `js/muzik.js` → `PARCALAR`'a bölge başına bir dosya yazılır (tas, maden, kristal, kule, menu); o bölgede dosya çalar, üretilen müzik susar.
+- [~] Gerçek müzik: Mustafa'dan istenecek (karar 2026-11-10). Brif: `docs/muzik-brifi.md`. Gelince `js/muzik.js` → `PARCALAR`'a bölge başına bir dosya yazılır (tas, maden, kristal, kule, menu); o bölgede dosya çalar, üretilen müzik susar.
 
 ### 5. Online özellikler
 - [?] Arka uç seçimi ve maliyet (Firebase, Supabase vb.).
@@ -96,6 +96,7 @@ Karar (2026-11-10): oyunda güçlendirme yok, **harcamalar yalnızca kozmetik**.
 - [ ] Hikâyenin meta ile bağı (bölgeler, kozmetikler).
 
 ## Yapılanlar
+- 2026-11-10 · v0.33 · Müzik brifi (Mustafa için); servis çalışanı müzik dosyalarını da internetsiz saklar.
 - 2026-11-10 · v0.32 · Ortam müziği (bölgeye ve akışa göre), Müzik ve Ses efektleri ayrı ayarlar.
 - 2026-11-10 · v0.31 · Dolap'a kahraman rengi ve kanca biçimi; beş sekme.
 - 2026-11-10 · v0.30 · Bölgeler: Taş Kuyu, Maden, Kristal Mağara, Eski Kule (bölümlerde numaraya, Sonsuz'da yüksekliğe göre).

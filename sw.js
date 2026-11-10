@@ -43,7 +43,7 @@ self.addEventListener('activate', e => {
   })());
 });
 
-const isMedia = url => /\/assets\/.*\.(webp|png|jpg|svg)$/.test(url.pathname);
+const isMedia = url => /\/assets\/.*\.(webp|png|jpg|svg|mp3|ogg|m4a)$/.test(url.pathname); // müzik dosyaları da (v0.32)
 
 self.addEventListener('fetch', e => {
   const req = e.request;

@@ -23,6 +23,7 @@
     });
     if (id === 'ekAna' || id === 'ekTanitim') startScene(); else stopScene();
     if (id === 'ekDolap') startPreview(); else stopPreview();
+    if (id !== 'oyun' && id !== 'ekAcilis') G.muzikSahne('menu'); // menülerde sakin müzik
     if (SEKMELER.indexOf(id) >= 0) $('gorevNokta').hidden = !G.gorevBekleyen();
   }
 
@@ -474,10 +475,15 @@
     var s = save();
     $('sesAnahtar').setAttribute('aria-checked', s.mute ? 'false' : 'true');
     $('titresimAnahtar').setAttribute('aria-checked', s.haptics === false ? 'false' : 'true');
+    $('muzikAnahtar').setAttribute('aria-checked', G.muzikAcik() ? 'true' : 'false');
     $('yaziAnahtar').setAttribute('aria-checked', s.buyukYazi ? 'true' : 'false');
     $('adDegis').value = (s.profile && s.profile.name) || '';
     show('ekAyarlar');
   }
+  $('muzikAnahtar').addEventListener('click', function () {
+    var on = G.toggleMuzik();
+    $('muzikAnahtar').setAttribute('aria-checked', on ? 'true' : 'false');
+  });
   $('sesAnahtar').addEventListener('click', function () {
     var muted = G.toggleMute();
     $('sesAnahtar').setAttribute('aria-checked', muted ? 'false' : 'true');

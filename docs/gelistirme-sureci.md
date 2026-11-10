@@ -73,9 +73,10 @@ Karar (2026-11-10): oyunda güçlendirme yok, **harcamalar yalnızca kozmetik**.
 - [x] Dolap görünümleri: atkı, ip, uçuş izi (v0.22); kahraman rengi ve kanca biçimi (v0.31). Kahraman: Turuncu (bedava), Deniz 60, Çimen 60, Lavanta 90, Pembe 90, Gece 120, Altın 150. Kanca: Ok (bedava), Çapa 50, Yıldız 80, Kalp 100 (kalp ve yıldız hep dik çizilir). Bütün dolap 2080 ateşböceği (tipik oyuncu için 2–3 hafta). Halka renkleri oynanışın parçası olduğu için satılmaz.
 - [ ] Daha sonra: kahraman kostümleri (şapka, gözlük), bölgeye özel ürünler.
 - [x] Bölgeler (v0.30): Taş Kuyu (1–16) → Maden (17–36) → Kristal Mağara (37–56) → Eski Kule (57–76), sonra baştan (20'şer). Sonsuz Kuyu'da her 500 m'de bir; sınır kuyunun içinde görünür. Değişen: duvar dokusu ve rengi, taş çıkıntı rengi, ortam ışığı, arka plan süsleri (madende fener, mağarada duvar dibinde kristal, kulede pencere ve ay ışığı). Halkalar, işaretler ve oyun renkleri her bölgede aynı. Bölümler ekranında grup adları bölge adı; yeni bölgeye ilk girişte oyunu durdurmayan kısa duyuru (Sonsuz'da metresiyle). Oynanış değişmedi.
-- [ ] Bölgelere özel müzik/ses dokusu (müzik kararına bağlı).
+- [x] Bölgelere özel müzik (v0.32, üretilen); gerçek parçalar müzik kararına bağlı.
 - [ ] Görsel düzenleme: bu yapının üzerine; baştan tasarım yok.
-- [?] Müzik: Mustafa'dan istenecek mi?
+- [x] Ortam müziği (v0.32): dosyasız, Web Audio ile üretilir (`js/muzik.js`). Bölgeye göre tema (Taş Kuyu La minör sakin, Maden sıcak ve damlalı, Kristal Mağara yankılı çan, Eski Kule org), menüde daha sakin sürüm; akış sürerken arpej katmanı açılır; duraklatınca ve sonuç kartında kısılır, telefon arka plandayken susar. Ayarlar'da Müzik ve Ses efektleri ayrı; duraklatma panelinde Müzik ve Efekt düğmeleri.
+- [?] Gerçek müzik: Mustafa'dan istenecek mi? Gelirse `js/muzik.js` → `PARCALAR`'a bölge başına bir dosya yazılır (tas, maden, kristal, kule, menu); o bölgede dosya çalar, üretilen müzik susar.
 
 ### 5. Online özellikler
 - [?] Arka uç seçimi ve maliyet (Firebase, Supabase vb.).
@@ -95,6 +96,7 @@ Karar (2026-11-10): oyunda güçlendirme yok, **harcamalar yalnızca kozmetik**.
 - [ ] Hikâyenin meta ile bağı (bölgeler, kozmetikler).
 
 ## Yapılanlar
+- 2026-11-10 · v0.32 · Ortam müziği (bölgeye ve akışa göre), Müzik ve Ses efektleri ayrı ayarlar.
 - 2026-11-10 · v0.31 · Dolap'a kahraman rengi ve kanca biçimi; beş sekme.
 - 2026-11-10 · v0.30 · Bölgeler: Taş Kuyu, Maden, Kristal Mağara, Eski Kule (bölümlerde numaraya, Sonsuz'da yüksekliğe göre).
 - 2026-11-10 · v0.29 · 4. bölüme üçüncü ateşböceği; kutu yerde artık kaymıyor (düğmeden çıkıp kapağı kapatıyordu).

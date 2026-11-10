@@ -61,13 +61,17 @@
 
   // ---------- ses ----------
   var audio = null;
+  function muzikAcik() { return save.muzik !== false; }
   function ac() {
-    if (save.mute) return null;
+    if (save.mute && !muzikAcik()) return null;
     if (!audio) { try { audio = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { return null; } }
-    if (audio.state === 'suspended') audio.resume();
+    if (audio.state === 'suspended' && !document.hidden) audio.resume();
+    if (window.KuyuMuzik) window.KuyuMuzik.baslat(audio, muzikAcik());
     return audio;
   }
+  var MZ = { sahne: function (s) { if (window.KuyuMuzik) window.KuyuMuzik.sahne(s); }, kis: function (k) { if (window.KuyuMuzik) window.KuyuMuzik.kis(k); } };
   function tone(freq, dur, type, vol, slide) {
+    if (save.mute) return; // efektler kapalı (müzik ayrı)
     var a = ac(); if (!a) return;
     var o = a.createOscillator(), g = a.createGain(), t = a.currentTime;
     o.type = type || 'sine'; o.frequency.setValueAtTime(freq, t);
@@ -274,6 +278,7 @@
     levelBolge = bolgeBolum(levelNo);
     reset();
     bolgeDuyur(levelBolge);
+    MZ.sahne(BOLGELER[levelBolge].id);
   }
   // Yeni bir bölgeye ilk girişte oyunu durdurmayan kısa duyuru (bölge başına bir kez)
   function bolgeDuyur(bi, ek) {
@@ -301,6 +306,8 @@
     if (mode === 'endless') def = newEndlessDef();
     sim = E.createSim(def);
     sonsuzBolge = 0;
+    if (mode === 'endless') MZ.sahne('tas');
+    MZ.kis(false);
     parts = []; floaters = []; trail = []; winT = null; deadT = null; resultShown = false; lastHud = ''; introOgeSayisi = 0;
     $('katman').hidden = true;
     closePause(); closeIntro(true);
@@ -916,7 +923,8 @@
       else if (mode === 'endless' && deadT > 0.6 && !resultShown) showEndlessResult();
     }
     handleEvents();
-    if (mode === 'endless' && sim.status === 'play') { var nb = bolgeY(sim.topY); if (nb !== sonsuzBolge) { /* en yüksek noktaya göre: sınırda inip çıkınca tekrar etmez */ sonsuzBolge = nb; floatText(sim.p.x, sim.p.y - 40, BOLGELER[nb].ad, 'rgb(' + BOLGELER[nb].isik + ')', 18); bolgeDuyur(nb, E.meters(sim) + ' m'); } }
+    if (window.KuyuMuzik) window.KuyuMuzik.yogunluk(sim.status === 'play' && sim.combo >= 2 ? (sim.combo - 1) / 6 : 0);
+    if (mode === 'endless' && sim.status === 'play') { var nb = bolgeY(sim.topY); if (nb !== sonsuzBolge) { /* en yüksek noktaya göre: sınırda inip çıkınca tekrar etmez */ sonsuzBolge = nb; MZ.sahne(BOLGELER[nb].id); floatText(sim.p.x, sim.p.y - 40, BOLGELER[nb].ad, 'rgb(' + BOLGELER[nb].isik + ')', 18); bolgeDuyur(nb, E.meters(sim) + ' m'); } }
     if (sim.status === 'play' && !paused) maybeIntro();
     var target = camTarget();
     cam += (target - cam) * Math.min(1, dt * (sim.status === 'dead' ? 2 : 7));
@@ -1000,6 +1008,7 @@
     };
   }
   function showSheet() {
+    MZ.kis(true);
     $('katman').classList.add('alt');
     $('katman').hidden = false;
   }
@@ -1198,10 +1207,16 @@
   // ---------- duraklatma ----------
   // Oyun ve su durur. Tutunduğun ip bırakılmaz: devam edince aynı yerden sürersin.
   var pauseOpen = false;
+  function muzikDegis() {
+    save.muzik = !muzikAcik(); persist();
+    var a = ac(); if (window.KuyuMuzik) window.KuyuMuzik.acik(muzikAcik());
+    return muzikAcik();
+  }
   function pauseGame() {
     if (introOpen) closeIntro(true);
     if (!sim || sim.status !== 'play' || pauseOpen) return;
     pauseOpen = true; paused = true;
+    MZ.kis(true);
     active = null; // parmak panelde kalkarsa ip bırakılmasın
     var m = E.meters(sim);
     if (mode === 'endless') {
@@ -1219,7 +1234,7 @@
     $('duraklat').hidden = false;
     $('devamBtn').focus({ preventScroll: true });
   }
-  function closePause() { pauseOpen = false; $('duraklat').hidden = true; }
+  function closePause() { pauseOpen = false; $('duraklat').hidden = true; MZ.kis(false); }
   function resumeGame() {
     if (!pauseOpen) return;
     closePause();
@@ -1228,7 +1243,9 @@
   }
   function syncPauseToggles() {
     $('dSesBtn').setAttribute('aria-checked', save.mute ? 'false' : 'true');
-    $('dSesBtn').textContent = save.mute ? 'Ses kapalı' : 'Ses açık';
+    $('dSesBtn').textContent = save.mute ? 'Efekt kapalı' : 'Efekt açık';
+    $('dMuzikBtn').setAttribute('aria-checked', muzikAcik() ? 'true' : 'false');
+    $('dMuzikBtn').textContent = muzikAcik() ? 'Müzik açık' : 'Müzik kapalı';
     $('dTitresimBtn').setAttribute('aria-checked', save.haptics === false ? 'false' : 'true');
     $('dTitresimBtn').textContent = save.haptics === false ? 'Titreşim kapalı' : 'Titreşim açık';
   }
@@ -1239,9 +1256,11 @@
   $('dAtlaBtn').onclick = function () { closePause(); if (mode === 'level') { istatBitir('atla'); startLevel(levelNo + 1); } };
   $('anaMenuBtn').onclick = function () { goHome(); };
   $('dSesBtn').onclick = function () { save.mute = !save.mute; persist(); setMuteIcon(); syncPauseToggles(); };
+  $('dMuzikBtn').onclick = function () { muzikDegis(); syncPauseToggles(); };
   $('dTitresimBtn').onclick = function () { save.haptics = save.haptics === false; persist(); syncPauseToggles(); };
   // Telefon arka plana alınınca (bildirim, arama, uygulama değişimi) oyun kendiliğinden durur.
   document.addEventListener('visibilitychange', function () {
+    if (audio) { if (document.hidden) audio.suspend(); else if (!save.mute || muzikAcik()) audio.resume(); }
     if (document.hidden && !$('oyunEkrani').hidden) pauseGame();
   });
   setMuteIcon();
@@ -1320,6 +1339,9 @@
     persist: persist,
     levelDef: levelDef,
     handCount: HAND.length,
+    toggleMuzik: function () { return muzikDegis(); },
+    muzikAcik: muzikAcik,
+    muzikSahne: function (s) { MZ.sahne(s); MZ.kis(false); },
     toggleMute: function () { save.mute = !save.mute; persist(); setMuteIcon(); return save.mute; },
     resetIntros: function () { save.seen = {}; persist(); },
     bolgeAdi: function (n) { return BOLGELER[bolgeBolum(n)].ad; },

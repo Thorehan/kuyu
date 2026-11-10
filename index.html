@@ -16,8 +16,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&family=Figtree:wght@400;600&display=swap">
-<link rel="stylesheet" href="css/kuyu.css?v=0.31">
-<link rel="stylesheet" href="css/ekranlar.css?v=0.31">
+<link rel="stylesheet" href="css/kuyu.css?v=0.32">
+<link rel="stylesheet" href="css/ekranlar.css?v=0.32">
 </head>
 <body>
 <div class="app" id="oyunEkrani" hidden>
@@ -53,7 +53,10 @@
           <button type="button" id="dAtlaBtn">Bölümü atla</button>
         </div>
         <div class="dur-iki">
-          <button type="button" class="anahtar-dugme" id="dSesBtn" role="switch" aria-checked="true">Ses</button>
+          <button type="button" class="anahtar-dugme" id="dMuzikBtn" role="switch" aria-checked="true">Müzik</button>
+          <button type="button" class="anahtar-dugme" id="dSesBtn" role="switch" aria-checked="true">Efekt</button>
+        </div>
+        <div class="dur-iki">
           <button type="button" class="anahtar-dugme" id="dTitresimBtn" role="switch" aria-checked="true">Titreşim</button>
         </div>
         <button type="button" class="genis" id="anaMenuBtn">Ana menü</button>
@@ -69,7 +72,7 @@
   <img id="acilisLogo" class="marka-logo" src="assets/funday-morning-logo.webp" alt="Funday Morning Games">
   <div class="yukleme" aria-hidden="true"><div id="yuklemeDolgu"></div></div>
   <div class="yukleme-not" id="yuklemeNot">Yükleniyor…</div>
-  <div class="ek-surum">Kuyu v0.31</div>
+  <div class="ek-surum">Kuyu v0.32</div>
 </section>
 
 <!-- Giriş: yalnızca ilk açılışta -->
@@ -240,7 +243,8 @@
 <section class="ekran sayfa-ekran sekmeli" id="ekAyarlar" hidden>
   <div class="sayfa-ust"><h2>Ayarlar</h2></div>
   <div class="sayfa-ic">
-    <div class="ayar-satir"><div><b>Ses</b><span>Kanca, akış ve ateşböceği sesleri</span></div><button type="button" class="anahtar" id="sesAnahtar" role="switch" aria-checked="true" aria-label="Ses"><i></i></button></div>
+    <div class="ayar-satir"><div><b>Müzik</b><span>Bölgeye göre değişen ortam müziği; akış sürerken canlanır</span></div><button type="button" class="anahtar" id="muzikAnahtar" role="switch" aria-checked="true" aria-label="Müzik"><i></i></button></div>
+    <div class="ayar-satir"><div><b>Ses efektleri</b><span>Kanca, akış ve ateşböceği sesleri</span></div><button type="button" class="anahtar" id="sesAnahtar" role="switch" aria-checked="true" aria-label="Ses efektleri"><i></i></button></div>
     <div class="ayar-satir"><div><b>Büyük yazı</b><span>Menülerdeki küçük yazılar, açıklamalar ve ipuçları büyür</span></div><button type="button" class="anahtar" id="yaziAnahtar" role="switch" aria-checked="false" aria-label="Büyük yazı"><i></i></button></div>
     <div class="ayar-satir"><div><b>Titreşim</b><span>Tutunurken ve ateşböceği alınca kısa titreşim (Android)</span></div><button type="button" class="anahtar" id="titresimAnahtar" role="switch" aria-checked="true" aria-label="Titreşim"><i></i></button></div>
     <form class="ayar-satir ad-satir" id="adForm">
@@ -261,7 +265,7 @@
     <button type="button" id="istatBtn">Oyun istatistikleri</button>
     <button type="button" id="tanitimBtn">Tanıtımı yeniden izle</button>
     <button type="button" id="ipucuSifirBtn">Tanıtım kartlarını yeniden göster</button>
-    <p class="surum">Kuyu v0.31 · prototip · Funday Morning Games</p>
+    <p class="surum">Kuyu v0.32 · prototip · Funday Morning Games</p>
   </div>
 </section>
 
@@ -296,13 +300,14 @@
 
 <div class="bildirim" id="bildirim" role="status" hidden></div>
 
-<script src="js/engine.js?v=0.31"></script>
-<script src="js/levels.js?v=0.31"></script>
-<script src="js/gen.js?v=0.31"></script>
-<script src="js/gorevler.js?v=0.31"></script>
-<script src="js/ekonomi.js?v=0.31"></script>
-<script src="js/istatistik.js?v=0.31"></script>
-<script src="js/game.js?v=0.31"></script>
-<script src="js/screens.js?v=0.31"></script>
+<script src="js/engine.js?v=0.32"></script>
+<script src="js/levels.js?v=0.32"></script>
+<script src="js/gen.js?v=0.32"></script>
+<script src="js/gorevler.js?v=0.32"></script>
+<script src="js/ekonomi.js?v=0.32"></script>
+<script src="js/istatistik.js?v=0.32"></script>
+<script src="js/muzik.js?v=0.32"></script>
+<script src="js/game.js?v=0.32"></script>
+<script src="js/screens.js?v=0.32"></script>
 </body>
 </html>

@@ -1,6 +1,6 @@
 # Kuyu
 
-**Funday Morning Games** · 2D mobil oyun · prototip v0.31
+**Funday Morning Games** · 2D mobil oyun · prototip v0.32
 
 Derin bir kuyunun dibindesin. Telefonu tek elle tut: ekranın soluna ya da sağına dokun, kanca o taraftaki hedefe fırlasın; basılı tut, ipe sarıl; bırak, savrul. Halkadan halkaya, ahşaptan ahşaba tırmanıp kuyudan çık.
 
@@ -20,7 +20,7 @@ Pofi ile aynı akış:
 1. **Açılış:** Funday Morning logosu ve yükleme çubuğu (en az 2,2 sn, yazı tipleri ve logo yüklenene kadar).
 2. **Giriş:** Yalnızca ilk açılışta. Oyuncu adı ve "Misafir olarak oyna". Google ve Apple düğmeleri şimdilik "yakında" der. İlerleme bu cihazda saklanır.
 3. **Tanıtım:** "Funday Morning sunar", ardından kahraman dipten kanca atıp halkaya çekilir ve gün ışığına fırlar; "Kuyu" yazısı belirir. Dokununca geçilir.
-4. **Ana menü (v0.9):** Arka planda kuyunun içinde ipte sallanan kahraman ve ateşböcekleri. Üstte profil (avatar ve ad), toplam ödül puanı ve ateşböceği. Başparmak bölgesinde görev şeridi (v0.24: "Görevler 1/3", ilerleme çubukları, tamamlanmaya en yakın görev ya da "Ödül hazır"; dokununca Görevler), Oyna kartı (kalınan bölümün adı ve hedefleri), Sonsuz Kuyu (rekor) ve Günlük Kuyu (günün en iyisi ve seri) kartları. En altta gezinme çubuğu: Ana sayfa, Bölümler, Görevler, Dolap, Ayarlar (Profil: üstteki "Merhaba" düğmesi). Ayarlar: ses, büyük yazı (v0.27), oyun istatistikleri (v0.28), titreşim, tam ekran, oyuncu adı, nasıl oynanır, tanıtımı yeniden izle.
+4. **Ana menü (v0.9):** Arka planda kuyunun içinde ipte sallanan kahraman ve ateşböcekleri. Üstte profil (avatar ve ad), toplam ödül puanı ve ateşböceği. Başparmak bölgesinde görev şeridi (v0.24: "Görevler 1/3", ilerleme çubukları, tamamlanmaya en yakın görev ya da "Ödül hazır"; dokununca Görevler), Oyna kartı (kalınan bölümün adı ve hedefleri), Sonsuz Kuyu (rekor) ve Günlük Kuyu (günün en iyisi ve seri) kartları. En altta gezinme çubuğu: Ana sayfa, Bölümler, Görevler, Dolap, Ayarlar (Profil: üstteki "Merhaba" düğmesi). Ayarlar: müzik ve ses efektleri (v0.32), büyük yazı (v0.27), oyun istatistikleri (v0.28), titreşim, tam ekran, oyuncu adı, nasıl oynanır, tanıtımı yeniden izle.
 
 Oyun ekranının üst şeridinde solda bölüm adı ve altında küçük göstergeler var: ateşböceği noktaları, atış/par (Kusursuz için), akış (x2 ve üstünde parlar). Sonsuz Kuyu'da metre, akış ve hız çarpanı, sağda büyük puan. Oyundaki **duraklat** düğmesi (II) paneli açar: Devam et, Baştan başla (Sonsuz'da Yeni koşu), Bölümü atla, ses ve titreşim, Ana menü. Duraklarken oyun ve su durur, tutunduğun ip bırakılmaz. Telefon arka plana alınınca (bildirim, arama) oyun kendiliğinden durur. Klavyede Esc ya da P duraklatır, Esc/Enter/Boşluk devam ettirir. `?bolum=N` ya da `?mod=sonsuz` bağlantısı açılıştan sonra tanıtımı atlayıp doğrudan oyuna girer.
 
@@ -89,6 +89,21 @@ Yolun üstünde, bir halkadan sıradakine giden hatta duran yatay şerit (112 bi
 - **Bölüm ödülü** = (100 + 25 × ateşböceği + 50 Kusursuz + 50 Akış) × hız çarpanı.
 - **Bölüm sonu kartı** ekranın altından açılır: ödül sayarak gelir ve hesabı yazılır, üç madalya (bu oyunda ilk kez kazanılan "YENİ" etiketiyle), süre ve en yüksek hız (kırılan rekorlar "REKOR" etiketiyle), büyük "Bölüm N ›" düğmesi, Tekrar ve Bölümler. Sonsuz Kuyu sonucu da aynı yapıda.
 - **Sonsuz Kuyu puanı** = (metre + akış bonusu + ateşböcekleri) × hız çarpanı.
+
+## Müzik ve ses (v0.32)
+- **Ortam müziği** dosyasız, Web Audio ile çalınırken üretilir (`js/muzik.js`). Katmanlar: yumuşak ses halısı (akor), alçak zemin notası, akış sürerken (x2 ve üstü) giderek açılan arpej, bölgeye özel renk.
+
+| Sahne | Tema |
+|---|---|
+| Menüler | sakin, 60 vuruş, arpej yok |
+| Taş Kuyu | La minör, yumuşak üçgen dalga |
+| Maden | Re dorian, sıcak tını, ara ara su damlası |
+| Kristal Mağara | Mi lidya, yankılı çan |
+| Eski Kule | Do minör, org gibi |
+
+- Duraklatınca ve sonuç kartında müzik kısılır; telefon arka plana alınınca ses bağlamı uyur (pil). Notalar ~100 ms aralıkla biraz ileriye planlanır, oyun karesi takılsa da ritim kaymaz.
+- **Ayarlar:** Müzik ve Ses efektleri ayrı anahtarlar; duraklatma panelinde "Müzik" ve "Efekt" düğmeleri. Efektler kapalıyken müzik çalabilir.
+- **Gerçek müzik gelince:** `js/muzik.js` içindeki `PARCALAR`'a sahne başına bir dosya yazılır (ör. `maden: 'assets/muzik/maden.mp3'`); o sahnede dosya döngüyle çalar, üretilen müzik susar. Dosya yoksa ya da yüklenemezse üretilen müzik çalar.
 
 ## Bölgeler (v0.30)
 Yalnızca görünüm değişir; oynanış, halkalar, işaretler ve oyun renkleri her bölgede aynıdır (okunabilirlik).
@@ -274,6 +289,7 @@ Bot rota bilmez; yalnızca ekrandaki sol ve sağ işarete bakar. Sonuçlar (6 el
 | `js/gorevler.js` | Günlük görevler ve başarımlar (tarayıcı + Node) |
 | `js/ekonomi.js` | Cüzdan, günlük giriş, Dolap kataloğu (tarayıcı + Node) |
 | `js/istatistik.js` | Yerel oyun istatistiği (tarayıcı + Node) |
+| `js/muzik.js` | Üretilen ortam müziği (bölge ve akışa göre) |
 | `js/game.js` | Oyun ekranı: çizim, ses, girdi, kayıt |
 | `js/screens.js` | Açılış, giriş, tanıtım, ana menü, bölümler, ayarlar ve arka plan sahnesi |
 | `assets/funday-morning-logo.webp` | Şirket logosu (Pofi ile aynı) |

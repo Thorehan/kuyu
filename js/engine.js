@@ -24,6 +24,7 @@
     REEL: 760,          // ip sarma hızı
     MIN_LEN: 24,        // asılı kalınca ip boyu
     BOX_R: 13,
+    BOX_ZEMIN: 0.85,    // yerdeki kutunun yatay hızı her adım bu oranla söner
     RING_R: 10,
     DT: 1 / 120,
     MAXV: 1150,
@@ -480,7 +481,11 @@
         var ex = b.x - p.x, ey = b.y - p.y, ed = Math.sqrt(ex * ex + ey * ey) || 1;
         if (ed > rp.len) { b.x = p.x + ex / ed * rp.len; b.y = p.y + ey / ed * rp.len; }
       }
-      for (j = 0; j < 2; j++) for (var k = 0; k < s.rects.length; k++) if (solid(s, s.rects[k])) collideCircle(b, s.rects[k], CFG.BOX_R, 0.6);
+      var zemin = false;
+      for (j = 0; j < 2; j++) for (var k = 0; k < s.rects.length; k++) if (solid(s, s.rects[k])) { var cn = collideCircle(b, s.rects[k], CFG.BOX_R, 0.6); if (cn && cn.ny < -0.5) zemin = true; }
+      // Yerde duran kutuda sürtünme: collideCircle sürtünmeyi yalnızca yüzeye doğru giderken uygular; duran kutunun
+      // dikey hızı her adım sıfırlandığı için kutu buz gibi kayıyor, düğmeden çıkıyordu (4. bölüm). Ip kutuyu çekerken uygulanmaz.
+      if (zemin && !(rp && rp.kind === 'box' && rp.box === b)) b.px = b.x - (b.x - b.px) * CFG.BOX_ZEMIN;
     }
 
     // düğmeler ve kapılar

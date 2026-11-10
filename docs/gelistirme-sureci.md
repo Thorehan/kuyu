@@ -37,7 +37,8 @@ Altı başlık, geliştirme sırasıyla aynı. `[~]` üzerinde çalışılıyor,
   3. [x] **Geçit çifti** (v0.20): mor giriş halkasına tutun, yaklaşınca (4 m) iki düğüm yukarıdaki mor çıkışa taşınır ve orada asılı kalırsın; akış sürer, düşme yok. Giriş ana yolun alternatifidir (seçim). Arada ateşböceği varsa geçit konmaz (atlatmasın). Bölümlerin 27/74'ünde birer çift, Sonsuz'da 1 km'de 4–5. İleride: çıkışa ateşböceği koyup gizli yol yapmak.
   4. [x] **Sarkaç halka** (v0.21): tepedeki pimden zincirle asılı, ±55 birim, 2,6 sn'de bir salınım. Hangi taraftaysa o tarafın işareti onu gösterir; uzaksa beklemek yeter. Tutununca seni de sallar. Ana yoldaki ortadaki halkalardan (x 100–260) 5 adım arayla. Motor hatası düzeltildi: sarkaç kancanın üstüne kayınca kanca içinden geçip ıskalıyordu.
   - Çürük halka zorluk olduğu için ertelendi.
-- [ ] 4. bölüme üçüncü ateşböceği (kutu bulmacası yüzünden yer yok; bölüm düzeni değişmeli).
+- [x] 4. bölüme üçüncü ateşböceği (v0.29): (60, 600), kapağın üstünde solda küçük bir sapma. Bulmaca odasına konunca oyuncu ateşböceği halkasından kutuyu çekip düğmeyi ıskalıyordu; (80, 340) yalnız sola basarak geçilebilen bir yol açıyordu. Bu yerde ateşböceği rotası 3/3, bütün tarzlar geçer, tek taraf geçemez.
+- [x] Kutu sürtünmesi (v0.29): yerdeki kutu buz gibi kayıp düğmeden çıkıyordu (çarpışma sürtünmesi yalnızca yüzeye doğru giderken uygulanıyordu). Artık yerdeki kutunun yatay hızı söner (`CFG.BOX_ZEMIN` 0,85); 4. bölümde denenen 8 zamanlamanın 8'inde kutu düğmede kalır (önce 1'inde). Kahraman fiziği değişmedi.
 - [x] Yerel istatistik (v0.28): Ayarlar → Oyun istatistikleri. Bölüm başına deneme, geçiş, ölüm (yüksekliğin yüzde kaçında), atlama, yarıda bırakma, en iyi süre, boş atış, kurtarma; Sonsuz/Günlük koşu metreleri (son 30), en uzun akış; halka kullanımı ve toplam oynama süresi. "Panoya kopyala" ile JSON paylaşılır (telefon denemesinden sonra bana gönder, denge buna göre ayarlanır). Yalnızca cihazda; sıfırlama iki dokunuşla.
 - Dokunulmayacak: Sonsuz Kuyu su temposu (karar 2026-11-09).
 
@@ -92,6 +93,7 @@ Karar (2026-11-10): oyunda güçlendirme yok, **harcamalar yalnızca kozmetik**.
 - [ ] Hikâyenin meta ile bağı (bölgeler, kozmetikler).
 
 ## Yapılanlar
+- 2026-11-10 · v0.29 · 4. bölüme üçüncü ateşböceği; kutu yerde artık kaymıyor (düğmeden çıkıp kapağı kapatıyordu).
 - 2026-11-10 · v0.28 · Yerel istatistik sayfası ve panoya kopyalama.
 - 2026-11-10 · v0.27 · Büyük yazı ayarı; sonuç kartında Dolap kısa yolu (v0.26).
 - 2026-11-10 · v0.25 · Dolap: ilk dokunuş önizleme, satın alma ayrı "Al" düğmesiyle (oyuncu geri bildirimi: dokununca hemen satın alınıyordu).

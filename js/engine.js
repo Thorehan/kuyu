@@ -48,6 +48,9 @@
     RESCUE_MAX: 1000,   // kurtarma kancası: menzilde hedef yokken en yakın yukarıdaki hedefe bu kadar uzağa atılır
     SPEED_BASE: 200,    // hız çarpanı bu serbest uçuş hızından sonra başlar
     SPEED_TOP: 1150,    // bu hızda çarpan en yüksek (x1,5)
+    TAM_PENCERE: 70,    // tam zamanında bırakma: ip halkaya bu kadar kala (≈0,09 sn) bırakılırsa
+    TAM_SARIM: 80,      // ...ve o tutunuşta ip en az bu kadar sarıldıysa (yakın halkada kendiliğinden olmasın)
+    TAM_PTS: 10,        // sonsuz mod: tam zamanında bırakma puanı (bölüm ödülünü değiştirmez)
     COMBO_PTS: 3,       // sonsuz mod: akışlı her tutunma min(akış, COMBO_CAP) × bu kadar puan
     COMBO_CAP: 12
   };
@@ -97,7 +100,7 @@
       grounded: false,
       // akış ve skor
       hang: 0, air: 0, chain: false, combo: 0, maxCombo: 0, hooks: 0, shots: 0, slips: 0,
-      startY: sy, topY: sy, bonus: 0, fireflyPts: 0, maxSpeed: 0, rescues: 0, misses: 0, boosts: 0, gates: 0, springs: 0, float: 0, portals: 0, swings: 0, ffGot: 0
+      startY: sy, topY: sy, bonus: 0, fireflyPts: 0, maxSpeed: 0, rescues: 0, misses: 0, boosts: 0, gates: 0, springs: 0, float: 0, portals: 0, swings: 0, ffGot: 0, tam: 0
     };
     // geçit çiftlerini bağla
     s.rings.forEach(function (g) {
@@ -212,6 +215,11 @@
     var rp = s.rope;
     if (!rp) return;
     if (rp.kind === 'anchor') {
+      // Tam zamanında bırakma: ip halkaya varmadan hemen önce bırakılırsa küçük ödül (yalnızca geri bildirim + puan; fizik aynı)
+      if ((why === 'release' || why === 'repress') && rp.len0 != null && rp.len > CFG.MIN_LEN + 0.5 && rp.len <= CFG.MIN_LEN + CFG.TAM_PENCERE && rp.len0 - rp.len >= CFG.TAM_SARIM) {
+        s.tam++; s.bonus += CFG.TAM_PTS;
+        s.events.push({ type: 'tam', x: s.p.x, y: s.p.y });
+      }
       s.lastAnchor = rp; s.lastAnchorT = s.t;
       s.chain = s.hang < CFG.EARLY && why !== 'slip';
       s.air = 0;
@@ -402,6 +410,7 @@
           var ax = hit.kind === 'ring' ? hit.ring.x : hit.kind === 'goal' ? s.goal.x : hit.x;
           var ay = hit.kind === 'ring' ? hit.ring.y : hit.kind === 'goal' ? s.goal.y : hit.y;
           s.rope = { kind: 'anchor', x: ax, y: ay, len: dist(p.x, p.y, ax, ay), target: hit.kind, ref: hit.ring || hit.rect || null };
+          s.rope.len0 = s.rope.len;
           s.hook = null;
           onAttach(s, ax, ay, hit.kind);
           if (hit.ring && hit.ring.sw) s.swings++;

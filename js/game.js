@@ -378,6 +378,7 @@
 
   // Üst şerit: bölüm adı ve altında küçük göstergeler. Dar ekranda kesilmesin diye kısa tutulur.
   var IK = {
+    tam: '<svg viewBox="0 0 12 12" aria-hidden="true"><path d="M6 1l1.2 3.8L11 6 7.2 7.2 6 11 4.8 7.2 1 6l3.8-1.2z" fill="currentColor"/></svg>',
     atis: '<svg viewBox="0 0 12 12" aria-hidden="true"><circle cx="6" cy="6" r="4.4" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="6" cy="6" r="1.6" fill="currentColor"/></svg>',
     akis: '<svg viewBox="0 0 16 12" aria-hidden="true"><path d="M1 6.5C2.8 2.5 4.8 2.5 6 6.5S9.2 10.5 10.5 6.5 13.7 2.5 15 6.5" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>',
     hiz: '<svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2.5 6.5L6 3l3.5 3.5M2.5 10L6 6.5 9.5 10" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>',
@@ -436,6 +437,12 @@
         floatText(e.x, e.y - 16, 'AKIŞ x' + e.combo + (mode === 'endless' ? '  +' + pts : ''), e.combo >= 8 ? COL.atesbocegi : COL.gok, 13 + Math.min(e.combo, 10));
       } else if (e.type === 'comboBreak') floatText(sim.p.x, sim.p.y - 26, 'akış bitti (' + e.why + ')', '#8fa09c', 12);
       else if (e.type === 'slip') { SFX.slip(); buzz(30); floatText(sim.p.x, sim.p.y - 24, 'el kaydı!', COL.kahraman, 15); }
+      else if (e.type === 'tam') {
+        // Tam zamanında bırakma: altın ışıltı, iki notalı tını; sonsuzda puanı da yazar
+        tone(988, 0.09, 'sine', 0.06); setTimeout(function () { tone(1480, 0.14, 'sine', 0.05); }, 55);
+        burst(e.x, e.y, 10, '#ffd36a', 190, 0.35, -30);
+        floatText(e.x + 18, e.y - 14, mode === 'endless' ? 'TAM! +' + CFG.TAM_PTS : 'TAM!', '#ffd36a', 14);
+      }
       else if (e.type === 'clink') { SFX.clink(); burst(e.x, e.y, 7, '#e9f3f0', 220, 0.25, 0); }
       else if (e.type === 'firefly') { SFX.firefly(); buzz([8, 40, 8]); burst(e.x, e.y, 16, COL.atesbocegi, 160, 0.6, -40); if (mode === 'endless') floatText(e.x, e.y - 10, '+25', COL.atesbocegi, 14); notAl(e); }
       else if (e.type === 'gecit') {
@@ -1247,6 +1254,7 @@
       '<div class="istatistik">' +
       stat(SURE_IK, fmt(time, 1) + ' sn', 'süre ' + fmt(time, 1) + ' saniye', recTime) +
       stat(IK.hiz, fmt(speed, 0) + ' m/sn', 'en yüksek hız ' + fmt(speed, 1) + ' metre/saniye', recSpeed) +
+      (sim.tam ? stat(IK.tam, sim.tam + ' tam', sim.tam + ' kez tam zamanında bıraktın', false) : '') +
       '</div>' + kazanimHtml(kaz, odenen) +
       dolapKisaYol(cuzdanOnce) +
       '<button type="button" class="ana buyuk genis" id="sonrakiBtn">Bölüm ' + (levelNo + 1) + ' ›</button>' +
@@ -1299,6 +1307,7 @@
       stat(IK.metre, m + ' m', m + ' metre', recM && !isRecord) +
       stat(IK.akis, 'x' + sim.maxCombo, 'en uzun akış x' + sim.maxCombo, recC) +
       stat(IK.hiz, fmt(speed, 0) + ' m/sn', 'en yüksek hız', false) +
+      (sim.tam ? stat(IK.tam, sim.tam + ' tam', sim.tam + ' kez tam zamanında bıraktın', false) : '') +
       '</div>' +
       '<p class="rekor-satir">' + recLine + '</p>' + kazanimHtml(kaz, odenen) +
       dolapKisaYol(cuzdanOnce) +

@@ -1,6 +1,6 @@
 # Kuyu
 
-**Funday Morning Games** · 2D mobil oyun · prototip v0.36
+**Funday Morning Games** · 2D mobil oyun · prototip v0.37
 
 Derin bir kuyunun dibindesin. Telefonu tek elle tut: ekranın soluna ya da sağına dokun, kanca o taraftaki hedefe fırlasın; basılı tut, ipe sarıl; bırak, savrul. Halkadan halkaya, ahşaptan ahşaba tırmanıp kuyudan çık.
 
@@ -82,6 +82,9 @@ Yolun üstünde, bir halkadan sıradakine giden hatta duran yatay şerit (112 bi
 - Akış yokken şerit soluk ve kesiklidir, geçmek bir şey vermez. Ceza yok.
 - Üretici şeridi yalnızca karar noktası olmayan adımlara koyar (yol tek), en az bir adım arayla; rastgele sayı kullanmaz, mevcut bölümler ve Günlük Kuyu tohumları değişmez. El yapımı 1–6. bölümlerde şerit yok.
 - Botlarla (74 üretilen bölümde 164 şerit): akışla oynayan %79'unu, asılarak oynayan ~%40'ını, tek tarafa basan hiçbirini almaz.
+
+## Tam zamanında bırakma (v0.37)
+İp halkaya varmadan hemen önce (son ~0,09 sn, `TAM_PENCERE` 70 birim) bırakılırsa altın bir ışıltı, iki notalı tını ve "TAM!" yazısı gelir; Sonsuz Kuyu'da +10 puan (`TAM_PTS`). Bölüm ödülü değişmez, fizik aynıdır: yalnızca akışı öğreten bir geri bildirim. O tutunuşta ip en az 80 birim sarılmış olmalı (`TAM_SARIM`), yoksa yakın halkada kendiliğinden olurdu. Sonuç kartında kaç kez yapıldığı görünür.
 
 ## Hız ve ödül
 - **En yüksek hız:** Raunt boyunca ipte değilken, yukarı ya da yana giderken ulaşılan en yüksek hız (m/sn). Kancanın çekme hızı ve düşüş sayılmaz. Bekleyerek oynayan yaklaşık 5–6 m/sn, ipi erken bırakıp zincirleyen 40–57 m/sn.

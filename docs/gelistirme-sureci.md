@@ -24,6 +24,16 @@ Bir aşamadaki işler bitmeden sonrakine geçilmez; yeni bulunan oynanış sorun
 - **El kayması yalnızca Sonsuz Kuyu'da**, bölümlerde yok. **Kusursuz** madalyasında boş atışlar sayılmaz.
 - **Ateşböceği alınamıyor olmamalı.** Ateşböcekleri halkanın içindedir; o halkaya tutunmak ya da içinden geçmek yeter. İstemeyen es geçer.
 
+## Sıradaki iş sırası (2026-11-11)
+Kalan işler geliştirme sırasına göre. Bekleyenler senden bir karar ya da telefon denemesi istiyor.
+1. [x] Tam zamanında bırakma (v0.37): ip halkaya varmadan hemen önce bırakılırsa ışıltı, tını, "TAM!" ve Sonsuz'da +10 puan.
+2. [ ] Kendi hayaletinle yarış (internetsiz): en iyi Sonsuz ve Günlük koşun soluk bir kopya olarak seninle tırmanır.
+3. [ ] Günlük Kuyu'ya günün kuralı: herkes için aynı tek değişiklik (zorluk eklemeyen kurallar).
+4. [ ] Ateşböceği ışığı: toplanan ateşböcekleri menüdeki kuyuyu kalıcı aydınlatır.
+5. [ ] İkinci yolculuk (77+) metinleri.
+
+Bekleyenler: telefon denemesi düzeltmeleri, fiyatların gözden geçirilmesi, ana menü geri bildirimi, bekçinin adı, online için arka uç seçimi, Mustafa'nın parçaları.
+
 ## Yapılacaklar listesi (2026-11-10)
 Altı başlık, geliştirme sırasıyla aynı. `[~]` üzerinde çalışılıyor, `[?]` senin kararını bekliyor.
 
@@ -103,6 +113,7 @@ Kullanıcı hikâyeye online'dan önce geçti; online (5) sonra.
 ## Yapılanlar
 - 2026-11-11 · v0.34 · Hikâye: Çıra (önsöz, bölge kartları, Çıra'nın yolu, metinler); oyun ekranı gizliyken döngü çizim yapmaz.
 - 2026-11-11 · v0.35 · Bekçinin notları: 12 not, ateşböceği yolunda; Çıra'nın yolu'nda okunur.
+- 2026-11-11 · v0.37 · Tam zamanında bırakma: ip halkaya ~0,09 sn kala bırakılınca ışıltı + "TAM!" (+10 Sonsuz puanı); sonuç kartında sayısı. Fizik ve tempo aynı.
 - 2026-11-11 · v0.36 · Bölge finalleri: 16, 36, 56, 76. bölüm sonunda bir kez oynayan sözsüz sahne; menü düğmesi bölüm sonu sırasında sonuç kartını açar (bölüm kaydedilmeden çıkılmaz).
 - 2026-11-10 · v0.33 · Müzik brifi (Mustafa için); servis çalışanı müzik dosyalarını da internetsiz saklar.
 - 2026-11-10 · v0.32 · Ortam müziği (bölgeye ve akışa göre), Müzik ve Ses efektleri ayrı ayarlar.

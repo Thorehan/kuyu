@@ -34,7 +34,7 @@ Altı başlık, geliştirme sırasıyla aynı. `[~]` üzerinde çalışılıyor,
 - [~] Yeni halka türleri (2026-11-10 sırası; hepsinde ceza yok, kaçıran yalnızca bonusu kaçırır, uçuş hızı değişmez):
   1. [x] **Rüzgâr şeridi** (v0.18): yolun üstünde yatay şerit; akış x2 ve üstündeyken içinden yukarı geçmek akışı +1 yapar ve puan verir, akış yokken söner. Karar noktası olmayan adımlara konur.
   2. [x] **Yay halkası** (v0.19): ip seni normal hızda çeker, halkaya ulaştığın an okun yönüne (sıradaki hedefe) fırlatır; bırakmak gerekmez, akış sürer. Tepede 1 sn süzülürsün (yavaş oyuncu düşmesin diye; süzülme olmadan ortalama oyuncu Sonsuz'da 13 sn'de yakalanıyordu). Asılarak oynayanı akışa sokar; akışla oynayan zaten halkaya varmadan geçer.
-  3. [ ] **Geçit çifti**: aynı renkli iki halka; birine tutununca öbüründen çıkarsın. Kestirme ve gizli ateşböceği yolları.
+  3. [x] **Geçit çifti** (v0.20): mor giriş halkasına tutun, yaklaşınca (4 m) iki düğüm yukarıdaki mor çıkışa taşınır ve orada asılı kalırsın; akış sürer, düşme yok. Giriş ana yolun alternatifidir (seçim). Arada ateşböceği varsa geçit konmaz (atlatmasın). Bölümlerin 27/74'ünde birer çift, Sonsuz'da 1 km'de 4–5. İleride: çıkışa ateşböceği koyup gizli yol yapmak.
   4. [ ] **Sarkaç halka**: zincirde sallanır; hangi taraftaysa o tarafın işareti onu gösterir. Sol/sağ kararına zamanlama katar, beklemek yeter.
   - Çürük halka zorluk olduğu için ertelendi.
 - [ ] 4. bölüme üçüncü ateşböceği (kutu bulmacası yüzünden yer yok; bölüm düzeni değişmeli).
@@ -84,6 +84,7 @@ Karar (2026-11-10): oyunda güçlendirme yok, **harcamalar yalnızca kozmetik**.
 - [ ] Hikâyenin meta ile bağı (bölgeler, kozmetikler).
 
 ## Yapılanlar
+- 2026-11-10 · v0.20 · Geçit çifti: mor giriş → yukarıdaki çıkış, tanıtım kartı, "GEÇİT +N m".
 - 2026-11-10 · v0.19 · Yay halkası: ulaşınca okun yönüne fırlatır, tepede süzülme, tanıtım kartı. Botlar fırlatılınca tepede dokunur.
 - 2026-11-10 · v0.18 · Rüzgâr şeridi (ilk yeni halka türü), tanıtım kartı, "rüzgâr şeridinden geç" görevi. Geri dönüş noktası: `geri-donus-v0.17`.
 - 2026-11-10 · v0.17 · Nişan: yandaki sığ halka yukarıdakinin önüne geçmiyor; `tools/nisan.js` denetimi. Geliştirme sırası altı aşamaya çıktı.

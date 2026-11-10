@@ -38,6 +38,7 @@
     YAY_V: 820,         // yay halkası: ulaşınca okun yönüne bu hızla fırlatır (birim/sn)
     YAY_FLOAT: 1.0,     // fırlatmanın tepesinde bu kadar süzülürsün (yavaş oyuncuya dokunma zamanı)
     YAY_FALL: 70,       // süzülürken en çok bu hızla alçalırsın (birim/sn)
+    GECIT_LEN: 80,      // geçit: girişe bu kadar yaklaşınca çıkışa taşınırsın (akışla erken basan da girer)
     BOOST: 650,         // hız halkasından bırakınca eklenen yukarı hız (birim/sn)
     WATER_GRACE: 1.0,   // ilk halkaya tutunduktan bu kadar sonra su yükselmeye başlar
     RESCUE_MAX: 1000,   // kurtarma kancası: menzilde hedef yokken en yakın yukarıdaki hedefe bu kadar uzağa atılır
@@ -63,6 +64,8 @@
       rings: (def.rings || []).map(function (r) {
         var o = { x: r[0], y: r[1], ff: r[2] === 'ff', hiz: r[2] === 'hiz', kapi: r[2] === 'kapi' };
         if (r[2] === 'yay') o.yay = r[3] || 0; // okun dikeyden açısı (derece, eksi sol)
+        if (r[2] === 'gecit') o.gecitId = r[3];  // geçit girişi; çıkışı aynı numaralı 'cikis'
+        if (r[2] === 'cikis') o.cikisId = r[3];
         return o;
       }),
       goal: def.goal ? { x: def.goal[0], y: def.goal[1] } : null,
@@ -77,8 +80,13 @@
       grounded: false,
       // akış ve skor
       hang: 0, air: 0, chain: false, combo: 0, maxCombo: 0, hooks: 0, shots: 0, slips: 0,
-      startY: sy, topY: sy, bonus: 0, fireflyPts: 0, maxSpeed: 0, rescues: 0, misses: 0, boosts: 0, gates: 0, springs: 0, float: 0
+      startY: sy, topY: sy, bonus: 0, fireflyPts: 0, maxSpeed: 0, rescues: 0, misses: 0, boosts: 0, gates: 0, springs: 0, float: 0, portals: 0
     };
+    // geçit çiftlerini bağla
+    s.rings.forEach(function (g) {
+      if (g.gecitId == null) return;
+      for (var k = 0; k < s.rings.length; k++) if (s.rings[k].cikisId === g.gecitId) { g.gecit = s.rings[k]; s.rings[k].cikis = true; }
+    });
     // Ateşböcekleri halkaların içinde: o halkaya tutunmak ya da içinden geçmek yeter.
     s.rings.forEach(function (rg) { if (rg.ff) s.fireflies.push({ x: rg.x, y: rg.y, got: false, ring: rg }); });
     (def.fireflies || []).forEach(function (f) { s.fireflies.push({ x: f[0], y: f[1], got: false }); });
@@ -407,6 +415,8 @@
           p.px = p.x - vx; p.py = p.y - vy;
         }
       }
+      // Geçit girişi: yaklaşınca çıkış halkasına taşınır, orada asılı kalırsın (akış sürer).
+      if (rp.ref && rp.ref.gecit && rp.len <= CFG.GECIT_LEN) { usePortal(s, rp.ref); rp = s.rope; atMin = false; }
       // Yay halkası: ulaştığın an seni okun yönüne fırlatır; ip kendiliğinden bırakılır, akış sürer.
       if (atMin && rp.ref && rp.ref.yay != null) { launchSpring(s, rp.ref); rp = null; }
       // tutunma gücü ve akış
@@ -496,6 +506,16 @@
       if (p.y + CFG.R * 0.5 > s.water) return die(s, 'su');
     }
     if (!s.endless && p.y > s.H + 220) return die(s, 'düşüş');
+  }
+
+  function usePortal(s, g) {
+    var o = g.gecit, p = s.p;
+    p.x = p.px = o.x; p.y = p.py = o.y + CFG.MIN_LEN;
+    s.rope = { kind: 'anchor', x: o.x, y: o.y, len: CFG.MIN_LEN, target: 'ring', ref: o };
+    s.hang = 0;
+    s.portals++;
+    if (o.ff) collectRing(s, o);
+    s.events.push({ type: 'gecit', x: g.x, y: g.y, x2: o.x, y2: o.y });
   }
 
   function launchSpring(s, rg) {

@@ -1,6 +1,6 @@
 # Kuyu
 
-**Funday Morning Games** · 2D mobil oyun · prototip v0.19
+**Funday Morning Games** · 2D mobil oyun · prototip v0.20
 
 Derin bir kuyunun dibindesin. Telefonu tek elle tut: ekranın soluna ya da sağına dokun, kanca o taraftaki hedefe fırlasın; basılı tut, ipe sarıl; bırak, savrul. Halkadan halkaya, ahşaptan ahşaba tırmanıp kuyudan çık.
 
@@ -50,6 +50,13 @@ Yeni bir şey ilk kez karşına çıktığında oyun kısa süre durur, ekranın
 - Halkalar **karar noktalarında**: ana yoldaki bir halkanın karşı tarafında, aynı yükseklik civarında. Oradan sıradaki halkaya da ulaşılabilir. İstemeyen ana halkaya gidip es geçer.
 - İşaret ateşböceği halkasını gösteriyorsa o yana dokunmak yeter. Gerçek oyuncu gibi oynayan bot ateşböceklerinin 215/221'ini yalnızca işaretlere bakarak topluyor.
 - El yapımı bölümlerde 3 (Kutu bölümünde 2), üretilen bölümlerin 73/74'ünde 3, sonsuz kuyuda ara ara.
+
+## Geçit çifti (v0.20)
+Mor giriş halkasında dönen girdap, yukarıdaki mor çıkış halkasında dışa yayılan halka; aralarında soluk noktalı çizgi çıkışı gösterir.
+- Girişe kanca at: ip seni her zamanki hızla çeker. **4 m'ye yaklaşınca** (`CFG.GECIT_LEN` 80) çıkış halkasına taşınırsın ve orada **asılı kalırsın**. Düşme yok, akış sürer. Akışla erken basan oyuncu da girer.
+- Giriş, ana yoldaki bir düğümün alternatifidir; çıkış iki düğüm yukarıdaki düğümün alternatifi (en az 250 birim yukarıda). Girmek kestirmedir, girmemek de olur.
+- Üretici: giriş ve çıkış düğümünde başka alternatif yoksa ve aradaki düğümün ateşböceği alternatifi yoksa (geçit ateşböceğini atlatmasın). Bölüm başına bir çift (74 üretilen bölümün 27'sinde), Sonsuz'da 1 km'de 4–5 çift. Rastgele sayı kullanmaz. El yapımı 1–6. bölümlerde yok.
+- Botlarla: bütün tarzlar 74/74, tek taraf 0/74; botlar geçitli bölümlerin yaklaşık yarısında girer (seçim). Su temposu: ortalama oyuncu 1 dk 14 sn (öncesi 1 dk 18 sn, tohumlar arası fark içinde), aynı yükseklik.
 
 ## Yay halkası (v0.19)
 Yeşil halka; çevresinde sıkışmış yay ve fırlatacağı yönü gösteren ok.

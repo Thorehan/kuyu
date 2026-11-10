@@ -244,6 +244,12 @@
       else if (e.type === 'slip') { SFX.slip(); buzz(30); floatText(sim.p.x, sim.p.y - 24, 'el kaydı!', COL.kahraman, 15); }
       else if (e.type === 'clink') { SFX.clink(); burst(e.x, e.y, 7, '#e9f3f0', 220, 0.25, 0); }
       else if (e.type === 'firefly') { SFX.firefly(); buzz([8, 40, 8]); burst(e.x, e.y, 16, COL.atesbocegi, 160, 0.6, -40); if (mode === 'endless') floatText(e.x, e.y - 10, '+25', COL.atesbocegi, 14); }
+      else if (e.type === 'gecit') {
+        tone(330, 0.25, 'sine', 0.08, 990); buzz([10, 30, 10]);
+        burst(e.x, e.y, 14, 'rgb(' + GECIT_COL + ')', 160, 0.45, 0); burst(e.x2, e.y2, 18, 'rgb(' + GECIT_COL + ')', 200, 0.55, -40);
+        floatText(e.x2, e.y2 - 24, 'GEÇİT +' + Math.round((e.y - e.y2) / 20) + ' m', 'rgb(' + GECIT_COL + ')', 16);
+        trail = [];
+      }
       else if (e.type === 'yay') {
         tone(220, 0.22, 'triangle', 0.08, 880); buzz(18); shake = Math.max(shake, 3);
         burst(e.x, e.y, 12, 'rgb(' + YAY_COL + ')', 200, 0.45, 300); floatText(e.x, e.y - 22, 'YAY!', 'rgb(' + YAY_COL + ')', 17);
@@ -414,6 +420,33 @@
     for (var k = 0; k < 2; k++) {
       var yy = r.y - 20 - k * 7 - ((t / 90) % 7);
       ctx.beginPath(); ctx.moveTo(r.x - 6, yy + 5); ctx.lineTo(r.x, yy); ctx.lineTo(r.x + 6, yy + 5); ctx.stroke();
+    }
+  }
+  // Geçit çifti: mor giriş halkasında dönen girdap, çıkışta dışa yayılan halkalar; aralarında soluk noktalı çizgi.
+  var GECIT_COL = '195,139,255';
+  function drawPortal(r, t) {
+    var a = 0.75 + 0.25 * Math.sin(t / 200 + r.y);
+    ctx.lineWidth = 2.8; ctx.strokeStyle = 'rgba(' + GECIT_COL + ',' + a + ')';
+    ctx.beginPath(); ctx.arc(r.x, r.y, CFG.RING_R + 2, 0, Math.PI * 2); ctx.stroke();
+    var gl = ctx.createRadialGradient(r.x, r.y, 0, r.x, r.y, 28);
+    gl.addColorStop(0, 'rgba(' + GECIT_COL + ',' + (0.35 * a) + ')'); gl.addColorStop(1, 'rgba(' + GECIT_COL + ',0)');
+    ctx.fillStyle = gl; ctx.fillRect(r.x - 28, r.y - 28, 56, 56);
+    if (r.gecit) {
+      // giriş: içeri dönen girdap
+      ctx.lineWidth = 1.6; ctx.strokeStyle = 'rgba(' + GECIT_COL + ',' + (0.9 * a) + ')';
+      for (var k = 0; k < 3; k++) {
+        var st = t / 260 + k * 2.09;
+        ctx.beginPath(); ctx.arc(r.x, r.y, 6, st, st + 1.4); ctx.stroke();
+      }
+      // çıkışa giden soluk noktalı çizgi
+      ctx.setLineDash([3, 8]); ctx.lineWidth = 1.5; ctx.strokeStyle = 'rgba(' + GECIT_COL + ',0.22)';
+      ctx.beginPath(); ctx.moveTo(r.x, r.y - 16); ctx.lineTo(r.gecit.x, r.gecit.y + 16); ctx.stroke();
+      ctx.setLineDash([]);
+    } else {
+      // çıkış: dışa yayılan halka
+      var ph = (t / 900) % 1;
+      ctx.lineWidth = 1.5; ctx.strokeStyle = 'rgba(' + GECIT_COL + ',' + (0.6 * (1 - ph)) + ')';
+      ctx.beginPath(); ctx.arc(r.x, r.y, CFG.RING_R + 4 + ph * 14, 0, Math.PI * 2); ctx.stroke();
     }
   }
   // Yay halkası: yeşil halka, çevresinde yay sargısı ve fırlatacağı yönü gösteren ok.
@@ -694,7 +727,7 @@
     var vh = viewH / K;
     for (var i = 0; i < sim.rects.length; i++) drawRect(sim.rects[i]);
     sim.buttons.forEach(drawButton);
-    sim.rings.forEach(function (r) { if (r.y > cam - 30 && r.y < cam + vh + 30) { if (r.kapi) { drawGate(r, t); return; } drawRing(r.x, r.y); if (r.yay != null) drawSpringRing(r, t); if (r.ff && !r.got) drawFireflyRing(r, t); if (r.hiz) drawSpeedRing(r, t); } });
+    sim.rings.forEach(function (r) { if (r.y > cam - 30 && r.y < cam + vh + 30) { if (r.kapi) { drawGate(r, t); return; } if (r.gecit || r.cikis) { drawPortal(r, t); return; } drawRing(r.x, r.y); if (r.yay != null) drawSpringRing(r, t); if (r.ff && !r.got) drawFireflyRing(r, t); if (r.hiz) drawSpeedRing(r, t); } });
     sim.fireflies.forEach(function (f) { if (f.y > cam - 20 && f.y < cam + vh + 20) drawFirefly(f, t); });
     sim.boxes.forEach(drawBox);
     drawAimMarkers(t);
@@ -913,6 +946,8 @@
       i: '<svg viewBox="0 0 64 64"><circle cx="32" cy="18" r="7" fill="#f26a3a"/><path d="M4 40c6-5 10-5 14 0s10 5 14 0 10-5 14 0 10 5 14 0V60H4z" fill="#1c6a72"/><path d="M4 40c6-5 10-5 14 0s10 5 14 0 10-5 14 0 10 5 14 0" fill="none" stroke="#5fc3c9" stroke-width="3"/><path d="M32 34v-6" stroke="#5fc3c9" stroke-width="3" stroke-linecap="round"/><path d="M28 31l4-4 4 4" fill="none" stroke="#5fc3c9" stroke-width="3" stroke-linecap="round"/></svg>' },
     akis: { t: 'Akış!', m: 'İpi tam sarılmadan bırakıp havadayken sıradakine tutundun. Zincir uzadıkça Akış madalyası ve puan gelir; uzun asılı kalmak zinciri bitirir.',
       i: '<svg viewBox="0 0 64 64"><path d="M6 40C14 22 22 22 30 40S46 58 58 30" fill="none" stroke="#e8f27c" stroke-width="5" stroke-linecap="round"/><text x="40" y="22" fill="#e8f27c" font-family="Baloo 2, sans-serif" font-weight="800" font-size="16">x2</text></svg>' },
+    gecit: { t: 'Geçit', m: 'Mor girdaplı halkaya tutun: yaklaşınca seni yukarıdaki mor çıkış halkasına taşır, orada asılı kalırsın. Kestirmedir; istemezsen normal yoldan devam et.',
+      i: '<svg viewBox="0 0 64 64"><circle cx="20" cy="46" r="10" fill="none" stroke="#c38bff" stroke-width="4"/><path d="M16 46a4 4 0 1 1 4 4" fill="none" stroke="#c38bff" stroke-width="2.5" stroke-linecap="round"/><circle cx="46" cy="16" r="10" fill="none" stroke="#c38bff" stroke-width="4"/><circle cx="46" cy="16" r="15" fill="none" stroke="#c38bff" stroke-width="2" opacity=".5"/><path d="M26 38L40 24" stroke="#c38bff" stroke-width="2.5" stroke-dasharray="3 5" stroke-linecap="round"/></svg>' },
     yay: { t: 'Yay halkası', m: 'Bu halkaya tutun: ulaştığın an seni okun yönüne fırlatır, bırakmana gerek yok. Tepede kısa süzülürsün; o sırada sıradakine dokun, akış sürer.',
       i: '<svg viewBox="0 0 64 64"><circle cx="32" cy="38" r="12" fill="none" stroke="#9be37a" stroke-width="4"/><path d="M26 54l12-3-12-3 12-3" fill="none" stroke="#9be37a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M24 18l8-8 8 8" fill="none" stroke="#9be37a" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></svg>' },
     kapi: { t: 'Rüzgâr şeridi', m: 'Akışın sürerken (x2 ve üstü) şeridin içinden yukarı geç: akış bir artar, puan gelir. Akış yoksa şerit söner; geçmek zorunda değilsin.',
@@ -934,6 +969,7 @@
     if (!save.seen.hiz && sim.rings.some(function (r) { return r.hiz && inView(r.y); })) wantIntro('hiz');
     if (!save.seen.kapi && sim.rings.some(function (r) { return r.kapi && !r.got && inView(r.y); })) wantIntro('kapi');
     if (!save.seen.yay && sim.rings.some(function (r) { return r.yay != null && inView(r.y); })) wantIntro('yay');
+    if (!save.seen.gecit && sim.rings.some(function (r) { return r.gecit && inView(r.y); })) wantIntro('gecit');
     if (!save.seen.ahsap && sim.rects.some(function (r) { return r.type === 'w' && inView(r.y + r.h / 2); })) wantIntro('ahsap');
     if (!save.seen.kutu && sim.boxes.length && sim.boxes.some(function (b) { return inView(b.y); })) wantIntro('kutu');
     if (!save.seen.kurtarma && !sim.rope && !sim.hook && E.aim(sim, 0.25).rescue) wantIntro('kurtarma');

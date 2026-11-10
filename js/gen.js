@@ -171,6 +171,18 @@
     return g;
   }
 
+  // ---------- geçit çiftleri ----------
+  // Giriş (A) bir düğümün alternatifi, çıkış (B) iki düğüm yukarıdaki düğümün alternatifi: girene kestirme.
+  // ffAlternative rastgele sayı kullanmaz; mevcut bölümler değişmez.
+  var PORTAL_SKIP = 2;
+  function portalPair(fromA, tA, nextA, fromB, tB, nextB, rings) {
+    var A = ffAlternative(null, fromA, tA, nextA, rings);
+    if (!A) return null;
+    var B = ffAlternative(null, fromB, tB, nextB, rings.concat([A]));
+    if (!B || B.y > A.y - 250) return null;
+    return { a: A, b: B };
+  }
+
   // ---------- yay halkaları ----------
   // Ana yoldaki bazı halkalar yay olur: ulaşınca seni okun yönüne fırlatır. Ok sıradaki hedefe bakar
   // (dikeyden en çok 40°). Karar noktası olmayan halkalar, en az 4 adım arayla; rastgele sayı kullanmaz.
@@ -226,12 +238,23 @@
       if (alt2) { hizRings.push(alt2); hizAt[hi] = alt2; lastDecision = hi; }
     }
 
+    // geçit çifti: bölüm başına bir tane, karar noktalarından uzak
+    var portal = null, portalAt = {};
+    for (var pi = 2; pi + PORTAL_SKIP < nodesN - 1 && !portal; pi++) {
+      var pj = pi + PORTAL_SKIP;
+      // giriş ve çıkış düğümünde başka alternatif yok; aradaki ateşböceği atlanmasın
+      if (ffAt[pi] || hizAt[pi] || ffAt[pj] || hizAt[pj] || ffAt[pi + 1]) continue;
+      portal = portalPair(allPts[pi], target(nodes[pi]), target(nodes[pi + 1]), allPts[pj], target(nodes[pj]), target(nodes[pj + 1]),
+        out.rings.concat(ffRings, hizRings));
+      if (portal) { portalAt[pi] = portal.a; portalAt[pj] = portal.b; }
+    }
+
     // rüzgâr şeritleri: karar noktası olmayan adımlarda, en az bir adım arayla
     var gates = [], lastGate = -9;
-    function altAt(k) { return ffAt[k] || hizAt[k]; }
+    function altAt(k) { return ffAt[k] || hizAt[k]; } // geçit ana yolu değiştirmez; şerit/yay yalnızca ona binmesin
     for (var gi = 2; gi < nodesN; gi++) {
       if (altAt(gi) || altAt(gi - 1) || gi - lastGate < 2) continue;
-      var gg = gateOn(allPts[gi], target(nodes[gi]), out.rings.concat(ffRings, hizRings));
+      var gg = gateOn(allPts[gi], target(nodes[gi]), out.rings.concat(ffRings, hizRings, portal ? [portal.a, portal.b] : []));
       if (gg) { gates.push(gg); lastGate = gi; }
     }
 
@@ -241,6 +264,7 @@
       if (nodes[yi].kind !== 'ring' || altAt(yi) || altAt(yi + 1) || yi - lastYay < YAY_GAP) continue;
       var yr = out.rings.filter(function (rg) { return rg.x === nodes[yi].x && rg.y === nodes[yi].y; })[0];
       if (!yr) continue;
+      if (portalAt[yi]) continue;
       yr.yay = yayAngle(nodes[yi], target(nodes[yi + 1]));
       lastYay = yi;
     }
@@ -267,7 +291,8 @@
       rects: rects,
       rings: out.rings.map(function (p) { var a = sh(p); if (p.yay != null) a.push('yay', p.yay); return a; }).concat(ffRings.map(function (a) { return [a.x, Math.round(a.y + off), 'ff']; }))
         .concat(hizRings.map(function (a) { return [a.x, Math.round(a.y + off), 'hiz']; }))
-        .concat(gates.map(function (a) { return [a.x, Math.round(a.y + off), 'kapi']; })),
+        .concat(gates.map(function (a) { return [a.x, Math.round(a.y + off), 'kapi']; }))
+        .concat(portal ? [[portal.a.x, Math.round(portal.a.y + off), 'gecit', 1], [portal.b.x, Math.round(portal.b.y + off), 'cikis', 1]] : []),
       route: route,
       ffRoute: ffRoute,
       hizRoute: hizRoute,
@@ -285,7 +310,7 @@
   function createEndless(seed) {
     var r = rng(seed >>> 0);
     var startY = 0;
-    var st = { hp: { x: 180, y: startY }, prevKind: null, nodes: [], frontier: startY, segs: [], anchors: [], prevHp: null, prevT: null, lastFF: -9, altPrev: true, lastGate: -9, lastYay: -9, prevRing: null };
+    var st = { hp: { x: 180, y: startY }, prevKind: null, nodes: [], frontier: startY, segs: [], anchors: [], prevHp: null, prevT: null, lastFF: -9, altPrev: true, lastGate: -9, lastYay: -9, prevRing: null, hist: [], lastPortal: -9, portalN: 0 };
     var def = {
       id: 'sonsuz', name: 'Sonsuz Kuyu', endless: true, seed: seed,
       hint: 'Su durmadan yükselir. Sağa ya da sola dokunarak tırman; ipi erken bırakıp zincirlersen ekstra puan.',
@@ -333,18 +358,35 @@
             var fr = { x: alt.x, y: alt.y, ff: isFF, hiz: !isFF };
             s.rings.push(fr);
             if (isFF) s.fireflies.push({ x: alt.x, y: alt.y, got: false, ring: fr });
+            st.lastAltFF = isFF;
             st.lastFF = st.nodes.length;
           }
         }
-        // rüzgâr şeridi: bir önceki adım (prevHp → prevT) karar noktası değilse
         var altNow = st.lastFF === st.nodes.length;
+        // geçit çifti: giriş k-3. düğümün, çıkış k-1. düğümün alternatifi (k = bu düğüm); arada karar noktası yoksa
+        var k = st.nodes.length, h = st.hist, portalHere = false;
+        st.hist.push({ t: st.prevT, from: st.prevHp, alt: altNow, ff: altNow && st.lastAltFF });
+        if (h.length > 6) h.shift();
+        if (k >= 6 && k - st.lastPortal >= 12 && h.length >= 4 && !h[h.length - 1].alt && !h[h.length - 3].alt && !h[h.length - 2].ff) {
+          var nA = h[h.length - 3], nA1 = h[h.length - 2], nB = h[h.length - 1];
+          var nearP = s.rings.filter(function (rg) { return Math.abs(rg.y - nA.t.y) < 700; });
+          var pp = nA.from && nB.from ? portalPair(nA.from, nA.t, nA1.t, nB.from, nB.t, t, nearP) : null;
+          if (pp) {
+            st.portalN++;
+            s.rings.push({ x: pp.a.x, y: pp.a.y, gecitId: st.portalN });
+            var ex = { x: pp.b.x, y: pp.b.y, cikisId: st.portalN, cikis: true };
+            s.rings.push(ex); s.rings[s.rings.length - 2].gecit = ex;
+            st.lastPortal = k; nB.alt = true; portalHere = true;
+          }
+        }
+        // rüzgâr şeridi: bir önceki adım (prevHp → prevT) karar noktası değilse
         if (st.prevT && st.prevHp && !altNow && !st.altPrev && st.nodes.length - st.lastGate >= 2) {
           var gg = gateOn(st.prevHp, st.prevT, s.rings.filter(function (rg) { return Math.abs(rg.y - st.prevT.y) < 300; }));
           if (gg) { s.rings.push({ x: gg.x, y: gg.y, kapi: true }); st.lastGate = st.nodes.length; }
         }
         // yay halkası: bir önceki ana halka (prevT), karar noktası değilse; oku bu düğüme (t) bakar
         var kPrev = st.nodes.length - 1;
-        if (st.prevRing && !altNow && kPrev >= 2 && kPrev - st.lastYay >= YAY_GAP) {
+        if (st.prevRing && !altNow && !portalHere && kPrev >= 2 && kPrev - st.lastYay >= YAY_GAP) {
           st.prevRing.yay = yayAngle(st.prevRing, t); st.lastYay = kPrev;
         }
         st.altPrev = altNow;

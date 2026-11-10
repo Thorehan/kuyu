@@ -182,10 +182,12 @@ if (!only) {
 // 3) Sonsuz mod
 if (!only) {
   console.log('\n== Sonsuz kuyu ==');
-  for (const style of ['rahat', 'akis']) {
+  // Günlük Kuyu'nun kuralları da: her kural 4 tohumla, rahat tarzda 1500 m'ye çıkılabilmeli
+  const turlar = [['rahat', null, 8], ['akis', null, 8]].concat(G.KURALLAR.map(k => ['rahat', k, 4]));
+  for (const [style, kural, tohum] of turlar) {
     const res = [];
-    for (let seed = 1; seed <= 8; seed++) {
-      const def = G.createEndless(seed);
+    for (let seed = 1; seed <= tohum; seed++) {
+      const def = G.createEndless(seed, kural || undefined);
       const s = E.createSim(def);
       let i = 0, why = '';
       while (s.status === 'play' && s.t < 240) {
@@ -205,9 +207,10 @@ if (!only) {
         if (E.meters(s) > 1500) break;
       }
       if (s.status === 'dead') why = 'öldü: ' + s.events.filter(e => e.type === 'dead').map(e => e.why).join();
+      if (kural && E.meters(s) < 1500) allOk = false;
       res.push(`tohum ${seed}: ${E.meters(s)} m, puan ${E.score(s)}, en iyi akış x${s.maxCombo}, ${s.t.toFixed(0)} sn${why ? ' (' + why + ')' : ''}`);
     }
-    console.log(`[${style}]`); res.forEach(l => console.log('  ' + l));
+    console.log(`[${style}${kural ? ' · ' + kural.ad : ''}]`); res.forEach(l => console.log('  ' + l));
   }
 }
 process.exit(allOk ? 0 : 1);

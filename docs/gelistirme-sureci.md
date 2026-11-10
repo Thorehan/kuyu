@@ -28,7 +28,7 @@ Bir aşamadaki işler bitmeden sonrakine geçilmez; yeni bulunan oynanış sorun
 Kalan işler geliştirme sırasına göre. Bekleyenler senden bir karar ya da telefon denemesi istiyor.
 1. [x] Tam zamanında bırakma (v0.37): ip halkaya varmadan hemen önce bırakılırsa ışıltı, tını, "TAM!" ve Sonsuz'da +10 puan.
 2. [x] Kendi hayaletinle yarış (v0.38): bölümde en kısa süreli, Sonsuz'da rekor, Günlük'te günün en iyi koşun soluk bir kopya olarak seninle tırmanır; ekran dışındaysa kenarda işaret. Ayarlar → Hayalet.
-3. [ ] Günlük Kuyu'ya günün kuralı: herkes için aynı tek değişiklik (zorluk eklemeyen kurallar).
+3. [x] Günlük Kuyu'ya günün kuralı (v0.39): altı kural sırayla döner (Yay, Rüzgâr, Ateşböceği gecesi, Sarkaç, Geçit, Hız). Yalnızca halka türleri değişir; yerler, su ve zorluk aynı. Her kural botla 1500 m'ye çıkılıyor, ortalama oyuncu 1:13–1:22'de yakalanıyor.
 4. [ ] Ateşböceği ışığı: toplanan ateşböcekleri menüdeki kuyuyu kalıcı aydınlatır.
 5. [ ] İkinci yolculuk (77+) metinleri.
 
@@ -113,6 +113,7 @@ Kullanıcı hikâyeye online'dan önce geçti; online (5) sonra.
 ## Yapılanlar
 - 2026-11-11 · v0.34 · Hikâye: Çıra (önsöz, bölge kartları, Çıra'nın yolu, metinler); oyun ekranı gizliyken döngü çizim yapmaz.
 - 2026-11-11 · v0.35 · Bekçinin notları: 12 not, ateşböceği yolunda; Çıra'nın yolu'nda okunur.
+- 2026-11-11 · v0.39 · Günün kuralı: Günlük Kuyu'da herkes için aynı tek değişiklik; menü kartında ve koşu başında gösterilir.
 - 2026-11-11 · v0.38 · Hayalet: en iyi koşunun soluk kopyası (bölüm, Sonsuz, Günlük); yalnızca görüntü, ayrı kayıt (`kuyu.hayalet`, ~60 bayt/sn). Ayarlar'dan kapatılır.
 - 2026-11-11 · v0.37 · Tam zamanında bırakma: ip halkaya ~0,09 sn kala bırakılınca ışıltı + "TAM!" (+10 Sonsuz puanı); sonuç kartında sayısı. Fizik ve tempo aynı.
 - 2026-11-11 · v0.36 · Bölge finalleri: 16, 36, 56, 76. bölüm sonunda bir kez oynayan sözsüz sahne; menü düğmesi bölüm sonu sırasında sonuç kartını açar (bölüm kaydedilmeden çıkılmaz).

@@ -1,6 +1,6 @@
 # Kuyu
 
-**Funday Morning Games** · 2D mobil oyun · prototip v0.38
+**Funday Morning Games** · 2D mobil oyun · prototip v0.39
 
 Derin bir kuyunun dibindesin. Telefonu tek elle tut: ekranın soluna ya da sağına dokun, kanca o taraftaki hedefe fırlasın; basılı tut, ipe sarıl; bırak, savrul. Halkadan halkaya, ahşaptan ahşaba tırmanıp kuyudan çık.
 
@@ -239,6 +239,8 @@ Ana menüde "Merhaba, {ad}" düğmesi açar: en yüksek hız; en yüksek ve geç
 - Doğrudan bağlantı: `?mod=sonsuz`
 
 ### Günlük Kuyu (v0.15)
+**Günün kuralı (v0.39):** her gün herkes için aynı tek değişiklik; altı kural gün sırasıyla döner, art arda iki gün aynı gelmez: Yay günü (yay halkaları bol), Rüzgâr günü (şeritler daha sık), Ateşböceği gecesi (karar noktalarında ateşböceği daha sık), Sarkaç günü (sarkaçlar bol), Geçit günü (geçit çiftleri sık), Hız günü (hız halkaları sık). Kural yalnızca halkaların türünü değiştirir: üretici aynı rastgele sayıları aynı sırayla çeker, yerler, su ve zorluk aynı kalır (`gen.js` → `KURALLAR`, `gunKurali`). Menüdeki Günlük kartında ve koşu başında kısa bir kartla gösterilir. `tools/bot.js` her kuralı 4 tohumla dener; tempo: `KURAL=sarkac node tools/tempo.js`.
+
 - Sonsuz Kuyu'nun kuralları, ama tohum günün tarihinden üretilir: o gün herkes **aynı kuyuyu** oynar. Gün sınırı herkes için İstanbul saati (UTC+3); yeni kuyu Türkiye'de gece yarısı gelir.
 - Deneme sınırsız; günün en iyi puanı, en yüksek metresi ve deneme sayısı saklanır. Sonuç kartında yeni kuyuya kalan süre yazar.
 - **Seri:** art arda her gün en az bir deneme yaparsan seri büyür; bir gün kaçarsa 1'den başlar. En uzun seri de saklanır.

@@ -20,7 +20,7 @@ const speed = p => Math.hypot(p.x - p.px, p.y - p.py) / C.DT;
 const ok = x => x.kind !== 'none';
 
 function run(seed, profile) {
-  const s = E.createSim(G.createEndless(seed));
+  const s = E.createSim(G.createEndless(seed, process.env.KURAL ? G.KURALLAR.find(k => k.id === process.env.KURAL) : undefined));
   const react = profile === 'ortalama' ? 0.9 : profile === 'iyi' ? 0.35 : 0;
   while (s.status === 'play' && s.t < LIMIT) {
     const L = E.aim(s, 0.25), R = E.aim(s, 0.75);

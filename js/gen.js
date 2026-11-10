@@ -320,14 +320,33 @@
   var NAMES_B = ['Kuyu', 'Baca', 'Geçit', 'Dehliz', 'Boğaz', 'Kova Yolu', 'Sarnıç', 'Çukur'];
   function levelName(n, r) { return NAMES_A[Math.floor(r() * NAMES_A.length)] + ' ' + NAMES_B[Math.floor(r() * NAMES_B.length)]; }
 
+  // ---------- Günlük Kuyu: günün kuralı ----------
+  // Her gün herkes için aynı tek değişiklik. Kurallar yalnızca halkaların türünü değiştirir (yerleri, su ve zorluk aynı):
+  // üretici aynı rastgele sayıları aynı sırayla çeker, yalnızca hangi halkanın yay/sarkaç/şerit/geçit/ateşböceği olacağı değişir.
+  var KURALLAR = [
+    { id: 'yay', ad: 'Yay günü', metin: 'Yay halkaları bol: tut, fırla, tepede süzül.', o: { yayGap: 2, sarkacGap: 99 } },
+    { id: 'ruzgar', ad: 'Rüzgâr günü', metin: 'Rüzgâr şeritleri daha sık: akışla içinden geç.', o: { gateGap: 1 } },
+    { id: 'ates', ad: 'Ateşböceği gecesi', metin: 'Karar noktalarında ateşböceği daha sık.', o: { ffP: 0.7 } },
+    { id: 'sarkac', ad: 'Sarkaç günü', metin: 'Sallanan halkalar bol: yakına gelince tutun.', o: { yayGap: 6, sarkacGap: 3 } },
+    { id: 'gecit', ad: 'Geçit günü', metin: 'Geçit çiftleri sık: girişe tutun, yukarıda çık.', o: { portalGap: 6 } },
+    { id: 'hiz', ad: 'Hız günü', metin: 'Mavi hız halkaları daha sık: tut, bırak, fırla.', o: { ffP: 0.15 } }
+  ];
+  // Gün sırasıyla döner: art arda iki gün aynı kural gelmez, altı günde hepsi bir kez.
+  function gunKurali(key) {
+    var gun = Math.floor(Date.parse(key + 'T12:00:00Z') / 864e5);
+    return KURALLAR[((gun % KURALLAR.length) + KURALLAR.length) % KURALLAR.length];
+  }
+
   // ---------- sonsuz koşu ----------
-  // Zorluk tırmanılan yüksekliğe göre artar; su hızı da.
-  function createEndless(seed) {
+  // Zorluk tırmanılan yüksekliğe göre artar; su hızı da. kural: Günlük Kuyu'nun günün kuralı (Sonsuz'da yok).
+  function createEndless(seed, kural) {
     var r = rng(seed >>> 0);
+    var ko = (kural && kural.o) || {};
+    var yayGap = ko.yayGap || YAY_GAP, sarkacGap = ko.sarkacGap || SARKAC_GAP, gateGap = ko.gateGap || 2, portalGap = ko.portalGap || 12, ffP = ko.ffP != null ? ko.ffP : 0.4;
     var startY = 0;
     var st = { hp: { x: 180, y: startY }, prevKind: null, nodes: [], frontier: startY, segs: [], anchors: [], prevHp: null, prevT: null, lastFF: -9, altPrev: true, lastGate: -9, lastYay: -9, prevRing: null, hist: [], lastPortal: -9, portalN: 0, lastSw: -9 };
     var def = {
-      id: 'sonsuz', name: 'Sonsuz Kuyu', endless: true, seed: seed,
+      id: 'sonsuz', name: 'Sonsuz Kuyu', endless: true, seed: seed, kural: kural ? kural.id : null,
       hint: 'Su durmadan yükselir. Sağa ya da sola dokunarak tırman; ipi erken bırakıp zincirlersen ekstra puan.',
       start: [180, startY - 20], rects: [[WL, startY, W - 2 * WL, 60, 's']], rings: [], fireflies: [],
       grip: 1.6, waterStart: 380,
@@ -369,7 +388,7 @@
           var near = s.rings.filter(function (rg) { return Math.abs(rg.y - st.prevT.y) < 300; });
           var alt = ffAlternative(r, st.prevHp, st.prevT, t, near);
           if (alt) {
-            var isFF = r() < 0.4;
+            var isFF = r() < ffP;
             var fr = { x: alt.x, y: alt.y, ff: isFF, hiz: !isFF };
             s.rings.push(fr);
             if (isFF) s.fireflies.push({ x: alt.x, y: alt.y, got: false, ring: fr });
@@ -382,7 +401,7 @@
         var k = st.nodes.length, h = st.hist, portalHere = false;
         st.hist.push({ t: st.prevT, from: st.prevHp, alt: altNow, ff: altNow && st.lastAltFF });
         if (h.length > 6) h.shift();
-        if (k >= 6 && k - st.lastPortal >= 12 && h.length >= 4 && !h[h.length - 1].alt && !h[h.length - 3].alt && !h[h.length - 2].ff) {
+        if (k >= 6 && k - st.lastPortal >= portalGap && h.length >= 4 && !h[h.length - 1].alt && !h[h.length - 3].alt && !h[h.length - 2].ff) {
           var nA = h[h.length - 3], nA1 = h[h.length - 2], nB = h[h.length - 1];
           var nearP = s.rings.filter(function (rg) { return Math.abs(rg.y - nA.t.y) < 700; });
           var pp = nA.from && nB.from ? portalPair(nA.from, nA.t, nA1.t, nB.from, nB.t, t, nearP) : null;
@@ -395,15 +414,15 @@
           }
         }
         // rüzgâr şeridi: bir önceki adım (prevHp → prevT) karar noktası değilse
-        if (st.prevT && st.prevHp && !altNow && !st.altPrev && st.nodes.length - st.lastGate >= 2) {
+        if (st.prevT && st.prevHp && !altNow && !st.altPrev && st.nodes.length - st.lastGate >= gateGap) {
           var gg = gateOn(st.prevHp, st.prevT, s.rings.filter(function (rg) { return Math.abs(rg.y - st.prevT.y) < 300; }));
           if (gg) { s.rings.push({ x: gg.x, y: gg.y, kapi: true }); st.lastGate = st.nodes.length; }
         }
         // yay halkası: bir önceki ana halka (prevT), karar noktası değilse; oku bu düğüme (t) bakar
         var kPrev = st.nodes.length - 1;
-        if (st.prevRing && !altNow && !portalHere && kPrev >= 2 && kPrev - st.lastYay >= YAY_GAP) {
+        if (st.prevRing && !altNow && !portalHere && kPrev >= 2 && kPrev - st.lastYay >= yayGap) {
           st.prevRing.yay = yayAngle(st.prevRing, t); st.lastYay = kPrev;
-        } else if (st.prevRing && !altNow && !portalHere && kPrev >= 2 && kPrev - st.lastSw >= SARKAC_GAP && swingOk({ kind: 'ring', x: st.prevRing.x })) {
+        } else if (st.prevRing && !altNow && !portalHere && kPrev >= 2 && kPrev - st.lastSw >= sarkacGap && swingOk({ kind: 'ring', x: st.prevRing.x })) {
           // sarkaç halka (yay olmayan ana halka)
           st.prevRing.sarkac = true;   // motor ilk adımda salınımı kurar
           st.lastSw = kPrev;
@@ -426,7 +445,7 @@
     return def;
   }
 
-  var api = { ENDLESS_WATER: { base: 38, perM: 0.3, perS: 0, cap: 300 }, createLevel: createLevel, createEndless: createEndless, target: target, hangOf: hangOf, ffAlternative: ffAlternative, rng: rng };
+  var api = { ENDLESS_WATER: { base: 38, perM: 0.3, perS: 0, cap: 300 }, createLevel: createLevel, createEndless: createEndless, KURALLAR: KURALLAR, gunKurali: gunKurali, target: target, hangOf: hangOf, ffAlternative: ffAlternative, rng: rng };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.KuyuGen = api;
 })(typeof window !== 'undefined' ? window : this);

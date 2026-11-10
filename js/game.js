@@ -250,7 +250,7 @@
     // seri canlı mı: bugün ya da dün oynandıysa
     var alive = st.last === key || st.last === prevKey(key);
     return { key: key, best: today ? today.best : 0, meters: today ? today.meters : 0, tries: today ? today.tries : 0,
-      streak: alive ? (st.count || 0) : 0, maxStreak: st.max || 0, playedToday: st.last === key };
+      streak: alive ? (st.count || 0) : 0, maxStreak: st.max || 0, playedToday: st.last === key, kural: GEN.gunKurali(key) };
   }
 
   // ---------- akış ----------
@@ -308,9 +308,12 @@
     $('puan').hidden = false;
     $('baslik').textContent = dailyKey ? 'Günlük Kuyu' : 'Sonsuz Kuyu';
     reset();
-    $('ipucu').textContent = dailyKey ? 'Bugünün kuyusu herkes için aynı. İstediğin kadar dene; günün en iyi puanın ve serin sayılır.' : def.hint;
+    var kural = dailyKey ? GEN.gunKurali(dailyKey) : null;
+    $('ipucu').textContent = kural ? 'Günün kuralı: ' + kural.ad + '. ' + kural.metin + ' Kuyu herkes için aynı; günün en iyi puanın ve serin sayılır.' : def.hint;
+    // günün kuralı: koşu başında oyunu durdurmayan kısa kart
+    if (kural && window.KuyuScreens && window.KuyuScreens.hikaye) window.KuyuScreens.hikaye('Günün kuralı · ' + kural.ad, kural.metin, 3800);
   }
-  function newEndlessDef() { return GEN.createEndless(dailyKey ? dailySeed(dailyKey) : (Date.now() ^ (Math.random() * 1e9)) >>> 0); }
+  function newEndlessDef() { return dailyKey ? GEN.createEndless(dailySeed(dailyKey), GEN.gunKurali(dailyKey)) : GEN.createEndless((Date.now() ^ (Math.random() * 1e9)) >>> 0); }
   function reset() {
     istatBitir('terk'); // Baştan başla / Yeni koşu
     if (mode === 'endless') def = newEndlessDef();

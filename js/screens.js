@@ -151,7 +151,7 @@
     $('sonsuzRekor').textContent = rec.score ? 'Rekor ' + rec.score + ' · ' + rec.meters + ' m' : 'Bölüm yok, su yükselir';
     renderAnaGorev();
     var di = G.dailyInfo();
-    $('gunlukBilgi').textContent = di.tries ? 'Bugün en iyi ' + di.best + ' puan' : 'Bugünün kuyusu hazır';
+    $('gunlukBilgi').textContent = di.tries ? di.kural.ad + ' · en iyi ' + di.best : 'Bugün: ' + di.kural.ad;
     $('gunlukSeri').hidden = !di.streak;
     $('gunlukSeri').textContent = di.streak + ' gün seri' + (di.playedToday ? '' : ' · bugün oyna, seri sürsün');
     show('ekAna');

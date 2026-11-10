@@ -156,7 +156,9 @@ button.anahtar-dugme[aria-checked="false"] { color: var(--soluk); }
 .cip.atis.asti { color: #8a9692; text-decoration: line-through; }
 
 /* bölüm sonu kartı (v0.13): alt sayfa, büyük ödül, yeni madalya ve rekor anları */
-.katman.alt { align-items: flex-end; padding: 10px 10px calc(10px + env(safe-area-inset-bottom, 0px)); }
+.katman.alt { flex-direction: column; align-items: center; justify-content: flex-start; overflow-y: auto; overscroll-behavior: contain; padding: 10px 10px calc(10px + env(safe-area-inset-bottom, 0px)); }
+/* kart alta yaslanır; sahneden uzunsa üstten başlar ve kaydırılır (başlık kesilmez) */
+.katman.alt > .kart { margin-top: auto; flex: none; }
 .kart.sonuc { max-width: 380px; gap: 10px; padding: 18px 16px 14px; border-radius: 20px; animation: sayfaGir .32s cubic-bezier(.2, .9, .3, 1) both; }
 .sonuc-bas { display: flex; flex-direction: column; align-items: center; gap: 2px; }
 .sonuc-bas span { color: var(--soluk); font-size: 13px; }
@@ -188,3 +190,17 @@ button.anahtar-dugme[aria-checked="false"] { color: var(--soluk); }
 .yeni-kart h2 { font-size: 26px; }
 .yeni-kart p { font-size: 15px; color: var(--yazi); opacity: .85; text-wrap: pretty; }
 @media (prefers-reduced-motion: reduce) { .kart.yeni-kart { animation: none; } }
+
+/* kısa ekranlar (ör. 360×640): sonuç kartı sıkı dizilir */
+@media (max-height: 720px) {
+  .kart.sonuc { gap: 7px; padding: 12px 12px 10px; }
+  .kart.sonuc h2 { font-size: 26px; }
+  .odul-satir b { font-size: 40px; }
+  .odul-satir .ikon-odul { width: 24px; height: 24px; }
+  .kart.sonuc .madalya { padding: 6px 4px; gap: 2px; }
+  .kart.sonuc .madalya svg { width: 22px; height: 22px; }
+  .cip.buyuk-cip { height: 24px; font-size: 13px; }
+  .kazanimlar li { padding: 4px 9px; font-size: 13px; }
+  .kart.sonuc .buyuk.genis { min-height: 48px; }
+  .dur-iki > button { min-height: 40px; }
+}

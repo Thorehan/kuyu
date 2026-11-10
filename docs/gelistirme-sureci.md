@@ -53,14 +53,20 @@ Karar (2026-11-10): oyunda güçlendirme yok, **harcamalar yalnızca kozmetik**.
 6. [ ] Daha çok ürün (4. aşama görsellikte: kahraman kostümleri, kanca biçimleri, halka temaları).
 
 ### 3. UI / UX
-- [x] **Ana menü düzeni (v0.9):** üst şerit (profil + toplam ödül + ateşböceği), Oyna kartında sıradaki bölümün adı ve hedefleri, başparmak bölgesinde modlar, alt gezinme çubuğu (Ana sayfa / Bölümler / Profil / Ayarlar). Görevler v0.16'da eklendi; Dolap 4. aşamada.
+- [x] **Ana menü düzeni (v0.9):** üst şerit (profil + toplam ödül + ateşböceği), Oyna kartında sıradaki bölümün adı ve hedefleri, başparmak bölgesinde modlar, alt gezinme çubuğu. v0.22'den beri: Ana sayfa / Bölümler / Görevler / Dolap / Ayarlar; Profil ana menüdeki "Merhaba" düğmesinde.
 - [ ] Ana menü için senin geri bildirimin (telefonda).
 - [x] Oyun içi duraklatma paneli (v0.10): Devam et, Baştan / Yeni koşu, Bölümü atla, ses ve titreşim, Ana menü. Oyun ve su durur, ip bırakılmaz; telefon arka plana alınınca kendiliğinden durur.
 - [x] Oyun içi üst şerit (v0.11): solda bölüm adı ve küçük göstergeler (ateşböceği, atış/par, akış; Sonsuz'da metre, akış, hız çarpanı), sağda duraklat. Atla ve Ses duraklatma paneline taşındı. 360 px'te kesilme yok.
 - [x] Bölümler ekranı (v0.12): özet ve ilerleme çubuğu, Tümü / Eksik hedefler filtresi, 1–6 Öğrenme ve 10'arlı gruplar (her grupta ilerleme), geçildi/tam işaretleri, Sıradaki etiketi ve otomatik kaydırma. Bölgeler gelince grup adları bölge adları olur.
 - [x] Bölüm sonu kartı (v0.13): alt sayfa; sayarak gelen büyük ödül ve hesabı; madalyalar (bu oyunda ilk kez kazanılan "YENİ" etiketiyle zıplar); süre ve hız göstergeleri (rekor etiketli); büyük "Bölüm N ›", Tekrar, Bölümler. Sonsuz Kuyu kartı aynı yapıda.
 - [x] Tanıtım kartları (v0.14): ateşböceği halkası, hız halkası, ahşap, kutu, su, akış, boş atış, kurtarma kancası, el yorulması ilk görüldüğünde oyun durur ve kısa kart çıkar; her biri bir kez. Ayarlar → "Tanıtım kartlarını yeniden göster".
-- [ ] Erişilebilirlik: turkuaz/sarı işaretlerin renk körlüğünde ayırt edilmesi (şekil farkı), yazı boyutu.
+- [x] **Denetim 2026-11-10 (v0.23), 360×640 telefon:** bütün sekmelerde yana taşma yok; günlük giriş penceresi sığıyor. Bulunan ve düzeltilenler:
+  - Bölüm sonu kartı (madalya + 3–4 kazanım satırı) sahneden uzundu, başlık kesiliyordu ve kaydırılamıyordu. Artık kart sahneden uzunsa üstten başlar ve kaydırılır; 720 pikselden kısa ekranlarda kart sıkı dizilir ve en çok 2 kazanım satırı gösterir (fazlası "ve N tane daha").
+  - 7. bölümde yay, sarkaç ve rüzgâr şeridi aynı bölümde ilk kez çıkıyordu: yeni oyuncu art arda 3 tanıtım kartıyla kesiliyordu. Artık el yapımı 1–6. bölümler dışında bir koşuda en çok bir yeni öğe kartı; kalanı sonraki bölümlerde (7, 8, 9. bölümler birer yeni şey öğretir). Acil kartlar (boş atış, kurtarma, su, akış, el yorulması) sınırsız.
+  - Servis çalışanı internetsiz açılışta en eski kayıtlı sürümü açıyordu (v0.22'de düzeltildi).
+- [ ] Erişilebilirlik: işaretlerde renk dışında yön oku zaten var (sol ◀, sağ ▶); kalan: yazı boyutu ayarı.
+- [ ] Ana menüde bugünün görev ilerlemesi (ör. "Görevler 1/3") kısa gösterim.
+- [ ] Sonuç kartında Dolap'a kısa yol: yeni bir ürüne yetecek ateşböceği birikince "Dolap'ta X alınabilir".
 
 ### 4. Görsellik (şimdilik öncelik değil)
 - [ ] Kozmetik dolap: atkı rengi, kanca/ip görünümü, uçuş izi (2. aşamadaki mağaza mantığının görünümleri).
@@ -86,6 +92,7 @@ Karar (2026-11-10): oyunda güçlendirme yok, **harcamalar yalnızca kozmetik**.
 - [ ] Hikâyenin meta ile bağı (bölgeler, kozmetikler).
 
 ## Yapılanlar
+- 2026-11-10 · v0.23 · UI/UX denetimi (360×640): sonuç kartı kısa ekranda taşmıyor ve kaydırılabiliyor; tanıtım kartı sınırı (koşu başına bir yeni öğe kartı).
 - 2026-11-10 · v0.22 · Servis çalışanı düzeltmesi: internetsiz açılışta en eski kayıtlı sürüm açılıyordu ve önbellek her sürümde şişiyordu; artık dosya başına tek (en son) kayıt.
 - 2026-11-10 · v0.22 · Ekonomi, günlük giriş, Dolap, video ile ikiye katlama; görev ödülleri ateşböceği. Düzeltme: Sonsuz/Günlük'te toplanan ateşböcekleri sayılmıyordu (görevler dahil).
 - 2026-11-10 · v0.21 · Sarkaç halka (yeni halka türlerinin sonuncusu), tanıtım kartı; rota botu sarkaçları canlı konumundan hedefler.

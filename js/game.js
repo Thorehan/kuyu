@@ -173,7 +173,7 @@
   function reset() {
     if (mode === 'endless') def = newEndlessDef();
     sim = E.createSim(def);
-    parts = []; floaters = []; trail = []; winT = null; deadT = null; resultShown = false; lastHud = '';
+    parts = []; floaters = []; trail = []; winT = null; deadT = null; resultShown = false; lastHud = ''; introOgeSayisi = 0;
     $('katman').hidden = true;
     closePause(); closeIntro(true);
     paused = false; acc = 0; lastT = 0;
@@ -843,8 +843,10 @@
     r.missions.forEach(function (m) { items.push('<li class="kz-gorev">' + KAZ_IK.gorev + '<span><small>Görev · Görevler\'den al</small>' + m.text + '</span><em>+' + m.reward + '</em></li>'); });
     r.ach.forEach(function (a) { items.push('<li class="kz-basarim t' + a.tier + '">' + KAZ_IK.basarim + '<span><small>' + a.kademe + '</small>' + a.ad + '</span>' + (a.ates ? '<em>+' + a.ates + '</em>' : '') + '</li>'); });
     if (!items.length) return '';
-    var more = items.length > 3 ? '<li class="kz-daha">ve ' + (items.length - 3) + ' tane daha · Görevler sekmesinde</li>' : '';
-    return '<ul class="kazanimlar" aria-label="Kazanımlar">' + items.slice(0, 3).join('') + more + '</ul>';
+    // kısa ekranda (720 pikselden kısa) en çok 2 satır, yoksa 3; fazlası tek satırda
+    var max = window.innerHeight < 720 ? 2 : 3;
+    var more = items.length > max ? '<li class="kz-daha">ve ' + (items.length - max) + ' tane daha · Görevler sekmesinde</li>' : '';
+    return '<ul class="kazanimlar" aria-label="Kazanımlar">' + items.slice(0, max).join('') + more + '</ul>';
   }
   function showSheet() {
     $('katman').classList.add('alt');
@@ -995,6 +997,11 @@
   var introOpen = false, introWant = [];
   function wantIntro(key) { if (!save.seen[key] && introWant.indexOf(key) < 0) introWant.push(key); }
   function inView(y) { var vh = viewH / K; return y > cam + 30 && y < cam + vh - 40; }
+  // Yeni öğe kartları (halka türleri, ahşap, kutu): el yapımı 1–6. bölümler dışında bir koşuda en çok bir tane;
+  // kalanı sonraki bölümlerde gelir. 7. bölümde yay, sarkaç ve şerit birlikte ilk kez çıkıyordu (art arda 3 kart).
+  // Acil kartlar (boş atış, kurtarma, su, akış, el yorulması) sınırsız.
+  var OGE_KARTLARI = ['ff', 'hiz', 'ahsap', 'kutu', 'kapi', 'yay', 'gecit', 'sarkac'], introOgeSayisi = 0;
+  function ogeSiniri() { return !(mode === 'level' && levelNo <= HAND.length) && introOgeSayisi >= 1; }
   function maybeIntro() {
     if (introOpen || pauseOpen || sim.t < 0.6) return;
     // ekranda ilk kez görünenler
@@ -1008,8 +1015,9 @@
     if (!save.seen.kutu && sim.boxes.length && sim.boxes.some(function (b) { return inView(b.y); })) wantIntro('kutu');
     if (!save.seen.kurtarma && !sim.rope && !sim.hook && E.aim(sim, 0.25).rescue) wantIntro('kurtarma');
     if (!save.seen.kayma && mode === 'endless' && isFinite(sim.grip) && sim.hang > 0.3) wantIntro('kayma');
+    if (ogeSiniri()) introWant = introWant.filter(function (k) { return OGE_KARTLARI.indexOf(k) < 0; });
     var key = introWant.shift();
-    if (key && !save.seen[key]) openIntro(key);
+    if (key && !save.seen[key]) { if (OGE_KARTLARI.indexOf(key) >= 0) introOgeSayisi++; openIntro(key); }
   }
   function openIntro(key) {
     var c = INTRO[key]; if (!c) return;

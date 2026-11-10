@@ -30,7 +30,7 @@ Kalan işler geliştirme sırasına göre. Bekleyenler senden bir karar ya da te
 2. [x] Kendi hayaletinle yarış (v0.38): bölümde en kısa süreli, Sonsuz'da rekor, Günlük'te günün en iyi koşun soluk bir kopya olarak seninle tırmanır; ekran dışındaysa kenarda işaret. Ayarlar → Hayalet.
 3. [x] Günlük Kuyu'ya günün kuralı (v0.39): altı kural sırayla döner (Yay, Rüzgâr, Ateşböceği gecesi, Sarkaç, Geçit, Hız). Yalnızca halka türleri değişir; yerler, su ve zorluk aynı. Her kural botla 1500 m'ye çıkılıyor, ortalama oyuncu 1:13–1:22'de yakalanıyor.
 4. [x] Ateşböceği ışığı (v0.40): ömür boyu kazanılan ateşböceği (harcamak söndürmez) 10 ışık seviyesine bölünür (25, 60, 120, 200, 320, 480, 700, 1000, 1400, 2000). Menüdeki kuyuda ateşböcekleri çoğalır, sıcak parıltı artar, 3. seviyeden sonra duvar fenerleri yanar. Profil'de "Kuyunun ışığı" çubuğu; seviye atlayınca menüde bildirim.
-5. [ ] İkinci yolculuk (77+) metinleri.
+5. [x] İkinci yolculuk (v0.41): 77. bölümden sonra her bölgeye ilk girişte kendi kartı; Çıra'nın yolu'nda toplanır, bölüm listesinde "· ikinci yolculuk".
 
 Bekleyenler: telefon denemesi düzeltmeleri, fiyatların gözden geçirilmesi, ana menü geri bildirimi, bekçinin adı, online için arka uç seçimi, Mustafa'nın parçaları.
 
@@ -107,12 +107,13 @@ Kullanıcı hikâyeye online'dan önce geçti; online (5) sonra.
 - [x] Menü metinleri (v0.34): "Çıra'yı fenerine geri götür", "ÇIRA'YI IŞIĞA ÇIKAR".
 - [x] Bölge finalleri (v0.36, 16, 36, 56, 76): ilk geçişte sözsüz son sahne (ateşböcekleri yol gösterir, madende fenerler yanar, mağarada kristaller çınlar, kulede fener yeniden yanar).
 - [x] Bekçinin notları (v0.35): 12 not (bölge başına 3; 4, 9, 14, 20, 27, 34, 41, 48, 54, 61, 68, 74. bölümler), bölümün en üstteki ateşböceği halkasına asılı. Halkayı alan notu bulur; metin bölüm sonunda kartla gelir, Çıra'nın yolu'nda toplanır. Bot: 12/12 ateşböceği rotasıyla alınıyor.
-- [ ] Son: 76. bölümde fener yeniden yanar; ikinci yolculuk (77+) metinleri.
+- [x] Son: 76. bölümde fener yeniden yanar (v0.36); ikinci yolculuk (77+) metinleri (v0.41).
 - [?] Bekçinin adı.
 
 ## Yapılanlar
 - 2026-11-11 · v0.34 · Hikâye: Çıra (önsöz, bölge kartları, Çıra'nın yolu, metinler); oyun ekranı gizliyken döngü çizim yapmaz.
 - 2026-11-11 · v0.35 · Bekçinin notları: 12 not, ateşböceği yolunda; Çıra'nın yolu'nda okunur.
+- 2026-11-11 · v0.41 · İkinci yolculuk: 77+ bölge kartları ve Çıra'nın yolu metinleri; bölüm listesinde yolculuk adı.
 - 2026-11-11 · v0.40 · Kuyunun ışığı: kazanılan ateşböcekleri menüdeki kuyuyu kalıcı aydınlatır (10 seviye); Profil'de ilerleme.
 - 2026-11-11 · v0.39 · Günün kuralı: Günlük Kuyu'da herkes için aynı tek değişiklik; menü kartında ve koşu başında gösterilir.
 - 2026-11-11 · v0.38 · Hayalet: en iyi koşunun soluk kopyası (bölüm, Sonsuz, Günlük); yalnızca görüntü, ayrı kayıt (`kuyu.hayalet`, ~60 bayt/sn). Ayarlar'dan kapatılır.

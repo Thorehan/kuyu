@@ -34,7 +34,14 @@ Bölgeler köyün unutulmuş katmanlarıdır; Çıra her bölgede fenere biraz d
 | Kristal Mağara | 37–56 | Kristaller ışığı saklar. Çıra'nın saçılan ışığının bir kısmı burada, taşların içinde parlıyor. |
 | Eski Kule | 57–76 | Kuyunun en üstünde fener kulesi. Fener sönük; bekçi her gece pencereden Çıra'yı bekliyor. |
 
-77. bölümden sonra döngü baştan başlar ("İkinci yolculuk": fener yandı ama ateşböcekleri hâlâ dağınık; Çıra onları toplamaya geri iner). Bu kısım sonra yazılacak.
+77. bölümden sonra döngü baştan başlar. **İkinci yolculuk** (v0.41): fener yandı ama ateşböcekleri hâlâ dağınık; Çıra onları toplamaya geri iner. Her bölgeye bu yolculukta ilk girişte kendi kartı çıkar, metin Çıra'nın yolu'nda kalır. Bölüm listesinde 77–156 "· ikinci yolculuk", sonra "· 3. yolculuk" diye sürer.
+
+| Bölge | İkinci yolculuk kartı |
+|---|---|
+| Taş Kuyu (77) | Fener yanıyor ama ateşböcekleri hâlâ kuyunun her yanına dağınık. Çıra onları toplamak için yeniden dibe indi. |
+| Maden (97) | Madenin fenerleri bu kez Çıra gelmeden yanmış. Maden onu bekliyordu. |
+| Kristal Mağara (117) | Kristaller Çıra'yı tanıdı. Her savruluşta biraz daha parlıyorlar. |
+| Eski Kule (137) | Kulenin penceresinde artık iki ışık var: biri fener, biri bekçinin lambası. Ateşböcekleri eve dönüyor. |
 
 ## Anlatım
 1. **Sözsüz önsöz** (v0.34): ilk açılışta, Funday logosundan sonra. Kuyunun ağzında fener yanıyor → fenerden bir kıvılcım kopup kuyuya düşüyor → dipte Çıra gözünü açıyor → kancayı atıp gün ışığına fırlıyor (mevcut sahne).
@@ -61,5 +68,4 @@ Ateşböcekleri Çıra'nın saçılan ışığıdır; kazanılan her biri kuyuya
 
 ## Açık sorular
 - Bekçinin adı.
-- İkinci yolculuğun (77+) metinleri.
 - Mağaza ve bölgelerde hikâyeye bağlı yeni ürünler (ör. bekçinin şapkası).

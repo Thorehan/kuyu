@@ -134,23 +134,30 @@
     { id: 'tas', ad: 'Taş Kuyu', zemin: '#121a19', taban: 30, d: [-6, 4, 1], yosun: '79,107,68', yosunP: 0.18, benek: null,
       duvar: '#141c1b', kenar: '#3a4743', isik: '191,230,238',
       hikaye: 'Köyün eski kuyusu. Çıra fenerden düştüğünde burada uyandı; yukarıda gün ışığı, aşağıda soğuk su.',
+      ikinci: 'Fener yanıyor ama ateşböcekleri hâlâ kuyunun her yanına dağınık. Çıra onları toplamak için yeniden dibe indi.',
       final: { baslik: 'Taş Kuyu geride kaldı', metin: 'Ateşböcekleri bir araya gelip yukarıyı gösterdi. Orada eski bir maden var.' } },
     { id: 'maden', ad: 'Maden', zemin: '#1a120b', taban: 33, d: [16, 4, -10], yosun: null, yosunP: 0, benek: '214,170,90', benekP: 0.22,
       duvar: '#1b140e', kenar: '#5a4430', isik: '255,190,120',
       hikaye: 'Fenerlerin yağı bir zamanlar bu madenden çıkarılırdı. Duvardaki eski fenerler hâlâ Çıra\'yı tanıyor.',
+      ikinci: 'Madenin fenerleri bu kez Çıra gelmeden yanmış. Maden onu bekliyordu.',
       final: { baslik: 'Maden geride kaldı', metin: 'Çıra geçerken madenin eski fenerleri bir bir yandı. Maden onu hatırladı.' } },
     { id: 'kristal', ad: 'Kristal Mağara', zemin: '#0f0c1c', taban: 28, d: [-4, -7, 17], yosun: '120,200,210', yosunP: 0.07, benek: '180,150,255', benekP: 0.16,
       duvar: '#15121f', kenar: '#4a4268', isik: '180,150,255',
       hikaye: 'Kristaller ışığı saklar. Çıra\'nın saçılan ışığının bir kısmı burada, taşların içinde parlıyor.',
+      ikinci: 'Kristaller Çıra\'yı tanıdı. Her savruluşta biraz daha parlıyorlar.',
       final: { baslik: 'Kristal Mağara geride kaldı', metin: 'Kristaller sakladıkları ışığı Çıra\'ya geri verdi. Çıra hiç bu kadar parlak olmamıştı.' } },
     { id: 'kule', ad: 'Eski Kule', zemin: '#1a1b20', taban: 47, d: [3, 4, 11], yosun: '79,107,68', yosunP: 0.06, benek: null,
       duvar: '#1b1c21', kenar: '#5a5d68', isik: '200,215,255',
       hikaye: 'Kuyunun en üstünde fener kulesi. Fener sönük; bekçi her gece pencereden Çıra\'yı bekliyor.',
+      ikinci: 'Kulenin penceresinde artık iki ışık var: biri fener, biri bekçinin lambası. Ateşböcekleri eve dönüyor.',
       final: { baslik: 'Fener yeniden yandı', metin: 'Çıra fenerine kavuştu. Bekçinin penceresinde ışık var; kuyunun her köşesi aydınlandı.' } }
   ];
   var BOLGE_ILK = [1, 17, 37, 57]; // her bölgenin açıldığı bölüm
   // Bölüm numarasından bölge: 1–16 Taş Kuyu, 17–36 Maden, 37–56 Kristal Mağara, 57–76 Eski Kule, sonra baştan (20'şer).
   function bolgeBolum(n) { return n <= 16 ? 0 : (1 + Math.floor((n - 17) / 20)) % BOLGELER.length; }
+  // Kaçıncı yolculuk: 1–76 ilk (0), 77–156 ikinci (1), sonra her 80 bölümde bir
+  function dongu(n) { return n <= 76 ? 0 : 1 + Math.floor((n - 77) / 80); }
+  function yolculukAdi(d) { return d === 1 ? 'ikinci yolculuk' : (d + 1) + '. yolculuk'; }
   var SONSUZ_BOLGE_M = 500;
   function bolgeY(y) {
     if (mode !== 'endless' || !sim) return levelBolge;
@@ -286,7 +293,7 @@
     $('baslik').textContent = levelNo + '. ' + def.name;
     levelBolge = bolgeBolum(levelNo);
     reset();
-    bolgeDuyur(levelBolge);
+    if (dongu(levelNo) > 0) ikinciDuyur(levelBolge); else bolgeDuyur(levelBolge);
     MZ.sahne(BOLGELER[levelBolge].id);
   }
   // Yeni bir bölgeye ilk girişte oyunu durdurmayan kısa duyuru (bölge başına bir kez)
@@ -297,6 +304,14 @@
     save.bolgeler[B.id] = true; persist();
     // hikâye kartı: bölge adı + tek cümle (docs/hikaye.md); oyunu durdurmaz
     if (window.KuyuScreens && window.KuyuScreens.hikaye) window.KuyuScreens.hikaye('Yeni bölge · ' + B.ad + (ek ? ' · ' + ek : ''), B.hikaye);
+  }
+  // İkinci yolculuk (77+): bölgeye o yolculukta ilk girişte kendi kartı (bölge başına bir kez)
+  function ikinciDuyur(bi) {
+    if (!save.ikinci) save.ikinci = {};
+    var B = BOLGELER[bi];
+    if (save.ikinci[B.id]) return;
+    save.ikinci[B.id] = true; persist();
+    if (window.KuyuScreens && window.KuyuScreens.hikaye) window.KuyuScreens.hikaye((bi === 0 ? 'İkinci yolculuk' : 'İkinci yolculuk · ' + B.ad), B.ikinci, 6000);
   }
   var sonsuzBolge = 0;
 
@@ -1617,10 +1632,10 @@
         var notlar = (NOT ? NOT.NOTLAR : []).filter(function (n) { return n.bolge === i; })
           .map(function (n) { return { no: n.no, bolum: n.bolum, metin: notBulundu(n.no) ? n.metin : null }; });
         return { ad: B.ad, metin: B.hikaye, acik: i === 0 || !!gor[B.id], ilkBolum: BOLGE_ILK[i], isik: B.isik, notlar: notlar,
-          son: finalGoruldu(i) ? B.final : null };
+          son: finalGoruldu(i) ? B.final : null, ikinci: save.ikinci && save.ikinci[B.id] ? B.ikinci : null };
       });
     },
-    bolgeAdi: function (n) { return BOLGELER[bolgeBolum(n)].ad; },
+    bolgeAdi: function (n) { var d = dongu(n); return BOLGELER[bolgeBolum(n)].ad + (d ? ' · ' + yolculukAdi(d) : ''); },
     istatOzet: function () { return IST.ozet(save); },
     istatSifirla: function () { IST.sifirla(save); persist(); },
     toggleBuyukYazi: function () { save.buyukYazi = !save.buyukYazi; persist(); return save.buyukYazi; },

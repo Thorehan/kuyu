@@ -1,6 +1,6 @@
 # Kuyu
 
-**Funday Morning Games** · 2D mobil oyun · prototip v0.39
+**Funday Morning Games** · 2D mobil oyun · prototip v0.40
 
 Derin bir kuyunun dibindesin. Telefonu tek elle tut: ekranın soluna ya da sağına dokun, kanca o taraftaki hedefe fırlasın; basılı tut, ipe sarıl; bırak, savrul. Halkadan halkaya, ahşaptan ahşaba tırmanıp kuyudan çık.
 
@@ -82,6 +82,9 @@ Yolun üstünde, bir halkadan sıradakine giden hatta duran yatay şerit (112 bi
 - Akış yokken şerit soluk ve kesiklidir, geçmek bir şey vermez. Ceza yok.
 - Üretici şeridi yalnızca karar noktası olmayan adımlara koyar (yol tek), en az bir adım arayla; rastgele sayı kullanmaz, mevcut bölümler ve Günlük Kuyu tohumları değişmez. El yapımı 1–6. bölümlerde şerit yok.
 - Botlarla (74 üretilen bölümde 164 şerit): akışla oynayan %79'unu, asılarak oynayan ~%40'ını, tek tarafa basan hiçbirini almaz.
+
+## Kuyunun ışığı (v0.40)
+Ömür boyu kazanılan ateşböceği (`cuzdan.kazanilan`; harcamak söndürmez) 10 ışık seviyesine bölünür: 25, 60, 120, 200, 320, 480, 700, 1000, 1400, 2000. Ana menüdeki kuyuda ateşböceği sayısı (8 + 3 × seviye) ve sıcak parıltı artar, 3. seviyeden sonra duvar fenerleri birer birer yanar. Seviye atlanınca menüde kısa bir bildirim çıkar; Profil'de ilerleme çubuğu. Tanıtım sahnesi değişmez.
 
 ## Hayalet (v0.38)
 En iyi koşunun soluk bir kopyası seninle aynı zamanlamayla tırmanır: bölümde en kısa süreli geçişin, Sonsuz Kuyu'da rekor koşun, Günlük Kuyu'da günün en iyisi. Sonsuz her koşuda farklı olduğundan orada bir yükseklik yarışıdır. Hayalet ekranın dışındaysa üst ya da alt kenarda küçük bir işaret görünür. Yalnızca görüntüdür; nişan, puan ve fizik etkilenmez. Ayarlar → Hayalet ile kapatılır.

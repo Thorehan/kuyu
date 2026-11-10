@@ -1624,6 +1624,15 @@
     istatOzet: function () { return IST.ozet(save); },
     istatSifirla: function () { IST.sifirla(save); persist(); },
     toggleBuyukYazi: function () { save.buyukYazi = !save.buyukYazi; persist(); return save.buyukYazi; },
+    // Kuyunun ışığı: ömür boyu kazanılan ateşböceği (harcamak söndürmez) menüdeki kuyuyu kalıcı aydınlatır
+    isik: function () {
+      var ESIK = [0, 25, 60, 120, 200, 320, 480, 700, 1000, 1400, 2000];
+      var n = (save.cuzdan && save.cuzdan.kazanilan) || 0, sv = 0;
+      while (sv + 1 < ESIK.length && n >= ESIK[sv + 1]) sv++;
+      var son = sv + 1 >= ESIK.length;
+      return { seviye: sv, en: ESIK.length - 1, toplam: n, alt: ESIK[sv], ust: son ? null : ESIK[sv + 1], gorulen: save.isikGorulen || 0 };
+    },
+    isikGordu: function (sv) { save.isikGorulen = sv; persist(); },
     toggleHayalet: function () { save.hayalet = !hayaletAcik(); persist(); return hayaletAcik(); },
     hayaletAcik: function () { return hayaletAcik(); },
     toggleHaptics: function () { save.haptics = save.haptics === false; persist(); if (save.haptics) buzz(20); return save.haptics; },

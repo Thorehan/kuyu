@@ -29,7 +29,7 @@ Kalan işler geliştirme sırasına göre. Bekleyenler senden bir karar ya da te
 1. [x] Tam zamanında bırakma (v0.37): ip halkaya varmadan hemen önce bırakılırsa ışıltı, tını, "TAM!" ve Sonsuz'da +10 puan.
 2. [x] Kendi hayaletinle yarış (v0.38): bölümde en kısa süreli, Sonsuz'da rekor, Günlük'te günün en iyi koşun soluk bir kopya olarak seninle tırmanır; ekran dışındaysa kenarda işaret. Ayarlar → Hayalet.
 3. [x] Günlük Kuyu'ya günün kuralı (v0.39): altı kural sırayla döner (Yay, Rüzgâr, Ateşböceği gecesi, Sarkaç, Geçit, Hız). Yalnızca halka türleri değişir; yerler, su ve zorluk aynı. Her kural botla 1500 m'ye çıkılıyor, ortalama oyuncu 1:13–1:22'de yakalanıyor.
-4. [ ] Ateşböceği ışığı: toplanan ateşböcekleri menüdeki kuyuyu kalıcı aydınlatır.
+4. [x] Ateşböceği ışığı (v0.40): ömür boyu kazanılan ateşböceği (harcamak söndürmez) 10 ışık seviyesine bölünür (25, 60, 120, 200, 320, 480, 700, 1000, 1400, 2000). Menüdeki kuyuda ateşböcekleri çoğalır, sıcak parıltı artar, 3. seviyeden sonra duvar fenerleri yanar. Profil'de "Kuyunun ışığı" çubuğu; seviye atlayınca menüde bildirim.
 5. [ ] İkinci yolculuk (77+) metinleri.
 
 Bekleyenler: telefon denemesi düzeltmeleri, fiyatların gözden geçirilmesi, ana menü geri bildirimi, bekçinin adı, online için arka uç seçimi, Mustafa'nın parçaları.
@@ -113,6 +113,7 @@ Kullanıcı hikâyeye online'dan önce geçti; online (5) sonra.
 ## Yapılanlar
 - 2026-11-11 · v0.34 · Hikâye: Çıra (önsöz, bölge kartları, Çıra'nın yolu, metinler); oyun ekranı gizliyken döngü çizim yapmaz.
 - 2026-11-11 · v0.35 · Bekçinin notları: 12 not, ateşböceği yolunda; Çıra'nın yolu'nda okunur.
+- 2026-11-11 · v0.40 · Kuyunun ışığı: kazanılan ateşböcekleri menüdeki kuyuyu kalıcı aydınlatır (10 seviye); Profil'de ilerleme.
 - 2026-11-11 · v0.39 · Günün kuralı: Günlük Kuyu'da herkes için aynı tek değişiklik; menü kartında ve koşu başında gösterilir.
 - 2026-11-11 · v0.38 · Hayalet: en iyi koşunun soluk kopyası (bölüm, Sonsuz, Günlük); yalnızca görüntü, ayrı kayıt (`kuyu.hayalet`, ~60 bayt/sn). Ayarlar'dan kapatılır.
 - 2026-11-11 · v0.37 · Tam zamanında bırakma: ip halkaya ~0,09 sn kala bırakılınca ışıltı + "TAM!" (+10 Sonsuz puanı); sonuç kartında sayısı. Fizik ve tempo aynı.

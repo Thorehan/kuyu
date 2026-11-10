@@ -152,6 +152,9 @@
     renderAnaGorev();
     var di = G.dailyInfo();
     $('gunlukBilgi').textContent = di.tries ? di.kural.ad + ' · en iyi ' + di.best : 'Bugün: ' + di.kural.ad;
+    isikGuncelle();
+    var ik = G.isik ? G.isik() : null;
+    if (ik && ik.seviye > ik.gorulen) { G.isikGordu(ik.seviye); setTimeout(function () { toast('Kuyu biraz daha aydınlandı · Işık ' + ik.seviye + '/' + ik.en); }, 700); }
     $('gunlukSeri').hidden = !di.streak;
     $('gunlukSeri').textContent = di.streak + ' gün seri' + (di.playedToday ? '' : ' · bugün oyna, seri sürsün');
     show('ekAna');
@@ -201,6 +204,10 @@
     $('pAd').textContent = (s.profile && s.profile.name) || 'Tırmanıcı';
     $('pHesap').textContent = 'Misafir · ilerleme bu cihazda';
     $('pHiz').textContent = fmt(st.maxSpeed, 1) + ' m/sn';
+    var ik = G.isik();
+    $('isikSeviye').textContent = 'Işık ' + ik.seviye + '/' + ik.en;
+    $('isikYazi').textContent = ik.toplam + ' ateşböceği' + (ik.ust ? ' · sonraki ışığa ' + (ik.ust - ik.toplam) : ' · kuyu tümüyle aydınlık');
+    $('isikDolu').style.width = (ik.ust ? Math.round((ik.toplam - ik.alt) / (ik.ust - ik.alt) * 100) : 100) + '%';
     $('hikayeListe').innerHTML = G.hikaye().map(function (hb) {
       return '<div class="hk-sayfa' + (hb.acik ? '' : ' kilitli') + '" style="--isik:' + hb.isik + '"><b>' + hb.ad + '</b>' +
         '<span>' + (hb.acik ? hb.metin : hb.ilkBolum + '. bölümde açılır') + '</span>' +
@@ -589,7 +596,12 @@
   // Tanıtımda kahraman dipten kanca atar, halkaya çekilir ve gün ışığına fırlar; sonra halkada sallanır.
   var sceneRaf = 0, sceneT0 = 0, sceneCanvas = null, brick = null, brickKey = '';
   var flies = [];
-  for (var i = 0; i < 14; i++) flies.push({ x: Math.random(), y: 0.25 + Math.random() * 0.65, p: Math.random() * 6.28, s: 0.4 + Math.random() * 0.6 });
+  for (var i = 0; i < 44; i++) flies.push({ x: 0.04 + Math.random() * 0.92, y: 0.2 + Math.random() * 0.7, p: Math.random() * 6.28, s: 0.4 + Math.random() * 0.6 });
+  // Kuyunun ışığı (ana menü): seviye arttıkça daha çok ateşböceği, sıcak bir parıltı ve duvarda yanan fenerler.
+  // Tanıtım sahnesi her zaman aynı kalır (önsöz).
+  var isikSv = 0;
+  function isikGuncelle() { isikSv = G.isik ? G.isik().seviye : 0; }
+  var DUVAR_FENER = [[0.07, 0.78], [0.93, 0.66], [0.07, 0.54], [0.93, 0.42], [0.07, 0.3], [0.93, 0.18], [0.07, 0.1], [0.93, 0.88]];
 
   function startScene() {
     sceneCanvas = current === 'ekAna' ? $('anaSahne') : $('tanitimSahne');
@@ -660,8 +672,17 @@
     ctx.fillStyle = 'rgba(227,244,242,.07)';
     ctx.beginPath(); ctx.moveTo(cx - w * 0.28, 0); ctx.lineTo(cx + w * 0.28, 0); ctx.lineTo(cx + w * 0.14, h * 0.75); ctx.lineTo(cx - w * 0.14, h * 0.75); ctx.closePath(); ctx.fill();
 
-    // ateşböcekleri
-    flies.forEach(function (fl) {
+    // kuyunun ışığı: sıcak parıltı ve duvar fenerleri (yalnızca ana menüde)
+    var ana = current === 'ekAna', sv = ana ? isikSv : 0;
+    if (sv > 0) {
+      var pg = ctx.createRadialGradient(cx, h * 0.62, 0, cx, h * 0.62, h * 0.7);
+      pg.addColorStop(0, 'rgba(232,230,140,' + (0.025 * sv) + ')'); pg.addColorStop(1, 'rgba(232,230,140,0)');
+      ctx.fillStyle = pg; ctx.fillRect(0, 0, w, h);
+      for (var fi = 0; fi < Math.min(DUVAR_FENER.length, sv - 2); fi++) duvarFener(ctx, DUVAR_FENER[fi][0] * w, DUVAR_FENER[fi][1] * h, u, t + fi);
+    }
+    // ateşböcekleri: menüde ışık seviyesiyle çoğalır (8 + 3 × seviye), tanıtımda 14
+    var flyN = ana ? 8 + 3 * sv : 14;
+    flies.slice(0, flyN).forEach(function (fl) {
       var x = (fl.x + Math.sin(t * 0.3 * fl.s + fl.p) * 0.05) * w, y = (fl.y + Math.cos(t * 0.4 * fl.s + fl.p) * 0.03) * h;
       var a = 0.45 + 0.4 * Math.sin(t * 2 * fl.s + fl.p);
       var g = ctx.createRadialGradient(x, y, 0, x, y, 12 * u);
@@ -742,6 +763,15 @@
       bg.addColorStop(0, 'rgba(13,20,22,0)'); bg.addColorStop(1, 'rgba(13,20,22,.75)');
       ctx.fillStyle = bg; ctx.fillRect(0, h * 0.55, w, h * 0.45);
     }
+  }
+  // Duvar feneri (kuyunun ışığı): duvara çakılı küçük fener
+  function duvarFener(ctx, x, y, u, t) {
+    var fl = 0.85 + 0.15 * Math.sin(t * 7);
+    var g = ctx.createRadialGradient(x, y, 1, x, y, 34 * u);
+    g.addColorStop(0, 'rgba(255,200,120,' + (0.38 * fl) + ')'); g.addColorStop(1, 'rgba(255,200,120,0)');
+    ctx.fillStyle = g; ctx.fillRect(x - 34 * u, y - 34 * u, 68 * u, 68 * u);
+    ctx.fillStyle = '#2b2118'; ctx.fillRect(x - 5 * u, y - 7 * u, 10 * u, 13 * u); ctx.fillRect(x - 7 * u, y - 9 * u, 14 * u, 2.5 * u);
+    ctx.fillStyle = 'rgba(255,214,150,' + (0.7 + 0.3 * fl) + ')'; ctx.fillRect(x - 3 * u, y - 4 * u, 6 * u, 8 * u);
   }
   // Kuyunun ağzındaki fener (önsöz)
   var ONSOZ = 1.7;

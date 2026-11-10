@@ -51,6 +51,9 @@ Bölgeler köyün unutulmuş katmanlarıdır; Çıra her bölgede fenere biraz d
 5. **Bekçinin notları** (v0.35): 12 kısa not, bölge başına 3. Her biri bir bölümün en üstteki ateşböceği halkasına asılı; gizli yol, ateşböceği yoludur. Okumak isteğe bağlı, "Çıra'nın yolu"nda toplanır. Metinler `js/notlar.js`'te; bekçi adını söylemez (ad henüz yok).
 6. **Son**: 76. bölümün finali (v0.36) fenerin yeniden yandığı sahnedir. Sonrası (77+ "İkinci yolculuk" metinleri) yazılacak.
 
+## Kuyunun ışığı (v0.40)
+Ateşböcekleri Çıra'nın saçılan ışığıdır; kazanılan her biri kuyuya geri döner. Ömür boyu kazanılan ateşböceği (harcamak söndürmez) 10 ışık seviyesine bölünür; ana menüdeki kuyu her seviyede biraz daha aydınlanır, duvarlarda fenerler yanar. Profil → "Kuyunun ışığı".
+
 ## Metin kuralları
 - Kısa cümleler, bir kartta en çok iki cümle.
 - "Ölmek" yok; su "söndürmeye çalışır", Çıra "ıslanır".

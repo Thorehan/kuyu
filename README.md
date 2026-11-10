@@ -1,6 +1,6 @@
 # Kuyu
 
-**Funday Morning Games** · 2D mobil oyun · prototip v0.34
+**Funday Morning Games** · 2D mobil oyun · prototip v0.35
 
 Derin bir kuyunun dibindesin. Telefonu tek elle tut: ekranın soluna ya da sağına dokun, kanca o taraftaki hedefe fırlasın; basılı tut, ipe sarıl; bırak, savrul. Halkadan halkaya, ahşaptan ahşaba tırmanıp kuyudan çık.
 
@@ -95,7 +95,8 @@ Köyün fenerinden düşen küçük bir kor olan **Çıra**, kuyunun dibinden fe
 - **Sözsüz önsöz:** tanıtım sahnesinin başında kuyunun ağzında fener yanar, bir kıvılcım kopup kuyuya düşer, dipte Çıra gözünü açar; ardından kancayı atıp gün ışığına fırlar. Ayarlar → "Tanıtımı yeniden izle" ile tekrar izlenir.
 - **Bölge kartları:** yeni bir bölgeye ilk girişte ekranın üstünde, oyunu durdurmayan kısa kart (bölge adı + bir cümle); dokununca ya da 5 sn sonra kapanır.
 - **Çıra'nın yolu (Profil):** açılan bölgelerin hikâye sayfaları; açılmayanlar "N. bölümde açılır" diye kilitli. Taş Kuyu baştan açıktır.
-- Sonra: bölge finalleri, bekçinin notları (gizli yollarda), fenerin yeniden yandığı son.
+- Bekçinin notları (v0.35, `js/notlar.js`): 12 kısa not, bölge başına 3. Her biri belli bir bölümün en üstteki ateşböceği halkasına asılı ("gizli yol" = ateşböceği yolu); halkayı alan notu bulur. Not hemen kaydedilir, metni bölüm sonunda (ya da su yetişirse yeniden başlarken) kartla gösterilir. Profil → Çıra'nın yolu'nda bulunanlar okunur, bulunmayanlar bölüm numarasıyla görünür. Motor ve bölüm düzeni değişmez; `tools/bot.js` her notun ateşböceği rotasıyla alındığını denetler.
+- Sonra: bölge finalleri, fenerin yeniden yandığı son.
 
 ## Müzik ve ses (v0.32)
 - **Ortam müziği** dosyasız, Web Audio ile çalınırken üretilir (`js/muzik.js`). Katmanlar: yumuşak ses halısı (akor), alçak zemin notası, akış sürerken (x2 ve üstü) giderek açılan arpej, bölgeye özel renk.
@@ -296,6 +297,7 @@ Bot rota bilmez; yalnızca ekrandaki sol ve sağ işarete bakar. Sonuçlar (6 el
 | `js/gorevler.js` | Günlük görevler ve başarımlar (tarayıcı + Node) |
 | `js/ekonomi.js` | Cüzdan, günlük giriş, Dolap kataloğu (tarayıcı + Node) |
 | `js/istatistik.js` | Yerel oyun istatistiği (tarayıcı + Node) |
+| `js/notlar.js` | Bekçinin notları: 12 metin, hangi bölümde, hangi halkada |
 | `js/muzik.js` | Üretilen ortam müziği (bölge ve akışa göre) |
 | `js/game.js` | Oyun ekranı: çizim, ses, girdi, kayıt |
 | `js/screens.js` | Açılış, giriş, tanıtım, ana menü, bölümler, ayarlar ve arka plan sahnesi |

@@ -397,3 +397,14 @@ button.oyna { padding: 10px 12px 10px 22px; min-height: 84px; }
 .hk-sayfa.kilitli { box-shadow: inset 3px 0 0 #2c3936; }
 .hk-sayfa.kilitli b, .hk-sayfa.kilitli span { color: var(--soluk); opacity: .8; }
 .buyuk-yazi .hikaye-kart span, .buyuk-yazi .hk-sayfa span { font-size: 16px; }
+.hk-notlar { list-style: none; margin: 6px 0 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.hk-notlar li { display: flex; gap: 9px; align-items: flex-start; padding: 8px 10px; border-radius: 10px; background: rgba(0,0,0,.18); }
+.hk-notlar li i { flex: none; width: 12px; height: 15px; margin-top: 2px; border-radius: 2px; background: #3a4542;
+  box-shadow: inset 0 4px 0 -3px rgba(0,0,0,.25), inset 0 8px 0 -7px rgba(0,0,0,.25); }
+.hk-notlar li.bulundu i { background: linear-gradient(225deg, #c9b78f 0 4px, #e9dcbe 4px); }
+.hk-notlar li span { display: flex; flex-direction: column; gap: 2px; font-size: 14px; line-height: 1.45; }
+.hk-notlar li em { font-style: normal; font-size: 12px; letter-spacing: .02em; color: var(--soluk); }
+.hk-notlar li.bulundu em { color: #ffd08a; }
+.hk-notlar li:not(.bulundu) span { color: var(--soluk); }
+.buyuk-yazi .hk-notlar li span { font-size: 16px; }
+.buyuk-yazi .hk-notlar li em { font-size: 14px; }

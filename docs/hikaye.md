@@ -41,7 +41,7 @@ Bölgeler köyün unutulmuş katmanlarıdır; Çıra her bölgede fenere biraz d
 2. **Bölge kartları** (v0.34): yeni bölgeye ilk girişte oyunu durdurmayan kısa kart: bölge adı + yukarıdaki tek cümle.
 3. **Çıra'nın yolu** (v0.34): Profil'de açılan bölgelerin hikâye sayfaları; açılmayanlar kilitli ("17. bölümde açılır").
 4. **Bölge finalleri** (sonra): 16, 36, 56, 76. bölümler gösterişli bir sahneyle biter (madende fenerler tek tek yanar, mağarada kristaller çınlar, kulede fener yeniden yanar).
-5. **Bekçinin notları** (sonra): gizli yollarda bulunan kısa notlar; okumak isteğe bağlı, "Çıra'nın yolu"nda toplanır.
+5. **Bekçinin notları** (v0.35): 12 kısa not, bölge başına 3. Her biri bir bölümün en üstteki ateşböceği halkasına asılı; gizli yol, ateşböceği yoludur. Okumak isteğe bağlı, "Çıra'nın yolu"nda toplanır. Metinler `js/notlar.js`'te; bekçi adını söylemez (ad henüz yok).
 6. **Son** (sonra): 76. bölümün sonunda Çıra kulenin fenerine ulaşır, fener yeniden yanar; kuyunun tamamı aydınlanır.
 
 ## Metin kuralları

@@ -203,7 +203,11 @@
     $('pHiz').textContent = fmt(st.maxSpeed, 1) + ' m/sn';
     $('hikayeListe').innerHTML = G.hikaye().map(function (hb) {
       return '<div class="hk-sayfa' + (hb.acik ? '' : ' kilitli') + '" style="--isik:' + hb.isik + '"><b>' + hb.ad + '</b>' +
-        '<span>' + (hb.acik ? hb.metin : hb.ilkBolum + '. bölümde açılır') + '</span></div>';
+        '<span>' + (hb.acik ? hb.metin : hb.ilkBolum + '. bölümde açılır') + '</span>' +
+        (hb.acik && hb.notlar && hb.notlar.length ? '<ul class="hk-notlar">' + hb.notlar.map(function (n) {
+          return n.metin ? '<li class="bulundu"><i aria-hidden="true"></i><span><em>Bekçinin notu · ' + n.bolum + '. bölüm</em>' + n.metin + '</span></li>'
+            : '<li><i aria-hidden="true"></i><span><em>Bulunmadı · ' + n.bolum + '. bölüm</em>Ateşböceği yolunda bir not asılı.</span></li>';
+        }).join('') + '</ul>' : '') + '</div>';
     }).join('');
     $('pHizNot').textContent = st.maxSpeed >= 40 ? 'Akış ustası: ipi erken bırakıp zincir kuruyorsun.' : 'İpi tam sarılmadan bırak, havadayken sıradakine tutun: hız ve ödül artar.';
     $('pBolum').textContent = done.length ? Math.max.apply(null, done) : '–';

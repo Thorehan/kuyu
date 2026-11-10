@@ -1,7 +1,7 @@
 /* Kuyu — ekranlar, çizim, ses ve girdi. Kurallar js/engine.js, bölümler js/levels.js ve js/gen.js. */
 (function () {
   'use strict';
-  var E = window.KuyuEngine, HAND = window.KuyuLevels, GEN = window.KuyuGen, GOREV = window.KuyuGorev, EKO = window.KuyuEkonomi, IST = window.KuyuIstat, CFG = E.CFG;
+  var E = window.KuyuEngine, HAND = window.KuyuLevels, GEN = window.KuyuGen, GOREV = window.KuyuGorev, EKO = window.KuyuEkonomi, IST = window.KuyuIstat, NOT = window.KuyuNotlar, CFG = E.CFG;
   var $ = function (id) { return document.getElementById(id); };
   var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -311,6 +311,7 @@
     istatBitir('terk'); // Baştan başla / Yeni koşu
     if (mode === 'endless') def = newEndlessDef();
     sim = E.createSim(def);
+    notKur();
     sonsuzBolge = 0;
     if (mode === 'endless') MZ.sahne('tas');
     MZ.kis(false);
@@ -322,6 +323,45 @@
     layout();
     cam = camTarget();
     updateHud(true);
+    notGoster(); // önceki denemede bulunup su yetişen notun metni
+  }
+
+  // ---------- Bekçinin notları (js/notlar.js) ----------
+  // Not, bölümün en üstteki ateşböceği halkasına iliştirilir; o halkayı alan notu bulur. Bulunan not hemen kaydedilir
+  // (su yetişse bile kaybolmaz); metni oyunu bölmemek için bölüm bitince ya da yeniden başlarken gösterilir.
+  var notAktif = null, notHalka = null, notBekleyen = null;
+  function notBulundu(no) { return !!(save.notlar && save.notlar[no]); }
+  function notKur() {
+    notAktif = null; notHalka = null;
+    if (mode !== 'level' || !NOT) return;
+    var n = NOT.bolumde(levelNo), h = n && NOT.halka(def);
+    if (!h || notBulundu(n.no)) return;
+    notAktif = n;
+    notHalka = sim.rings.find(function (r) { return r.ff && r.x === h[0] && r.y === h[1]; }) || null;
+  }
+  function notAl(e) {
+    if (!notAktif || !notHalka || e.x !== notHalka.x || e.y !== notHalka.y) return;
+    if (!save.notlar) save.notlar = {};
+    save.notlar[notAktif.no] = true; persist();
+    notBekleyen = notAktif; notAktif = null;
+    tone(523, 0.3, 'triangle', 0.07, 784);
+    floatText(e.x, e.y - 30, 'Bekçinin notu!', '#ffd08a', 16);
+  }
+  function notGoster() {
+    if (!notBekleyen || !window.KuyuScreens || !window.KuyuScreens.hikaye) return;
+    var n = notBekleyen; notBekleyen = null;
+    var top = NOT.NOTLAR.filter(function (x) { return notBulundu(x.no); }).length;
+    window.KuyuScreens.hikaye('Bekçinin notu · ' + top + '/' + NOT.NOTLAR.length, n.metin, 7000);
+  }
+  function drawNot(r, t) {
+    var a = Math.sin(t / 520 + r.x) * 0.18, x = r.x, y = r.y + CFG.RING_R;
+    ctx.save(); ctx.translate(x, y); ctx.rotate(a);
+    ctx.strokeStyle = 'rgba(233,220,190,.7)'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(0, 6); ctx.stroke();
+    ctx.fillStyle = '#e9dcbe'; ctx.fillRect(-6, 6, 12, 14);
+    ctx.fillStyle = '#c9b78f'; ctx.beginPath(); ctx.moveTo(2, 6); ctx.lineTo(6, 6); ctx.lineTo(6, 10); ctx.closePath(); ctx.fill();
+    ctx.strokeStyle = '#8a7656'; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(-3.5, 12); ctx.lineTo(3.5, 12); ctx.moveTo(-3.5, 15); ctx.lineTo(3.5, 15); ctx.moveTo(-3.5, 18); ctx.lineTo(1, 18); ctx.stroke();
+    ctx.restore();
   }
 
   function camTarget() {
@@ -393,7 +433,7 @@
       } else if (e.type === 'comboBreak') floatText(sim.p.x, sim.p.y - 26, 'akış bitti (' + e.why + ')', '#8fa09c', 12);
       else if (e.type === 'slip') { SFX.slip(); buzz(30); floatText(sim.p.x, sim.p.y - 24, 'el kaydı!', COL.kahraman, 15); }
       else if (e.type === 'clink') { SFX.clink(); burst(e.x, e.y, 7, '#e9f3f0', 220, 0.25, 0); }
-      else if (e.type === 'firefly') { SFX.firefly(); buzz([8, 40, 8]); burst(e.x, e.y, 16, COL.atesbocegi, 160, 0.6, -40); if (mode === 'endless') floatText(e.x, e.y - 10, '+25', COL.atesbocegi, 14); }
+      else if (e.type === 'firefly') { SFX.firefly(); buzz([8, 40, 8]); burst(e.x, e.y, 16, COL.atesbocegi, 160, 0.6, -40); if (mode === 'endless') floatText(e.x, e.y - 10, '+25', COL.atesbocegi, 14); notAl(e); }
       else if (e.type === 'gecit') {
         tone(330, 0.25, 'sine', 0.08, 990); buzz([10, 30, 10]);
         burst(e.x, e.y, 14, 'rgb(' + GECIT_COL + ')', 160, 0.45, 0); burst(e.x2, e.y2, 18, 'rgb(' + GECIT_COL + ')', 200, 0.55, -40);
@@ -893,7 +933,7 @@
     var vh = viewH / K;
     for (var i = 0; i < sim.rects.length; i++) drawRect(sim.rects[i]);
     sim.buttons.forEach(drawButton);
-    sim.rings.forEach(function (r) { if (r.y > cam - 30 - (r.sw ? CFG.SARKAC_L : 0) && r.y < cam + vh + 30) { if (r.kapi) { drawGate(r, t); return; } if (r.gecit || r.cikis) { drawPortal(r, t); return; } if (r.sw) drawSwingChain(r); drawRing(r.x, r.y); if (r.yay != null) drawSpringRing(r, t); if (r.ff && !r.got) drawFireflyRing(r, t); if (r.hiz) drawSpeedRing(r, t); } });
+    sim.rings.forEach(function (r) { if (r.y > cam - 30 - (r.sw ? CFG.SARKAC_L : 0) && r.y < cam + vh + 30) { if (r.kapi) { drawGate(r, t); return; } if (r.gecit || r.cikis) { drawPortal(r, t); return; } if (r.sw) drawSwingChain(r); drawRing(r.x, r.y); if (r.yay != null) drawSpringRing(r, t); if (r.ff && !r.got) { drawFireflyRing(r, t); if (r === notHalka && notAktif) drawNot(r, t); } if (r.hiz) drawSpeedRing(r, t); } });
     sim.fireflies.forEach(function (f) { if (f.y > cam - 20 && f.y < cam + vh + 20) drawFirefly(f, t); });
     sim.boxes.forEach(drawBox);
     drawAimMarkers(t);
@@ -1022,6 +1062,7 @@
   }
   function showLevelResult() {
     resultShown = true;
+    setTimeout(notGoster, 600);
     istatBitir('gecis');
     var cuzdanOnce = save.cuzdan.ates;
     var ff = E.fireflyCount(sim), ffT = sim.fireflies.length, time = sim.t;
@@ -1355,7 +1396,11 @@
     // Çıra'nın yolu (Profil): açılan bölgelerin hikâyesi; Taş Kuyu baştan açık
     hikaye: function () {
       var gor = save.bolgeler || {};
-      return BOLGELER.map(function (B, i) { return { ad: B.ad, metin: B.hikaye, acik: i === 0 || !!gor[B.id], ilkBolum: BOLGE_ILK[i], isik: B.isik }; });
+      return BOLGELER.map(function (B, i) {
+        var notlar = (NOT ? NOT.NOTLAR : []).filter(function (n) { return n.bolge === i; })
+          .map(function (n) { return { no: n.no, bolum: n.bolum, metin: notBulundu(n.no) ? n.metin : null }; });
+        return { ad: B.ad, metin: B.hikaye, acik: i === 0 || !!gor[B.id], ilkBolum: BOLGE_ILK[i], isik: B.isik, notlar: notlar };
+      });
     },
     bolgeAdi: function (n) { return BOLGELER[bolgeBolum(n)].ad; },
     istatOzet: function () { return IST.ozet(save); },

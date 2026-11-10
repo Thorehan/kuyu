@@ -6,6 +6,7 @@
 const E = require('../js/engine.js');
 const LEVELS = require('../js/levels.js');
 const G = require('../js/gen.js');
+const NOT = require('../js/notlar.js');
 const C = E.CFG;
 const args = process.argv.slice(2);
 const trace = args.includes('--trace');
@@ -138,6 +139,22 @@ if (!args.includes('--gen') || only) {
     if (trace || !b.ok) b.log.forEach(l => console.log('   ~ ' + l));
     if (b.ok && b.s.maxCombo < def.flow) { allOk = false; console.log(`   ! akış hedefi x${def.flow} bot ile ulaşılamıyor (x${b.s.maxCombo})`); }
   }
+}
+
+// 1b) Bekçinin notları: ateşböceği rotası notun iliştiği halkayı almalı
+if (!only) {
+  let notOk = 0;
+  for (const n of NOT.NOTLAR) {
+    const def = n.bolum <= LEVELS.length ? LEVELS[n.bolum - 1] : G.createLevel(n.bolum);
+    const h = NOT.halka(def);
+    const c = h ? play(def, 'rahat', def.ffRoute) : null;
+    const rg = c && c.s.rings.find(r => r.ff && r.x === h[0] && r.y === h[1]);
+    if (rg && rg.got && c.ok) notOk++;
+    else { allOk = false; console.log(`! Not ${n.no} (${n.bolum}. bölüm): ${h ? 'ateşböceği rotası halkayı almıyor' : 'ateşböceği halkası yok'}`); }
+  }
+  console.log(`
+== Bekçinin notları: ${notOk}/${NOT.NOTLAR.length} ateşböceği rotasıyla alınıyor ==
+`);
 }
 
 // 2) Üretilen bölümler

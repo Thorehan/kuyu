@@ -70,7 +70,8 @@ Karar (2026-11-10): oyunda güçlendirme yok, **harcamalar yalnızca kozmetik**.
 - [x] Sonuç kartında Dolap kısa yolu (v0.26): bu koşunun kazancıyla ilk kez yetişilen en ucuz ürün için "Dolap'ta yeni · Gök ip alınabilir ›"; yalnızca eşik o koşuda aşıldığında çıkar. Dokununca oyun durur ve Dolap o ürünün önizlemesiyle açılır (satın alma yine "Al" ile).
 
 ### 4. Görsellik (şimdilik öncelik değil)
-- [ ] Kozmetik dolap: atkı rengi, kanca/ip görünümü, uçuş izi (2. aşamadaki mağaza mantığının görünümleri).
+- [x] Dolap görünümleri: atkı, ip, uçuş izi (v0.22); kahraman rengi ve kanca biçimi (v0.31). Kahraman: Turuncu (bedava), Deniz 60, Çimen 60, Lavanta 90, Pembe 90, Gece 120, Altın 150. Kanca: Ok (bedava), Çapa 50, Yıldız 80, Kalp 100 (kalp ve yıldız hep dik çizilir). Bütün dolap 2080 ateşböceği (tipik oyuncu için 2–3 hafta). Halka renkleri oynanışın parçası olduğu için satılmaz.
+- [ ] Daha sonra: kahraman kostümleri (şapka, gözlük), bölgeye özel ürünler.
 - [x] Bölgeler (v0.30): Taş Kuyu (1–16) → Maden (17–36) → Kristal Mağara (37–56) → Eski Kule (57–76), sonra baştan (20'şer). Sonsuz Kuyu'da her 500 m'de bir; sınır kuyunun içinde görünür. Değişen: duvar dokusu ve rengi, taş çıkıntı rengi, ortam ışığı, arka plan süsleri (madende fener, mağarada duvar dibinde kristal, kulede pencere ve ay ışığı). Halkalar, işaretler ve oyun renkleri her bölgede aynı. Bölümler ekranında grup adları bölge adı; yeni bölgeye ilk girişte oyunu durdurmayan kısa duyuru (Sonsuz'da metresiyle). Oynanış değişmedi.
 - [ ] Bölgelere özel müzik/ses dokusu (müzik kararına bağlı).
 - [ ] Görsel düzenleme: bu yapının üzerine; baştan tasarım yok.
@@ -94,6 +95,7 @@ Karar (2026-11-10): oyunda güçlendirme yok, **harcamalar yalnızca kozmetik**.
 - [ ] Hikâyenin meta ile bağı (bölgeler, kozmetikler).
 
 ## Yapılanlar
+- 2026-11-10 · v0.31 · Dolap'a kahraman rengi ve kanca biçimi; beş sekme.
 - 2026-11-10 · v0.30 · Bölgeler: Taş Kuyu, Maden, Kristal Mağara, Eski Kule (bölümlerde numaraya, Sonsuz'da yüksekliğe göre).
 - 2026-11-10 · v0.29 · 4. bölüme üçüncü ateşböceği; kutu yerde artık kaymıyor (düğmeden çıkıp kapağı kapatıyordu).
 - 2026-11-10 · v0.28 · Yerel istatistik sayfası ve panoya kopyalama.

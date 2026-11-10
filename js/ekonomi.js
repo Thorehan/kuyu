@@ -14,6 +14,19 @@
 
   // Dolap. Fiyatlar tools/ekonomi-olcum.js ile ölçülen kazanca göre (README → Ekonomi).
   var KATALOG = [
+    // kahraman gövdesi (renk2: alt gölge)
+    { id: 'govde-turuncu', tur: 'govde', ad: 'Turuncu', renk: '#f26a3a', renk2: '#b8401b', fiyat: 0 },
+    { id: 'govde-deniz', tur: 'govde', ad: 'Deniz', renk: '#3aa0f2', renk2: '#1b5fb8', fiyat: 60 },
+    { id: 'govde-cimen', tur: 'govde', ad: 'Çimen', renk: '#5cc45a', renk2: '#2f7d2d', fiyat: 60 },
+    { id: 'govde-lavanta', tur: 'govde', ad: 'Lavanta', renk: '#a77cf2', renk2: '#6a45b8', fiyat: 90 },
+    { id: 'govde-pembe', tur: 'govde', ad: 'Pembe', renk: '#f27ab0', renk2: '#b8457a', fiyat: 90 },
+    { id: 'govde-gece', tur: 'govde', ad: 'Gece', renk: '#4a5680', renk2: '#252b45', fiyat: 120 },
+    { id: 'govde-altin', tur: 'govde', ad: 'Altın', renk: '#f2c23a', renk2: '#b88a1b', fiyat: 150 },
+    // kanca biçimi (renk alanı biçim adı)
+    { id: 'kanca-ok', tur: 'kanca', ad: 'Ok', renk: 'ok', fiyat: 0 },
+    { id: 'kanca-capa', tur: 'kanca', ad: 'Çapa', renk: 'capa', fiyat: 50 },
+    { id: 'kanca-yildiz', tur: 'kanca', ad: 'Yıldız', renk: 'yildiz', fiyat: 80 },
+    { id: 'kanca-kalp', tur: 'kanca', ad: 'Kalp', renk: 'kalp', fiyat: 100 },
     { id: 'atki-turkuaz', tur: 'atki', ad: 'Turkuaz', renk: '#2fb3a6', fiyat: 0 },
     { id: 'atki-kiraz', tur: 'atki', ad: 'Kiraz', renk: '#e2445c', fiyat: 40 },
     { id: 'atki-mor', tur: 'atki', ad: 'Mor', renk: '#9b6bff', fiyat: 40 },
@@ -32,8 +45,8 @@
     { id: 'iz-altin', tur: 'iz', ad: 'Altın', renk: '#ffd36b', fiyat: 80 },
     { id: 'iz-gokkusagi', tur: 'iz', ad: 'Gökkuşağı', renk: 'gokkusagi', fiyat: 250 }
   ];
-  var TURLER = { atki: 'Atkı', ip: 'İp', iz: 'Uçuş izi' };
-  var VARSAYILAN = { atki: 'atki-turkuaz', ip: 'ip-keten', iz: 'iz-atki' };
+  var TURLER = { govde: 'Kahraman', atki: 'Atkı', ip: 'İp', kanca: 'Kanca', iz: 'Uçuş izi' };
+  var VARSAYILAN = { govde: 'govde-turuncu', atki: 'atki-turkuaz', ip: 'ip-keten', kanca: 'kanca-ok', iz: 'iz-atki' };
 
   function item(id) { for (var i = 0; i < KATALOG.length; i++) if (KATALOG[i].id === id) return KATALOG[i]; return null; }
 
@@ -44,7 +57,12 @@
       for (var k in b) ff += b[k].ff || 0;
       save.cuzdan = { ates: ff, kazanilan: ff, harcanan: 0 };
     }
-    if (!save.dolap) save.dolap = { sahip: [VARSAYILAN.atki, VARSAYILAN.ip, VARSAYILAN.iz], kusan: { atki: VARSAYILAN.atki, ip: VARSAYILAN.ip, iz: VARSAYILAN.iz } };
+    if (!save.dolap) save.dolap = { sahip: [], kusan: {} };
+    // her türün bedava varsayılanı sahip olunur ve kuşanılır (sonradan eklenen türler eski kayıtlara da gelir)
+    Object.keys(VARSAYILAN).forEach(function (t) {
+      if (save.dolap.sahip.indexOf(VARSAYILAN[t]) < 0) save.dolap.sahip.push(VARSAYILAN[t]);
+      if (!save.dolap.kusan[t]) save.dolap.kusan[t] = VARSAYILAN[t];
+    });
     if (!save.giris) save.giris = { gun: 0, son: null, toplam: 0 };
     return save;
   }
@@ -96,7 +114,7 @@
   function gorunum(save) {
     ensure(save);
     var k = save.dolap.kusan, out = {};
-    Object.keys(VARSAYILAN).forEach(function (t) { var it = item(k[t]) || item(VARSAYILAN[t]); out[t] = it.renk; });
+    Object.keys(VARSAYILAN).forEach(function (t) { var it = item(k[t]) || item(VARSAYILAN[t]); out[t] = it.renk; if (it.renk2) out[t + '2'] = it.renk2; });
     return out;
   }
 

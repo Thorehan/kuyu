@@ -374,3 +374,7 @@ button.oyna { padding: 10px 12px 10px 22px; min-height: 84px; }
 .istat-metin { width: 100%; min-height: 160px; border-radius: 12px; background: #101817; color: var(--yazi); border: 1px solid #2c3936; font: 12px/1.4 ui-monospace, monospace; padding: 8px; }
 .buyuk-yazi .istat-satir span { font-size: 15px; }
 .buyuk-yazi .istat-satir small { font-size: 14px; }
+
+/* Dolap: beş bölüm sekmesi dar ekranda alt satıra geçebilir (v0.31) */
+#ekDolap .filtre { flex-wrap: wrap; gap: 5px; }
+#ekDolap .filtre button { padding: 0 10px; }

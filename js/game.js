@@ -30,6 +30,26 @@
   function scarfCol(t) { return renk(look().atki, t); }
   function trailCol(t) { var c = look().iz; return c === 'atki' ? scarfCol(t) : renk(c, t); }
   function ropeCol() { return renk(look().ip); }
+  // Kanca biçimi: başlangıç noktasında, aci yönüne bakar. Kalp ve yıldız döndürülmez (hep dik okunsun).
+  function kancaCiz(c, bicim, renkK, aci) {
+    if (aci && bicim !== 'kalp' && bicim !== 'yildiz') c.rotate(aci);
+    c.strokeStyle = renkK || '#cfd7d4'; c.fillStyle = renkK || '#cfd7d4'; c.lineWidth = 2; c.lineCap = 'round'; c.lineJoin = 'round';
+    c.beginPath();
+    if (bicim === 'capa') {
+      c.moveTo(-6, 0); c.lineTo(4, 0); c.moveTo(-3, -3.5); c.lineTo(-3, 3.5);
+      c.moveTo(5.5, -4.5); c.arc(0.5, 0, 5, -1.1, 1.1); c.stroke();
+      c.beginPath(); c.arc(-7.5, 0, 1.6, 0, Math.PI * 2); c.stroke();
+    } else if (bicim === 'yildiz') {
+      for (var i = 0; i < 10; i++) { var a = i * Math.PI / 5, rr = i % 2 ? 2.4 : 6; c.lineTo(Math.cos(a) * rr, Math.sin(a) * rr); }
+      c.closePath(); c.fill();
+    } else if (bicim === 'kalp') {
+      // dik kalp, ucu aşağıda
+      c.moveTo(0, 5.5); c.bezierCurveTo(-2, 2, -7, -0.5, -5.5, -3.8); c.bezierCurveTo(-4, -6.5, -1, -6, 0, -3.2);
+      c.bezierCurveTo(1, -6, 4, -6.5, 5.5, -3.8); c.bezierCurveTo(7, -0.5, 2, 2, 0, 5.5); c.closePath(); c.fill();
+    } else { // ok (varsayılan)
+      c.moveTo(-4, 0); c.lineTo(4, 0); c.moveTo(4, 0); c.lineTo(0, -5); c.moveTo(4, 0); c.lineTo(0, 5); c.stroke();
+    }
+  }
 
   // ---------- bölümler ----------
   var genCache = {};
@@ -380,7 +400,7 @@
       else if (e.type === 'waterStart') { wantIntro('su'); floatText(sim.p.x, sim.p.y + 40, 'su yükseliyor', COL.suAcik, 14); }
       else if (e.type === 'dead') {
         SFX.dead(); shake = 8; buzz(80);
-        burst(sim.p.x, sim.p.y, 22, e.why === 'su' ? COL.suAcik : COL.kahraman, 260, 0.7);
+        burst(sim.p.x, sim.p.y, 22, e.why === 'su' ? COL.suAcik : (look().govde || COL.kahraman), 260, 0.7);
         deadT = 0;
       } else if (e.type === 'won') { SFX.won(); buzz([20, 60, 30]); winT = 0; burst(sim.p.x, sim.p.y, 20, COL.gok, 200, 0.8, -60); }
     }
@@ -692,10 +712,8 @@
     ctx.beginPath(); ctx.moveTo(p.x, p.y - 2); ctx.lineTo(tx, ty); ctx.stroke();
     if (sim.hook) {
       var a = Math.atan2(sim.hook.dy, sim.hook.dx);
-      ctx.save(); ctx.translate(tx, ty); ctx.rotate(a);
-      ctx.strokeStyle = '#cfd7d4'; ctx.lineWidth = 2;
-      ctx.beginPath(); ctx.moveTo(-4, 0); ctx.lineTo(4, 0);
-      ctx.moveTo(4, 0); ctx.lineTo(0, -5); ctx.moveTo(4, 0); ctx.lineTo(0, 5); ctx.stroke();
+      ctx.save(); ctx.translate(tx, ty);
+      kancaCiz(ctx, look().kanca, null, a);
       ctx.restore();
     }
   }
@@ -727,9 +745,9 @@
     var st = Math.min(0.25, sp / 40), ang = Math.atan2(vy, vx);
     ctx.save(); ctx.translate(p.x, p.y);
     if (sp > 1) { ctx.rotate(ang); ctx.scale(1 + st, 1 - st * 0.6); ctx.rotate(-ang); }
-    ctx.fillStyle = COL.kahramanKoyu;
+    ctx.fillStyle = look().govde2 || COL.kahramanKoyu;
     ctx.beginPath(); ctx.arc(0, 1, CFG.R, 0, Math.PI * 2); ctx.fill();
-    ctx.fillStyle = COL.kahraman;
+    ctx.fillStyle = look().govde || COL.kahraman;
     ctx.beginPath(); ctx.arc(0, 0, CFG.R, 0, Math.PI * 2); ctx.fill();
     ctx.fillStyle = 'rgba(255,255,255,0.18)';
     ctx.beginPath(); ctx.arc(-3.5, -4, 3.5, 0, Math.PI * 2); ctx.fill();
@@ -740,7 +758,7 @@
     ctx.beginPath(); ctx.arc(p.x + lx * 3, p.y - 2 + ly * 2, 4.4, 0, Math.PI * 2); ctx.fill();
     ctx.fillStyle = '#1a1210';
     ctx.beginPath(); ctx.arc(p.x + lx * 5, p.y - 2 + ly * 3.4, 2, 0, Math.PI * 2); ctx.fill();
-    if (Math.floor(t / 2600) % 3 === 0 && t % 2600 < 110) { ctx.fillStyle = COL.kahraman; ctx.fillRect(p.x + lx * 3 - 5, p.y - 7 + ly * 2, 10, 5); }
+    if (Math.floor(t / 2600) % 3 === 0 && t % 2600 < 110) { ctx.fillStyle = look().govde || COL.kahraman; ctx.fillRect(p.x + lx * 3 - 5, p.y - 7 + ly * 2, 10, 5); }
   }
 
   // Sol ve sağ dokunuşun kancayı nereye atacağı: sol hedef turkuaz, sağ hedef sarı halka ve ok.
@@ -1293,6 +1311,7 @@
     kusan: function (id) { var r = EKO.kusan(save, id); GORUNUM = null; persist(); return r; },
     gorunum: function () { return look(); },
     renk: renk,
+    kancaCiz: kancaCiz,
     gorevBekleyen: function () { return GOREV.unclaimed(save, todayKey()); },
     basarimlar: function () { return GOREV.achList(save); },
     yeniGune: msToNextDay,

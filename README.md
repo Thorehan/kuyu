@@ -1,6 +1,6 @@
 # Kuyu
 
-**Funday Morning Games** · 2D mobil oyun · prototip v0.30
+**Funday Morning Games** · 2D mobil oyun · prototip v0.31
 
 Derin bir kuyunun dibindesin. Telefonu tek elle tut: ekranın soluna ya da sağına dokun, kanca o taraftaki hedefe fırlasın; basılı tut, ipe sarıl; bırak, savrul. Halkadan halkaya, ahşaptan ahşaba tırmanıp kuyudan çık.
 
@@ -129,10 +129,12 @@ Oyunda güçlendirme yok; harcamalar yalnızca kozmetik. Para birimi **ateşböc
 - **Video ile ikiye katla:** Yalnızca oyuncu seçerse (Pofi kuralı). Web sürümünde reklam yok: 3 saniyelik, "deneme sürümünde reklam yok" yazan bir bekleme ekranı çıkar. Unity'de gerçek ödüllü reklam buraya bağlanır.
 - **Dolap kısa yolu** (v0.26): bir koşunun kazancıyla Dolap'taki bir ürüne ilk kez yetişince sonuç kartında "Dolap'ta yeni · X alınabilir ›" çıkar (yalnız o koşuda eşik aşıldıysa); dokununca Dolap o ürünün önizlemesiyle açılır.
 - **Dolap** (alt menü): üstte bakiye ve kuşanılan görünümle sallanan kahraman; Atkı / İp / Uçuş izi sekmeleri. Sahip olmadığın ürüne dokunmak **önizlemedir** (v0.25): kahraman o renge bürünür, ürün "Önizleme" diye işaretlenir ve önizlemenin altında "Al · fiyat" ile "Vazgeç" çubuğu açılır. Satın alma yalnızca "Al" ile olur (alınca kuşanılır); bakiye yetmezse düğmede kaç eksik olduğu yazar. Sahip olduğun ürüne dokunmak doğrudan kuşanır.
+  - Kahraman (v0.31): Turuncu (bedava), Deniz 60, Çimen 60, Lavanta 90, Pembe 90, Gece 120, Altın 150. Oyunda, menü sahnesinde ve önizlemede.
+  - Kanca (v0.31): Ok (bedava), Çapa 50, Yıldız 80, Kalp 100. Kanca uçarken görünür; kalp ve yıldız hep dik çizilir.
   - Atkı: Turkuaz (bedava), Kiraz 40, Mor 40, Altın 70, Gece 70, Pembe 100, Gökkuşağı 300 (renk döner).
   - İp: Keten (bedava), Gök 30, Zümrüt 50, Altın 60, Ateş 90.
   - Uçuş izi: Atkı rengi (bedava), Kar 40, Mor 60, Altın 80, Gökkuşağı 250. Akış sürerken iz yine sarı yanar (oyun geri bildirimi).
-- Kazanç ölçümü (tipik gün: 10 dk bölüm + 10 dk Sonsuz + 3 görev + giriş): ortalama oyuncu ~100 ateşböceği (videolarla ~145), ateşböceği avcısı ~150 (~195). En ucuz ürün ilk gün, orta ürünler birer günde, gökkuşağı 2–3 günde; bütün dolap (1280) 9–13 günde.
+- Kazanç ölçümü (tipik gün: 10 dk bölüm + 10 dk Sonsuz + 3 görev + giriş): ortalama oyuncu ~100 ateşböceği (videolarla ~145), ateşböceği avcısı ~150 (~195). En ucuz ürün ilk gün, orta ürünler birer günde, gökkuşağı 2–3 günde; bütün dolap (2080, v0.31) 2–3 haftada. Eski kayıtlara yeni türlerin bedava varsayılanları kendiliğinden eklenir.
 
 ## Görevler ve başarımlar (v0.16)
 Alt menüdeki **Görevler** sekmesinde iki bölüm var. Mantık `js/gorevler.js` içinde, testi `node tools/gorev-test.js`.

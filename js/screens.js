@@ -306,9 +306,16 @@
   // ---------- dolap ----------
   // Sahip olunmayan ürüne ilk dokunuş ÖNİZLEMEdir: kahraman o renge bürünür, altta "Al · fiyat" çubuğu açılır.
   // Satın alma yalnızca o çubuktaki "Al" ile olur. Sahip olunan ürüne dokunmak doğrudan kuşanır.
-  var dolapTur = 'atki', previewRaf = 0, onizleme = null;
+  var dolapTur = 'govde', previewRaf = 0, onizleme = null, onizlemeGorunum = null;
   function openDolap() { onizleme = null; renderDolap(); show('ekDolap'); $('ekDolap').scrollTop = 0; }
   function swatch(it) {
+    if (it.tur === 'kanca') {
+      var cv = document.createElement('canvas'), d = 2; cv.width = cv.height = 34 * d;
+      var c = cv.getContext('2d'); c.scale(d, d); c.fillStyle = '#24302d'; c.beginPath(); c.arc(17, 17, 17, 0, 6.29); c.fill();
+      c.translate(17, 17); c.scale(2, 2); G.kancaCiz(c, it.renk, '#e6eeec', -Math.PI / 2);
+      return '<span class="renk kanca-renk" style="background:url(' + cv.toDataURL() + ') center/cover" aria-hidden="true"></span>';
+    }
+    if (it.tur === 'govde') return '<span class="renk" style="background:radial-gradient(circle at 35% 30%, ' + it.renk + ' 55%, ' + it.renk2 + ')" aria-hidden="true"></span>';
     var c = it.renk === 'gokkusagi' ? 'conic-gradient(#ff5d5d, #ffd35d, #7ce36a, #5dd6ff, #9b6bff, #ff5d5d)' : it.renk === 'atki' ? 'linear-gradient(135deg, #2fb3a6 50%, #e2445c 50%)' : it.renk;
     return '<span class="renk" style="background:' + c + '" aria-hidden="true"></span>';
   }
@@ -363,7 +370,8 @@
     cancelAnimationFrame(previewRaf);
     (function tick(now) {
       var t = now / 1000, L = Object.assign({}, G.gorunum()), oz = onizleme && window.KuyuEkonomi.item(onizleme);
-      if (oz) L[oz.tur] = oz.renk;
+      if (oz) { L[oz.tur] = oz.renk; if (oz.renk2) L[oz.tur + '2'] = oz.renk2; }
+      onizlemeGorunum = L;
       c.setTransform(dpr, 0, 0, dpr, 0, 0);
       c.fillStyle = '#121b1a'; c.fillRect(0, 0, w, h);
       var cx = w / 2, ringY = 26, rope = 78, r = 16;
@@ -379,6 +387,7 @@
       c.globalAlpha = 1;
       c.lineWidth = 3; c.strokeStyle = '#d08a45'; c.beginPath(); c.arc(cx, ringY, 9, 0, 6.29); c.stroke();
       c.strokeStyle = G.renk(L.ip, now); c.lineWidth = 2.5; c.beginPath(); c.moveTo(cx, ringY); c.lineTo(hx, hy - r * 0.2); c.stroke();
+      c.save(); c.translate(cx, ringY - 13); c.scale(1.7, 1.7); G.kancaCiz(c, L.kanca, null, -Math.PI / 2); c.restore();
       hero(c, hx, hy, r, { x: Math.sin(t * 0.8) * 0.6, y: -0.5 }, G.renk(L.atki, now));
       previewRaf = requestAnimationFrame(tick);
     })(performance.now());
@@ -590,8 +599,9 @@
   }
 
   function hero(ctx, x, y, r, look, scarf) {
-    ctx.fillStyle = '#b8401b'; ctx.beginPath(); ctx.arc(x, y + 1.2, r, 0, 6.29); ctx.fill();
-    ctx.fillStyle = '#f26a3a'; ctx.beginPath(); ctx.arc(x, y, r, 0, 6.29); ctx.fill();
+    var L0 = (current === 'ekDolap' && onizlemeGorunum) || G.gorunum();
+    ctx.fillStyle = L0.govde2 || '#b8401b'; ctx.beginPath(); ctx.arc(x, y + 1.2, r, 0, 6.29); ctx.fill();
+    ctx.fillStyle = L0.govde || '#f26a3a'; ctx.beginPath(); ctx.arc(x, y, r, 0, 6.29); ctx.fill();
     ctx.fillStyle = 'rgba(255,255,255,.18)'; ctx.beginPath(); ctx.arc(x - r * 0.32, y - r * 0.36, r * 0.32, 0, 6.29); ctx.fill();
     ctx.fillStyle = scarf || G.renk(G.gorunum().atki); ctx.fillRect(x - r * 0.75, y + r * 0.2, r * 1.5, r * 0.36);
     ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(x + look.x * r * 0.27, y - r * 0.18 + look.y * r * 0.18, r * 0.4, 0, 6.29); ctx.fill();

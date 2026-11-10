@@ -16,8 +16,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&family=Figtree:wght@400;600&display=swap">
-<link rel="stylesheet" href="css/kuyu.css?v=0.30">
-<link rel="stylesheet" href="css/ekranlar.css?v=0.30">
+<link rel="stylesheet" href="css/kuyu.css?v=0.31">
+<link rel="stylesheet" href="css/ekranlar.css?v=0.31">
 </head>
 <body>
 <div class="app" id="oyunEkrani" hidden>
@@ -69,7 +69,7 @@
   <img id="acilisLogo" class="marka-logo" src="assets/funday-morning-logo.webp" alt="Funday Morning Games">
   <div class="yukleme" aria-hidden="true"><div id="yuklemeDolgu"></div></div>
   <div class="yukleme-not" id="yuklemeNot">Yükleniyor…</div>
-  <div class="ek-surum">Kuyu v0.30</div>
+  <div class="ek-surum">Kuyu v0.31</div>
 </section>
 
 <!-- Giriş: yalnızca ilk açılışta -->
@@ -174,8 +174,10 @@
       <button type="button" class="ana" id="scAl">Al</button>
     </div>
     <div class="filtre" role="tablist" aria-label="Dolap bölümü">
-      <button type="button" role="tab" data-dolap="atki" aria-selected="true">Atkı</button>
+      <button type="button" role="tab" data-dolap="govde" aria-selected="true">Kahraman</button>
+      <button type="button" role="tab" data-dolap="atki" aria-selected="false">Atkı</button>
       <button type="button" role="tab" data-dolap="ip" aria-selected="false">İp</button>
+      <button type="button" role="tab" data-dolap="kanca" aria-selected="false">Kanca</button>
       <button type="button" role="tab" data-dolap="iz" aria-selected="false">Uçuş izi</button>
     </div>
     <div class="dolap-liste" id="dolapListe"></div>
@@ -259,7 +261,7 @@
     <button type="button" id="istatBtn">Oyun istatistikleri</button>
     <button type="button" id="tanitimBtn">Tanıtımı yeniden izle</button>
     <button type="button" id="ipucuSifirBtn">Tanıtım kartlarını yeniden göster</button>
-    <p class="surum">Kuyu v0.30 · prototip · Funday Morning Games</p>
+    <p class="surum">Kuyu v0.31 · prototip · Funday Morning Games</p>
   </div>
 </section>
 
@@ -294,13 +296,13 @@
 
 <div class="bildirim" id="bildirim" role="status" hidden></div>
 
-<script src="js/engine.js?v=0.30"></script>
-<script src="js/levels.js?v=0.30"></script>
-<script src="js/gen.js?v=0.30"></script>
-<script src="js/gorevler.js?v=0.30"></script>
-<script src="js/ekonomi.js?v=0.30"></script>
-<script src="js/istatistik.js?v=0.30"></script>
-<script src="js/game.js?v=0.30"></script>
-<script src="js/screens.js?v=0.30"></script>
+<script src="js/engine.js?v=0.31"></script>
+<script src="js/levels.js?v=0.31"></script>
+<script src="js/gen.js?v=0.31"></script>
+<script src="js/gorevler.js?v=0.31"></script>
+<script src="js/ekonomi.js?v=0.31"></script>
+<script src="js/istatistik.js?v=0.31"></script>
+<script src="js/game.js?v=0.31"></script>
+<script src="js/screens.js?v=0.31"></script>
 </body>
 </html>

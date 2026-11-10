@@ -1,6 +1,6 @@
 # Kuyu
 
-**Funday Morning Games** · 2D mobil oyun · prototip v0.16
+**Funday Morning Games** · 2D mobil oyun · prototip v0.17
 
 Derin bir kuyunun dibindesin. Telefonu tek elle tut: ekranın soluna ya da sağına dokun, kanca o taraftaki hedefe fırlasın; basılı tut, ipe sarıl; bırak, savrul. Halkadan halkaya, ahşaptan ahşaba tırmanıp kuyudan çık.
 
@@ -27,11 +27,12 @@ Oyun ekranının üst şeridinde solda bölüm adı ve altında küçük göster
 ## Tek el kontrolü
 - **Hedefe dokunmak gerekmez, ama taraf seçmek gerekir.** Ekran ikiye bölünür: sol yarıya basınca kanca sol taraftaki hedefe, sağ yarıya basınca sağ taraftakine atılır. Sol/sağ kararı oyuncunundur; hep aynı tarafa basarak geçilemez.
 - Nişan yardımı (`engine.aim`) bastığın tarafta, menzilde ve görüşte olan hedefi şu sırayla seçer:
-  1. Bu taraftaki **en yakın yukarı** hedef (halka, ahşap, kova, kutu). Önce gerçekten o taraftakiler; tam tepedeki hedef (yatayda ±40 birim) iki taraftan da alınır ama ikinci sırada gelir. Böylece iki işaret mümkün olduğunca farklı seçenek gösterir.
-  2. Tutunmuyorsan (düşerken, yerdeyken) bu taraftaki en yakın aşağı hedef. Tutunurken aşağıya hiç atılmaz.
-  3. **Bu tarafta hedef yoksa:** kanca o yöne boşa gidip döner, tutunduğun ip **bırakılmaz**. Ceza yok; kaybedilen biraz zaman ve bir atış. İşaretlerde o tarafa soluk bir "×" konur.
-  4. **İki tarafta da menzilde hedef yoksa** (dipte tıkanma) **kurtarma kancası** en yakın yukarı hedefe uzanır (en çok 1000 birim, çift hızla). Akışı bozar, bir atış sayılır.
-- "Yukarı", asılı olduğun noktanın en az 30 birim üstü demektir; aynı yükseklikteki yan halka yukarı sayılmaz.
+  1. Bu taraftaki **en yakın dik yukarı** hedef (halka, ahşap, kova, kutu). Önce gerçekten o taraftakiler; tam tepedeki hedef (yatayda ±40 birim) iki taraftan da alınır ama ikinci sırada gelir. Böylece iki işaret mümkün olduğunca farklı seçenek gösterir.
+  2. Dik hedef yoksa bu taraftaki **yandaki** (sığ) hedef: 3 m'den az yükselen ya da 45°'den düz açıdaki hedef (v0.17). Yandaki yakın halka, aynı taraftaki daha yukarıdaki hedefin önüne geçmez.
+  3. Tutunmuyorsan (düşerken, yerdeyken) bu taraftaki en yakın aşağı hedef. Tutunurken aşağıya hiç atılmaz.
+  4. **Bu tarafta hedef yoksa:** kanca o yöne boşa gidip döner, tutunduğun ip **bırakılmaz**. Ceza yok; kaybedilen biraz zaman ve bir atış. İşaretlerde o tarafa soluk bir "×" konur.
+  5. **İki tarafta da menzilde hedef yoksa** (dipte tıkanma) **kurtarma kancası** en yakın yukarı hedefe uzanır (en çok 1000 birim, çift hızla). Akışı bozar, bir atış sayılır.
+- "Yukarı", asılı olduğun noktanın (havadaysan kendi konumunun) en az 30 birim üstü demektir; aynı yükseklikteki yan halka yukarı sayılmaz. Ayarlar `CFG.UP_RISE` (60) ve `CFG.UP_ANGLE` (45). Denetim: `node tools/nisan.js`.
 - **Hedef işaretleri:** sol yarının hedefi turkuaz, sağ yarınınki sarı kesikli halka ve okla gösterilir.
 - **İlk bölüm ipucu**, **titreşim** ve tablet/fare için hedefe doğrudan dokunma önceki sürümdeki gibi.
 
@@ -203,6 +204,7 @@ Bot rota bilmez; yalnızca ekrandaki sol ve sağ işarete bakar. Sonuçlar (6 el
 | `tools/kontrol.js` | Duman testi: sözdizimi, sayfa bağlantıları, servis çalışanı listesi, sürüm etiketi |
 | `tools/tempo.js` | Sonsuz Kuyu su temposu ölçümü |
 | `tools/gorev-test.js` | Görev ve başarım mantığı testi |
+| `tools/nisan.js` | Nişan denetimi: işaret yandaki sığ hedefi mi gösteriyor |
 | `tools/simge.py` | Uygulama simgelerini çizer |
 
 Düz JavaScript, derleme adımı yok. Her yayında `index.html` içindeki `?v=` sürüm etiketini artırın ve `node tools/kontrol.js` çalıştırın; yeni bir js/css dosyası eklenirse `sw.js` listesine de yazılmalı; yoksa telefonlar eski CSS/JS'i önbellekten kullanabilir. Kayıt tarayıcıda `kuyu.v2` anahtarıyla tutulur.

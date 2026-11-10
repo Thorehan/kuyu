@@ -2,11 +2,13 @@
 
 Bu belge geliştirme sırasını, kararları ve yapılanları tutar. Claude her turda buradan devam eder.
 
-## Geliştirme sırası (karar: 2026-11-09)
-1. **Oynanış sorunları**
-2. **Geliştirmeler**
-3. **Online özellikler**
-4. **Hikâye**: en son. Karakter kim, neden kaçıyor, ateşböcekleri ne işe yarıyor.
+## Geliştirme sırası (karar: 2026-11-10, 2026-11-09'daki dörtlü sıranın yerine)
+1. **Mekanik oynanış**: kontrol, nişan, fizik, halka türleri, denge.
+2. **Oyun içi akış / alış-satış**: kazanma ve harcama döngüsü (ödül puanı, ateşböceği), görevler, ödüller, mağaza mantığı ve fiyatlar.
+3. **UI / UX**: ekranlar, menüler, kartlar, erişilebilirlik.
+4. **Görsellik**: kozmetik dolap (görünümler), bölgeler, görsel düzenleme, ses ve müzik. Görsel şimdilik öncelik değil.
+5. **Online özellikler**
+6. **Hikâye**: en son. Karakter kim, neden kaçıyor, ateşböcekleri ne işe yarıyor.
 
 Bir aşamadaki işler bitmeden sonrakine geçilmez; yeni bulunan oynanış sorunları her zaman öne alınır.
 
@@ -19,24 +21,28 @@ Bir aşamadaki işler bitmeden sonrakine geçilmez; yeni bulunan oynanış sorun
 - **El kayması yalnızca Sonsuz Kuyu'da**, bölümlerde yok. **Kusursuz** madalyasında boş atışlar sayılmaz.
 - **Ateşböceği alınamıyor olmamalı.** Ateşböcekleri halkanın içindedir; o halkaya tutunmak ya da içinden geçmek yeter. İstemeyen es geçer.
 
-## Yapılacaklar listesi (2026-11-09)
-Dört başlık: **oynanış, UI/UX, hikâye, online**. `[~]` üzerinde çalışılıyor, `[?]` senin kararını bekliyor.
+## Yapılacaklar listesi (2026-11-10)
+Altı başlık, geliştirme sırasıyla aynı. `[~]` üzerinde çalışılıyor, `[?]` senin kararını bekliyor.
 
-### 1. Oynanış
+### 1. Mekanik oynanış
 **Bitenler:** tek el sol/sağ kontrolü ve nişan yardımı, kurtarma kancası, ateşböceği ve hız halkaları (karar noktaları), akış, hız çarpanı, su ilk halkadan sonra, bölümlerde el kayması yok, Kusursuz'da boş atış sayılmaz.
+- [x] Nişan: yandaki halka yukarıdakinin önüne geçmesin (v0.17). Yukarıdaki hedefler dik ve yandakiler (sığ) diye ayrılır; yan = 3 m'den az yükselen ya da 45°'den düz açıdaki hedef. Önce bu taraftaki dik hedef, yoksa yandaki. Havadayken/ip sarılırken yan seçim %4,8 → %1,2 (`node tools/nisan.js`); kalanlar açıkça yukarıdaki yakın halkalar.
 - [ ] Telefon denemesi sonuçlarına göre düzeltmeler (`docs/telefon-testi.md`, sende).
 - [?] Yeni halka türleri: sallanan halka (zamanlama), yay halkası (sabit fırlatma). Çürük halka zorluk olduğu için ertelendi.
-- [?] Ödül puanı ne işe yarayacak: öneri kozmetik dolap (atkı rengi, kanca/ip görünümü, uçuş izi).
-- [x] Günlük Kuyu: herkes aynı gün aynı tohumla aynı sonsuz kuyu (online skor tablosunun zemini). v0.15
-- [x] Görevler ve başarımlar: günde 3 görev (kolay/orta/zor, ödül puanı), 9 başarım × 3 kademe, Görevler sekmesi. v0.16
-- [ ] Bölgeler: her 10–15 bölümde görünüm değişir (taş kuyu → maden → kristal mağara → eski kule).
 - [ ] 4. bölüme üçüncü ateşböceği (kutu bulmacası yüzünden yer yok; bölüm düzeni değişmeli).
-- [?] Müzik: Mustafa'dan istenecek mi?
 - [ ] Yerel istatistik: bölüm başına süre, boş atış, ölüm (denge için).
 - Dokunulmayacak: Sonsuz Kuyu su temposu (karar 2026-11-09).
 
-### 2. UI / UX
-- [x] **Ana menü düzeni (v0.9):** üst şerit (profil + toplam ödül + ateşböceği), Oyna kartında sıradaki bölümün adı ve hedefleri, başparmak bölgesinde modlar, alt gezinme çubuğu (Ana sayfa / Bölümler / Profil / Ayarlar). İleride Dolap ve Görevler bu çubuğa eklenir.
+### 2. Oyun içi akış / alış-satış
+- [x] Günlük Kuyu: herkes aynı gün aynı tohumla aynı sonsuz kuyu (online skor tablosunun zemini). v0.15
+- [x] Görevler ve başarımlar: günde 3 görev (kolay/orta/zor, ödül puanı), 9 başarım × 3 kademe, Görevler sekmesi. v0.16
+- [?] Ödül puanı ve ateşböceği ne işe yarayacak: iki para birimi mi, tek mi; neyle kazanılır, neye harcanır.
+- [ ] Ekonomi tablosu: bölüm, görev ve Sonsuz koşusundan saatte ne kadar kazanılıyor; fiyatlar buna göre.
+- [ ] Mağaza mantığı (satın al, kuşan, sahip olunanlar); görünümleri 4. aşamada çizilir.
+- [?] Ödüllü reklam yalnızca oyuncu seçerse (Pofi kuralı): ör. günlük görev ödülünü ikiye katla.
+
+### 3. UI / UX
+- [x] **Ana menü düzeni (v0.9):** üst şerit (profil + toplam ödül + ateşböceği), Oyna kartında sıradaki bölümün adı ve hedefleri, başparmak bölgesinde modlar, alt gezinme çubuğu (Ana sayfa / Bölümler / Profil / Ayarlar). Görevler v0.16'da eklendi; Dolap 4. aşamada.
 - [ ] Ana menü için senin geri bildirimin (telefonda).
 - [x] Oyun içi duraklatma paneli (v0.10): Devam et, Baştan / Yeni koşu, Bölümü atla, ses ve titreşim, Ana menü. Oyun ve su durur, ip bırakılmaz; telefon arka plana alınınca kendiliğinden durur.
 - [x] Oyun içi üst şerit (v0.11): solda bölüm adı ve küçük göstergeler (ateşböceği, atış/par, akış; Sonsuz'da metre, akış, hız çarpanı), sağda duraklat. Atla ve Ses duraklatma paneline taşındı. 360 px'te kesilme yok.
@@ -44,17 +50,14 @@ Dört başlık: **oynanış, UI/UX, hikâye, online**. `[~]` üzerinde çalış�
 - [x] Bölüm sonu kartı (v0.13): alt sayfa; sayarak gelen büyük ödül ve hesabı; madalyalar (bu oyunda ilk kez kazanılan "YENİ" etiketiyle zıplar); süre ve hız göstergeleri (rekor etiketli); büyük "Bölüm N ›", Tekrar, Bölümler. Sonsuz Kuyu kartı aynı yapıda.
 - [x] Tanıtım kartları (v0.14): ateşböceği halkası, hız halkası, ahşap, kutu, su, akış, boş atış, kurtarma kancası, el yorulması ilk görüldüğünde oyun durur ve kısa kart çıkar; her biri bir kez. Ayarlar → "Tanıtım kartlarını yeniden göster".
 - [ ] Erişilebilirlik: turkuaz/sarı işaretlerin renk körlüğünde ayırt edilmesi (şekil farkı), yazı boyutu.
-- [ ] Görsel düzenleme (ileride): bu yapının üzerine; baştan tasarım yok.
 
-### 3. Oyun hikâyesi (en son ele alınır)
-- [ ] Kahraman kim, adı ne?
-- [ ] Kuyuya nasıl düştü, neden yukarı kaçıyor; su neyi temsil ediyor?
-- [ ] Ateşböcekleri ne işe yarıyor (yol mu gösteriyor, kuyuyu mu aydınlatıyor)? Toplama ile bağlantısı.
-- [ ] Kuyunun ağzındaki dünya; kova kimin?
-- [ ] Anlatım biçimi: tanıtım sahnesi, bölge geçiş kartları, kısa diyaloglar.
-- [ ] Hikâyenin meta ile bağı (bölgeler, kozmetikler).
+### 4. Görsellik (şimdilik öncelik değil)
+- [ ] Kozmetik dolap: atkı rengi, kanca/ip görünümü, uçuş izi (2. aşamadaki mağaza mantığının görünümleri).
+- [ ] Bölgeler: her 10–15 bölümde görünüm değişir (taş kuyu → maden → kristal mağara → eski kule).
+- [ ] Görsel düzenleme: bu yapının üzerine; baştan tasarım yok.
+- [?] Müzik: Mustafa'dan istenecek mi?
 
-### 4. Online özellikler
+### 5. Online özellikler
 - [?] Arka uç seçimi ve maliyet (Firebase, Supabase vb.).
 - [ ] Google / Apple girişi, bulut kayıt (şu an misafir, ilerleme cihazda).
 - [ ] Skor tabloları: Sonsuz Kuyu genel ve haftalık, Günlük Kuyu günlük.
@@ -63,7 +66,16 @@ Dört başlık: **oynanış, UI/UX, hikâye, online**. `[~]` üzerinde çalış�
 - [ ] Arkadaş rekorları ve "bu kuyuyu benimle oyna" paylaşım bağlantısı.
 - [?] Yayın: Unity'ye taşıma zamanı, mağaza hesabı, yalnızca seçilen ödüllü reklam (Pofi kuralı).
 
+### 6. Oyun hikâyesi (en son ele alınır)
+- [ ] Kahraman kim, adı ne?
+- [ ] Kuyuya nasıl düştü, neden yukarı kaçıyor; su neyi temsil ediyor?
+- [ ] Ateşböcekleri ne işe yarıyor (yol mu gösteriyor, kuyuyu mu aydınlatıyor)? Toplama ile bağlantısı.
+- [ ] Kuyunun ağzındaki dünya; kova kimin?
+- [ ] Anlatım biçimi: tanıtım sahnesi, bölge geçiş kartları, kısa diyaloglar.
+- [ ] Hikâyenin meta ile bağı (bölgeler, kozmetikler).
+
 ## Yapılanlar
+- 2026-11-10 · v0.17 · Nişan: yandaki sığ halka yukarıdakinin önüne geçmiyor; `tools/nisan.js` denetimi. Geliştirme sırası altı aşamaya çıktı.
 - 2026-11-10 · v0.16 · Görevler ve başarımlar: günlük 3 görev, ödül alma, 9 başarım (Bronz/Gümüş/Altın), alt menüde Görevler sekmesi, sonuç kartında kazanımlar.
 - 2026-11-10 · v0.15 · Günlük Kuyu: günün tohumu (İstanbul saati), günün en iyisi, deneme sayısı, seri; ana menü kartı ve profil.
 - 2026-11-10 · v0.14 · Tanıtım kartları (9 tür), Ayarlar'dan sıfırlama.

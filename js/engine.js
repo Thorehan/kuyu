@@ -31,6 +31,8 @@
     EARLY: 0.25,        // bu süreden kısa asılıp bırakmak "fırlama" sayılır
     COMBO_HANG: 0.45,   // bundan uzun asılı kalmak akışı bozar
     COMBO_AIR: 1.1,     // havada bundan uzun tutunmadan kalmak akışı bozar
+    UP_RISE: 60,        // nişan: bundan az yükselen hedef "yanda" sayılır (3 m)
+    UP_ANGLE: 45,       // nişan: bundan düz açıdaki hedef "yanda" sayılır (derece)
     NEAR_V: 40,         // yatayda bu kadar yakın (tam tepedeki) hedef iki taraftan da alınır
     BOOST: 650,         // hız halkasından bırakınca eklenen yukarı hız (birim/sn)
     WATER_GRACE: 1.0,   // ilk halkaya tutunduktan bu kadar sonra su yükselmeye başlar
@@ -271,7 +273,10 @@
     // "Yukarı" asılı olduğun noktaya göre ölçülür: aynı yükseklikteki yan halka yukarı sayılmaz.
     var refY = s.rope && s.rope.kind === 'anchor' ? s.rope.y : p.y;
     var holding = s.rope && s.rope.kind === 'anchor';
-    var upSide = [], downSide = [], anyReach = false;
+    var refX = holding ? s.rope.x : p.x, slope = Math.tan(CFG.UP_ANGLE * Math.PI / 180);
+    // Yukarıdakiler ikiye ayrılır: dik (gerçekten yukarı) ve sığ (neredeyse aynı hizada, yanda).
+    // Yandaki yakın hedef, aynı taraftaki daha yukarıdaki hedefin önüne geçmesin.
+    var upSide = [], flatSide = [], downSide = [], anyReach = false;
     for (i = 0; i < list.length; i++) {
       c = list[i];
       if (c.ref === ignore) continue;
@@ -280,13 +285,14 @@
       var sideOk = side < 0 ? dx <= CFG.NEAR_V : dx >= -CFG.NEAR_V;
       // tam tepedeki hedef ikinci sırada: o tarafta başka hedef varsa işaret onu gösterir (iki seçenek ayrışır)
       c.strict = side < 0 ? dx < -CFG.NEAR_V : dx > CFG.NEAR_V;
-      var up = c.y < refY - 30;
-      if (sideOk) (up ? upSide : downSide).push(c);
+      var rise = refY - c.y, up = rise > 30;
+      var flat = up && (rise < CFG.UP_RISE || rise < Math.abs(c.x - refX) * slope);
+      if (sideOk) (flat ? flatSide : up ? upSide : downSide).push(c);
       else if (!anyReach && (up || !holding) && reachable(s, c, ignore)) anyReach = true;
     }
-    // Öncelik: bu taraftaki en yakın yukarı hedef; tutunmuyorsan bu taraftaki en yakın aşağı hedef.
+    // Öncelik: bu taraftaki en yakın dik yukarı hedef, sonra yandaki sığ hedef; tutunmuyorsan en son aşağıdaki.
     // Tutunurken aşağıya hiç atılmaz.
-    var tiers = holding ? [upSide] : [upSide, downSide];
+    var tiers = holding ? [upSide, flatSide] : [upSide, flatSide, downSide];
     for (var tI = 0; tI < tiers.length; tI++) {
       var tier = tiers[tI].sort(function (u, v) { return (u.strict === v.strict) ? u.d - v.d : (u.strict ? -1 : 1); });
       for (i = 0; i < tier.length; i++) {
@@ -486,6 +492,7 @@
   var api = {
     CFG: CFG, createSim: createSim, step: step, press: press, release: release,
     fireflyCount: fireflyCount, hookRay: hookRay, meters: meters, score: score, segRect: segRect, aim: aim,
+    candidates: candidates, reachable: reachable, currentIgnore: currentIgnore,
     speedMult: speedMult, speedMs: speedMs, finalScore: finalScore
   };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;

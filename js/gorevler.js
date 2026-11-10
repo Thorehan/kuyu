@@ -21,7 +21,7 @@
     hizMs:    { ad: function (n) { return 'Bir koşuda ' + n + ' m/sn hıza çık'; }, how: 'max', key: 'speed', t: [25, 40, 52] }
   };
   var KINDS = Object.keys(MISSIONS);
-  var REWARD = [50, 100, 150]; // ödül puanı (toplam ödüle eklenir)
+  var REWARD = [5, 10, 15]; // ateşböceği (v0.22'den önce ödül puanıydı; o puanlar odulEk'te kalır)
   var TIER_AD = ['Kolay', 'Orta', 'Zor'];
 
   function hash(str) {
@@ -101,7 +101,7 @@
     var out = [];
     achList(save).forEach(function (a) {
       var had = save.ach[a.id] || 0;
-      if (a.tier > had) { save.ach[a.id] = a.tier; out.push(a); }
+      if (a.tier > had) { save.ach[a.id] = a.tier; a.onceki = had; out.push(a); }
     });
     return out;
   }
@@ -124,13 +124,13 @@
     });
     return { missions: doneNow, ach: newAch(save) };
   }
-  // Tamamlanan görevin ödülünü al.
-  function claim(save, i) {
+  // Tamamlanan görevin ödülünü al: işaretler ve ateşböceği sayısını döner (cüzdana ekleme js/ekonomi.js ile).
+  // kat 2: oyuncu video izlemeyi seçti.
+  function claim(save, i, kat) {
     var m = save.missions && save.missions.list[i];
     if (!m || !m.done || m.claimed) return 0;
     m.claimed = true;
-    save.odulEk = (save.odulEk || 0) + REWARD[m.tier];
-    return REWARD[m.tier];
+    return REWARD[m.tier] * (kat === 2 ? 2 : 1);
   }
   function unclaimed(save, key) { return daily(save, key).filter(function (m) { return m.done && !m.claimed; }).length; }
 

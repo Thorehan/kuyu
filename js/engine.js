@@ -96,7 +96,7 @@
       grounded: false,
       // akış ve skor
       hang: 0, air: 0, chain: false, combo: 0, maxCombo: 0, hooks: 0, shots: 0, slips: 0,
-      startY: sy, topY: sy, bonus: 0, fireflyPts: 0, maxSpeed: 0, rescues: 0, misses: 0, boosts: 0, gates: 0, springs: 0, float: 0, portals: 0, swings: 0
+      startY: sy, topY: sy, bonus: 0, fireflyPts: 0, maxSpeed: 0, rescues: 0, misses: 0, boosts: 0, gates: 0, springs: 0, float: 0, portals: 0, swings: 0, ffGot: 0
     };
     // geçit çiftlerini bağla
     s.rings.forEach(function (g) {
@@ -497,7 +497,7 @@
     for (i = 0; i < s.fireflies.length; i++) {
       var f = s.fireflies[i];
       if (!f.got && Math.abs(f.y - p.y) < 40 && dist(p.x, p.y, f.x, f.y) < CFG.R + (f.ring ? 20 : 12)) {
-        f.got = true; if (f.ring) f.ring.got = true; s.fireflyPts += 25;
+        f.got = true; if (f.ring) f.ring.got = true; s.fireflyPts += 25; s.ffGot++;
         s.events.push({ type: 'firefly', x: f.x, y: f.y });
       }
     }
@@ -570,7 +570,7 @@
   function collectRing(s, rg) {
     for (var i = 0; i < s.fireflies.length; i++) {
       var f = s.fireflies[i];
-      if (f.ring === rg && !f.got) { f.got = true; rg.got = true; s.fireflyPts += 25; s.events.push({ type: 'firefly', x: f.x, y: f.y }); }
+      if (f.ring === rg && !f.got) { f.got = true; rg.got = true; s.fireflyPts += 25; s.ffGot++; s.events.push({ type: 'firefly', x: f.x, y: f.y }); }
     }
   }
   // Hız çarpanı: 1,00 – 1,50 (0,05 adımlarla)
@@ -581,7 +581,8 @@
   function speedMs(v) { return v / 20; } // birim/sn → m/sn (20 birim = 1 m)
   function die(s, why) { s.status = 'dead'; s.rope = null; s.hook = null; s.events.push({ type: 'dead', why: why }); }
   function dist(ax, ay, bx, by) { var x = ax - bx, y = ay - by; return Math.sqrt(x * x + y * y); }
-  function fireflyCount(s) { return s.fireflies.filter(function (f) { return f.got; }).length; }
+  // Toplanan ateşböceği sayısı. Liste sayılmaz: Sonsuz kuyu suyun altında kalanları listeden siler.
+  function fireflyCount(s) { return s.ffGot || 0; }
   // Sonsuz mod puanı: tırmanılan metre + akış bonusu + ateşböcekleri
   function meters(s) { return Math.max(0, Math.floor((s.startY - s.topY) / 20)); }
   function score(s) { return meters(s) + s.bonus + s.fireflyPts; }

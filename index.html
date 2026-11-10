@@ -16,8 +16,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&family=Figtree:wght@400;600&display=swap">
-<link rel="stylesheet" href="css/kuyu.css?v=0.21">
-<link rel="stylesheet" href="css/ekranlar.css?v=0.21">
+<link rel="stylesheet" href="css/kuyu.css?v=0.22">
+<link rel="stylesheet" href="css/ekranlar.css?v=0.22">
 </head>
 <body>
 <div class="app" id="oyunEkrani" hidden>
@@ -69,7 +69,7 @@
   <img id="acilisLogo" class="marka-logo" src="assets/funday-morning-logo.webp" alt="Funday Morning Games">
   <div class="yukleme" aria-hidden="true"><div id="yuklemeDolgu"></div></div>
   <div class="yukleme-not" id="yuklemeNot">Yükleniyor…</div>
-  <div class="ek-surum">Kuyu v0.21</div>
+  <div class="ek-surum">Kuyu v0.22</div>
 </section>
 
 <!-- Giriş: yalnızca ilk açılışta -->
@@ -105,7 +105,7 @@
     <button type="button" class="selam" id="profilBtn" aria-label="Profil kartını aç"><span class="avatar" aria-hidden="true"></span><span class="selam-yazi"><span>Merhaba,</span><b id="selamAd">Tırmanıcı</b></span></button>
     <div class="ust-sayac">
       <span class="stat-hap" title="Toplam ödül puanı"><i class="ikon-odul" aria-hidden="true"></i><b id="toplamOdul">0</b><span class="sr">ödül puanı</span></span>
-      <span class="stat-hap" title="Toplanan ateşböceği"><i class="ikon-ates" aria-hidden="true"></i><b id="toplamAtes">0</b><span class="sr">ateşböceği</span></span>
+      <span class="stat-hap" title="Ateşböceği: Dolap'ta harcanır"><i class="ikon-ates" aria-hidden="true"></i><b id="toplamAtes">0</b><span class="sr">ateşböceği</span></span>
     </div>
   </div>
   <div class="ana-logo"><h1>Kuyu</h1><span>Kancayla tırman, gün ışığına çık</span></div>
@@ -150,11 +150,26 @@
 <section class="ekran sayfa-ekran sekmeli" id="ekGorevler" hidden>
   <div class="sayfa-ust"><h2>Görevler</h2></div>
   <div class="sayfa-ic">
+    <div class="giris-satir" id="girisSatir"></div>
     <div class="gorev-bas"><h3>Bugünün görevleri</h3><span id="gorevSure">yenisi gece yarısı</span></div>
     <div class="gorev-liste" id="gorevListe"></div>
     <div class="gorev-bas"><h3>Başarımlar</h3><span id="basarimSay">0/27</span></div>
     <div class="basarim-liste" id="basarimListe"></div>
-    <p class="not">Görevler her gece yarısı (Türkiye saati) yenilenir ve o gün herkes için aynıdır. Sayılan koşular: geçilen bölümler ile biten Sonsuz ve Günlük Kuyu koşuları. Görev ödülleri toplam ödül puanına eklenir. Başarımların üç kademesi var: Bronz, Gümüş, Altın.</p>
+    <p class="not">Görevler her gece yarısı (Türkiye saati) yenilenir ve o gün herkes için aynıdır. Sayılan koşular: geçilen bölümler ile biten Sonsuz ve Günlük Kuyu koşuları. Görev ödülleri ateşböceğidir (kolay 5, orta 10, zor 15); istersen video izleyip ikiye katlarsın. Başarımların üç kademesi var: Bronz, Gümüş, Altın.</p>
+  </div>
+</section>
+
+<section class="ekran sayfa-ekran sekmeli" id="ekDolap" hidden>
+  <div class="sayfa-ust"><h2>Dolap</h2><span class="bakiye"><i class="ikon-ates" aria-hidden="true"></i><b id="dolapBakiye">0</b><span class="sr">ateşböceği</span></span></div>
+  <div class="sayfa-ic">
+    <canvas class="dolap-onizleme" id="dolapOnizleme" aria-label="Kahramanın kuşandığı görünüm"></canvas>
+    <div class="filtre" role="tablist" aria-label="Dolap bölümü">
+      <button type="button" role="tab" data-dolap="atki" aria-selected="true">Atkı</button>
+      <button type="button" role="tab" data-dolap="ip" aria-selected="false">İp</button>
+      <button type="button" role="tab" data-dolap="iz" aria-selected="false">Uçuş izi</button>
+    </div>
+    <div class="dolap-liste" id="dolapListe"></div>
+    <p class="not">Hepsi yalnızca görünüş; oyunda güçlendirme yok. Ateşböceği bölümlerde ilk kez topladıklarından, Sonsuz ve Günlük Kuyu'da topladığın her ateşböceğinden, görevlerden, başarımlardan ve günlük girişten gelir.</p>
   </div>
 </section>
 
@@ -215,7 +230,7 @@
     <div class="ayar-satir" id="tamEkranSatir"><div><b>Tam ekran</b><span id="tamEkranYazi">Tarayıcı çubukları gizlenir. Ana ekrana eklersen oyun kendiliğinden tam ekran açılır.</span></div><button type="button" id="tamEkranBtn">Aç</button></div>
     <button type="button" id="tanitimBtn">Tanıtımı yeniden izle</button>
     <button type="button" id="ipucuSifirBtn">Tanıtım kartlarını yeniden göster</button>
-    <p class="surum">Kuyu v0.21 · prototip · Funday Morning Games</p>
+    <p class="surum">Kuyu v0.22 · prototip · Funday Morning Games</p>
   </div>
 </section>
 
@@ -224,17 +239,38 @@
   <button type="button" data-sekme="ekAna"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="7" r="3.2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 10.5v4" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="18" r="3" fill="currentColor"/></svg><span>Ana sayfa</span></button>
   <button type="button" data-sekme="ekBolumler"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="6.5" height="6.5" rx="1.6" fill="none" stroke="currentColor" stroke-width="2"/><rect x="13.5" y="4" width="6.5" height="6.5" rx="1.6" fill="none" stroke="currentColor" stroke-width="2"/><rect x="4" y="13.5" width="6.5" height="6.5" rx="1.6" fill="none" stroke="currentColor" stroke-width="2"/><rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1.6" fill="none" stroke="currentColor" stroke-width="2"/></svg><span>Bölümler</span></button>
   <button type="button" data-sekme="ekGorevler"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="3.5" width="14" height="17" rx="2.4" fill="none" stroke="currentColor" stroke-width="2"/><path d="M8.5 9l1.6 1.6 3-3M8.5 15.5h7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Görevler</span><i class="nokta" id="gorevNokta" hidden></i></button>
-  <button type="button" data-sekme="ekProfil"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8.5" r="4" fill="none" stroke="currentColor" stroke-width="2"/><path d="M4.5 20c1.2-4 4.2-5.6 7.5-5.6s6.3 1.6 7.5 5.6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><span>Profil</span></button>
+  <button type="button" data-sekme="ekDolap"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 6.2a2.2 2.2 0 1 1 2.2 2.2c-.9 0-2.2.6-2.2 1.8v.6M12 10.8L3.6 16.6c-.9.6-.5 2 .6 2h15.6c1.1 0 1.5-1.4.6-2L12 10.8z" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Dolap</span></button>
+  <button type="button" data-sekme="ekProfil" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8.5" r="4" fill="none" stroke="currentColor" stroke-width="2"/><path d="M4.5 20c1.2-4 4.2-5.6 7.5-5.6s6.3 1.6 7.5 5.6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><span>Profil</span></button>
   <button type="button" data-sekme="ekAyarlar"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 8.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7z" fill="none" stroke="currentColor" stroke-width="2"/><path d="M19.4 13.5l1.6 1.2-1.8 3.1-1.9-.7a7.6 7.6 0 0 1-2 1.2l-.3 2h-3.6l-.3-2a7.6 7.6 0 0 1-2-1.2l-1.9.7-1.8-3.1 1.6-1.2a7.7 7.7 0 0 1 0-2.4L2.9 9.3l1.8-3.1 1.9.7a7.6 7.6 0 0 1 2-1.2l.3-2h3.6l.3 2a7.6 7.6 0 0 1 2 1.2l1.9-.7 1.8 3.1-1.6 1.2a7.7 7.7 0 0 1 0 2.4z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg><span>Ayarlar</span></button>
 </nav>
 
+<div class="katman-ust" id="girisKatman" hidden role="dialog" aria-modal="true" aria-labelledby="girisBaslik">
+  <div class="kart giris-kart">
+    <h2 id="girisBaslik">Günlük giriş</h2>
+    <p id="girisAlt">Her gün gel, ateşböceği al. Bir gün kaçırırsan sıfırlanmaz, kaldığın yerden devam eder.</p>
+    <div class="takvim" id="girisTakvim"></div>
+    <button type="button" class="ana buyuk genis" id="girisAlBtn">Al</button>
+    <button type="button" class="genis video-btn" id="girisVideoBtn">Video izle, ikiye katla</button>
+    <button type="button" class="metin-btn" id="girisKapat">Sonra</button>
+  </div>
+</div>
+
+<div class="katman-ust" id="videoKatman" hidden role="dialog" aria-modal="true" aria-labelledby="videoBaslik">
+  <div class="kart video-kart">
+    <h2 id="videoBaslik">Ödüllü video</h2>
+    <p>Deneme sürümünde reklam yok; burada ödüllü video oynayacak. Ödülün birazdan geliyor.</p>
+    <b class="video-sayac" id="videoSayac">3</b>
+  </div>
+</div>
+
 <div class="bildirim" id="bildirim" role="status" hidden></div>
 
-<script src="js/engine.js?v=0.21"></script>
-<script src="js/levels.js?v=0.21"></script>
-<script src="js/gen.js?v=0.21"></script>
-<script src="js/gorevler.js?v=0.21"></script>
-<script src="js/game.js?v=0.21"></script>
-<script src="js/screens.js?v=0.21"></script>
+<script src="js/engine.js?v=0.22"></script>
+<script src="js/levels.js?v=0.22"></script>
+<script src="js/gen.js?v=0.22"></script>
+<script src="js/gorevler.js?v=0.22"></script>
+<script src="js/ekonomi.js?v=0.22"></script>
+<script src="js/game.js?v=0.22"></script>
+<script src="js/screens.js?v=0.22"></script>
 </body>
 </html>

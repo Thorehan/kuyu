@@ -32,7 +32,9 @@ ok(p('bolum').prog === 1, 'günlük koşu bölüm saymaz');
 ok(save.totals.maxMeters === 420 && save.totals.ff === 10, 'toplamlar');
 // ödül alma bir kez
 const i = save.missions.list.indexOf(p('ff'));
-ok(G.claim(save, i) === 50 && G.claim(save, i) === 0 && save.odulEk === 50, 'ödül bir kez alınır');
+ok(G.claim(save, i) === 5 && G.claim(save, i) === 0, 'ödül bir kez alınır (5 ateşböceği)');
+const j = save.missions.list.indexOf(p('hiz'));
+ok(G.claim(save, j, 2) === 10, 'video ile ikiye katlanır');
 ok(G.claim(save, save.missions.list.indexOf(p('bolum'))) === 0, 'bitmemiş görev alınmaz');
 // başarım bir kez bildirilir
 ok(G.newAch(save).length === 0, 'başarım tekrar bildirilmez');

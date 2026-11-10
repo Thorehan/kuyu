@@ -45,10 +45,12 @@ Altı başlık, geliştirme sırasıyla aynı. `[~]` üzerinde çalışılıyor,
 - [x] Günlük Kuyu: herkes aynı gün aynı tohumla aynı sonsuz kuyu (online skor tablosunun zemini). v0.15
 - [x] Görevler ve başarımlar: günde 3 görev (kolay/orta/zor, ödül puanı), 9 başarım × 3 kademe, Görevler sekmesi. v0.16
 Karar (2026-11-10): oyunda güçlendirme yok, **harcamalar yalnızca kozmetik**. Sıra:
-1. [ ] Ekonomi: harcanabilir para (cüzdan), neyle kazanılır (bölüm, görev, Sonsuz, günlük giriş), fiyat tablosu. Saatte kazanç bot ölçümüyle.
-2. [ ] Günlük giriş ödülü: 7 günlük takvim, 7. gün büyük ödül; "video izle, ikiye katla" (yalnızca oyuncu seçerse, Pofi kuralı). Web sürümünde reklam yok, yer tutucu; gerçek reklam Unity'de.
-3. [ ] Mağaza ve dolap mantığı: satın al, kuşan, sahip olunanlar; ilk ürünler basit renk değişimleri (atkı, ip, iz). Asıl görünümler 4. aşamada çizilir.
-4. [ ] Görev ödüllerine de "video ile ikiye katla".
+1. [x] Ekonomi (v0.22): para birimi ateşböceği (cüzdan). Kazanç: bölümde ilk kez alınan ateşböceği (tekrar oynayarak kasılmaz), Sonsuz/Günlük'te toplanan her ateşböceği, görev (5/10/15), başarım kademesi (10/25/50), günlük giriş. Ölçüm `node tools/ekonomi-olcum.js`: ortalama oyuncu tipik bir günde ~100, videolarla ~145.
+2. [x] Günlük giriş (v0.22): 7 günlük takvim 5-5-10-10-15-15-50; gün kaçırınca sıfırlanmaz. "Video izle, ikiye katla" yer tutucusu (3 sn, "deneme" yazılı); gerçek ödüllü reklam Unity'de.
+3. [x] Dolap (v0.22): alt menüde (Profil ana menüdeki "Merhaba" düğmesinde). Atkı 7, ip 5, uçuş izi 5 seçenek; 30–300 ateşböceği, hepsi 1280 (tipik oyuncu için 9–13 gün). Satın alınca kuşanılır; önizlemede sallanan kahraman. Atkı oyunda ve menü sahnesinde, ip ve iz oyunda uygulanır.
+4. [x] Görev ödüllerinde "▶ ×2" video seçeneği (v0.22).
+5. [ ] Fiyat ve kazancı telefon denemesinden sonra gözden geçir.
+6. [ ] Daha çok ürün (4. aşama görsellikte: kahraman kostümleri, kanca biçimleri, halka temaları).
 
 ### 3. UI / UX
 - [x] **Ana menü düzeni (v0.9):** üst şerit (profil + toplam ödül + ateşböceği), Oyna kartında sıradaki bölümün adı ve hedefleri, başparmak bölgesinde modlar, alt gezinme çubuğu (Ana sayfa / Bölümler / Profil / Ayarlar). Görevler v0.16'da eklendi; Dolap 4. aşamada.
@@ -84,6 +86,7 @@ Karar (2026-11-10): oyunda güçlendirme yok, **harcamalar yalnızca kozmetik**.
 - [ ] Hikâyenin meta ile bağı (bölgeler, kozmetikler).
 
 ## Yapılanlar
+- 2026-11-10 · v0.22 · Ekonomi, günlük giriş, Dolap, video ile ikiye katlama; görev ödülleri ateşböceği. Düzeltme: Sonsuz/Günlük'te toplanan ateşböcekleri sayılmıyordu (görevler dahil).
 - 2026-11-10 · v0.21 · Sarkaç halka (yeni halka türlerinin sonuncusu), tanıtım kartı; rota botu sarkaçları canlı konumundan hedefler.
 - 2026-11-10 · v0.20 · Geçit çifti: mor giriş → yukarıdaki çıkış, tanıtım kartı, "GEÇİT +N m".
 - 2026-11-10 · v0.19 · Yay halkası: ulaşınca okun yönüne fırlatır, tepede süzülme, tanıtım kartı. Botlar fırlatılınca tepede dokunur.

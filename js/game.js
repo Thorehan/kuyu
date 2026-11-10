@@ -1,7 +1,7 @@
 /* Kuyu — ekranlar, çizim, ses ve girdi. Kurallar js/engine.js, bölümler js/levels.js ve js/gen.js. */
 (function () {
   'use strict';
-  var E = window.KuyuEngine, HAND = window.KuyuLevels, GEN = window.KuyuGen, GOREV = window.KuyuGorev, CFG = E.CFG;
+  var E = window.KuyuEngine, HAND = window.KuyuLevels, GEN = window.KuyuGen, GOREV = window.KuyuGorev, EKO = window.KuyuEkonomi, CFG = E.CFG;
   var $ = function (id) { return document.getElementById(id); };
   var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -19,7 +19,16 @@
   if (!save.stats) save.stats = { maxSpeed: 0, bestReward: 0 };
   if (!save.seen) save.seen = {};
   GOREV.ensure(save);
+  EKO.ensure(save);
   function persist() { try { localStorage.setItem(KEY, JSON.stringify(save)); } catch (e) {} }
+
+  // ---------- dolap görünümü (js/ekonomi.js) ----------
+  var GORUNUM = null;
+  function look() { if (!GORUNUM) GORUNUM = EKO.gorunum(save); return GORUNUM; }
+  function renk(c, t) { return c === 'gokkusagi' ? 'hsl(' + Math.round((t || performance.now()) / 12 % 360) + ',85%,62%)' : c; }
+  function scarfCol(t) { return renk(look().atki, t); }
+  function trailCol(t) { var c = look().iz; return c === 'atki' ? scarfCol(t) : renk(c, t); }
+  function ropeCol() { return renk(look().ip); }
 
   // ---------- bölümler ----------
   var genCache = {};
@@ -566,7 +575,7 @@
       }
     } else if (sim.hook) { tx = sim.hook.x; ty = sim.hook.y; }
     if (tx === null) return;
-    ctx.strokeStyle = COL.ip; ctx.lineWidth = 2; ctx.lineCap = 'round';
+    ctx.strokeStyle = ropeCol(); ctx.lineWidth = 2; ctx.lineCap = 'round';
     ctx.beginPath(); ctx.moveTo(p.x, p.y - 2); ctx.lineTo(tx, ty); ctx.stroke();
     if (sim.hook) {
       var a = Math.atan2(sim.hook.dy, sim.hook.dx);
@@ -596,7 +605,7 @@
     trail.unshift({ x: p.x, y: p.y }); if (trail.length > 7) trail.pop();
     var hot = sim.combo >= 2;
     if (trail.length > 2) {
-      ctx.strokeStyle = hot ? COL.atesbocegi : COL.atki; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+      ctx.strokeStyle = hot ? COL.atesbocegi : trailCol(t); ctx.lineCap = 'round'; ctx.lineJoin = 'round';
       for (var i = 1; i < trail.length; i++) {
         ctx.lineWidth = (hot ? 6 : 5) - i * 0.55;
         ctx.beginPath(); ctx.moveTo(trail[i - 1].x, trail[i - 1].y + 3); ctx.lineTo(trail[i].x, trail[i].y + 3 + i * 0.6); ctx.stroke();
@@ -612,7 +621,7 @@
     ctx.fillStyle = 'rgba(255,255,255,0.18)';
     ctx.beginPath(); ctx.arc(-3.5, -4, 3.5, 0, Math.PI * 2); ctx.fill();
     ctx.restore();
-    ctx.fillStyle = hot ? COL.atesbocegi : COL.atki; ctx.fillRect(p.x - 8, p.y + 2, 16, 4);
+    ctx.fillStyle = scarfCol(t); ctx.fillRect(p.x - 8, p.y + 2, 16, 4);
     var lx = aim.x, ly = aim.y;
     ctx.fillStyle = '#fff';
     ctx.beginPath(); ctx.arc(p.x + lx * 3, p.y - 2 + ly * 2, 4.4, 0, Math.PI * 2); ctx.fill();
@@ -817,15 +826,22 @@
     persist();
   }
   // Koşu bitti: görev ilerlemesi ve başarımlar (js/gorevler.js).
-  function recordRun(run) { var r = GOREV.record(save, run, todayKey()); persist(); return r; }
+  function recordRun(run) {
+    var r = GOREV.record(save, run, todayKey());
+    // başarım kademesi ödülü: geçilen her kademe için (bronz 10, gümüş 25, altın 50)
+    r.ach.forEach(function (a) { a.ates = 0; for (var k = (a.onceki || 0) + 1; k <= a.tier; k++) a.ates += EKO.kazan(save, EKO.BASARIM_ATES[k - 1]); });
+    persist();
+    return r;
+  }
   var KAZ_IK = {
     gorev: '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8.5l3 3 7-7" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
     basarim: '<svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="6" r="4.2" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M5.6 9.4L4.5 15 8 13.2 11.5 15l-1.1-5.6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>'
   };
-  function kazanimHtml(r) {
+  function kazanimHtml(r, ates) {
     var items = [];
-    r.missions.forEach(function (m) { items.push('<li class="kz-gorev">' + KAZ_IK.gorev + '<span><small>Görev</small>' + m.text + '</span><em>+' + m.reward + '</em></li>'); });
-    r.ach.forEach(function (a) { items.push('<li class="kz-basarim t' + a.tier + '">' + KAZ_IK.basarim + '<span><small>' + a.kademe + '</small>' + a.ad + '</span></li>'); });
+    if (ates > 0) items.push('<li class="kz-ates"><i class="ikon-ates" aria-hidden="true"></i><span><small>Ateşböceği</small>cüzdana eklendi</span><em>+' + ates + '</em></li>');
+    r.missions.forEach(function (m) { items.push('<li class="kz-gorev">' + KAZ_IK.gorev + '<span><small>Görev · Görevler\'den al</small>' + m.text + '</span><em>+' + m.reward + '</em></li>'); });
+    r.ach.forEach(function (a) { items.push('<li class="kz-basarim t' + a.tier + '">' + KAZ_IK.basarim + '<span><small>' + a.kademe + '</small>' + a.ad + '</span>' + (a.ates ? '<em>+' + a.ates + '</em>' : '') + '</li>'); });
     if (!items.length) return '';
     var more = items.length > 3 ? '<li class="kz-daha">ve ' + (items.length - 3) + ' tane daha · Görevler sekmesinde</li>' : '';
     return '<ul class="kazanimlar" aria-label="Kazanımlar">' + items.slice(0, 3).join('') + more + '</ul>';
@@ -857,6 +873,7 @@
     noteStats(speed, reward);
     if (levelNo + 1 > save.maxLevel) save.maxLevel = levelNo + 1;
     persist();
+    var odenen = EKO.bolumOde(save, b.ff || 0, Math.max(b.ff || 0, ff)); // yalnızca ilk kez alınan ateşböcekleri
     var kaz = recordRun({ mode: 'level', won: true, ff: ff, boosts: sim.boosts, gates: sim.gates, maxCombo: sim.maxCombo, speed: speed, perfect: perfect });
     $('kart').className = 'kart sonuc';
     $('kart').innerHTML =
@@ -871,7 +888,7 @@
       '<div class="istatistik">' +
       stat(SURE_IK, fmt(time, 1) + ' sn', 'süre ' + fmt(time, 1) + ' saniye', recTime) +
       stat(IK.hiz, fmt(speed, 0) + ' m/sn', 'en yüksek hız ' + fmt(speed, 1) + ' metre/saniye', recSpeed) +
-      '</div>' + kazanimHtml(kaz) +
+      '</div>' + kazanimHtml(kaz, odenen) +
       '<button type="button" class="ana buyuk genis" id="sonrakiBtn">Bölüm ' + (levelNo + 1) + ' ›</button>' +
       '<div class="dur-iki"><button type="button" id="tekrarBtn">Tekrar</button><button type="button" id="bolumlerDonBtn">Bölümler</button></div>';
     showSheet();
@@ -908,6 +925,7 @@
       recLine = 'Rekor ' + save.endless.score + ' puan · en yüksek ' + save.endless.meters + ' m';
     }
     noteStats(speed, 0);
+    var odenen = EKO.kazan(save, E.fireflyCount(sim));
     var kaz = recordRun({ mode: dailyKey ? 'daily' : 'endless', ff: E.fireflyCount(sim), boosts: sim.boosts, gates: sim.gates, maxCombo: sim.maxCombo, meters: m, speed: speed });
     $('kart').className = 'kart sonuc';
     $('kart').innerHTML =
@@ -919,7 +937,7 @@
       stat(IK.akis, 'x' + sim.maxCombo, 'en uzun akış x' + sim.maxCombo, recC) +
       stat(IK.hiz, fmt(speed, 0) + ' m/sn', 'en yüksek hız', false) +
       '</div>' +
-      '<p class="rekor-satir">' + recLine + '</p>' + kazanimHtml(kaz) +
+      '<p class="rekor-satir">' + recLine + '</p>' + kazanimHtml(kaz, odenen) +
       '<button type="button" class="ana buyuk genis" id="yenidenBtn">' + (dailyKey ? 'Bir daha dene' : 'Yeniden dene') + '</button>' +
       '<button type="button" class="genis" id="menuDonBtn">Ana menü</button>';
     showSheet();
@@ -1116,7 +1134,14 @@
     startDaily: function () { ac(); startEndless(true); },
     dailyInfo: dailyInfo,
     gorevler: function () { return GOREV.daily(save, todayKey()); },
-    gorevAl: function (i) { var r = GOREV.claim(save, i); persist(); return r; },
+    gorevAl: function (i, kat) { var r = GOREV.claim(save, i, kat); if (r) EKO.kazan(save, r); persist(); return r; },
+    cuzdan: function () { return save.cuzdan; },
+    giris: function () { return EKO.girisDurum(save, todayKey()); },
+    girisAl: function (kat) { var r = EKO.girisAl(save, todayKey(), kat); persist(); return r; },
+    satinAl: function (id) { var r = EKO.satinAl(save, id); GORUNUM = null; persist(); return r; },
+    kusan: function (id) { var r = EKO.kusan(save, id); GORUNUM = null; persist(); return r; },
+    gorunum: function () { return look(); },
+    renk: renk,
     gorevBekleyen: function () { return GOREV.unclaimed(save, todayKey()); },
     basarimlar: function () { return GOREV.achList(save); },
     yeniGune: msToNextDay,

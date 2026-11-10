@@ -1,6 +1,6 @@
 # Kuyu
 
-**Funday Morning Games** · 2D mobil oyun · prototip v0.21
+**Funday Morning Games** · 2D mobil oyun · prototip v0.22
 
 Derin bir kuyunun dibindesin. Telefonu tek elle tut: ekranın soluna ya da sağına dokun, kanca o taraftaki hedefe fırlasın; basılı tut, ipe sarıl; bırak, savrul. Halkadan halkaya, ahşaptan ahşaba tırmanıp kuyudan çık.
 
@@ -20,7 +20,7 @@ Pofi ile aynı akış:
 1. **Açılış:** Funday Morning logosu ve yükleme çubuğu (en az 2,2 sn, yazı tipleri ve logo yüklenene kadar).
 2. **Giriş:** Yalnızca ilk açılışta. Oyuncu adı ve "Misafir olarak oyna". Google ve Apple düğmeleri şimdilik "yakında" der. İlerleme bu cihazda saklanır.
 3. **Tanıtım:** "Funday Morning sunar", ardından kahraman dipten kanca atıp halkaya çekilir ve gün ışığına fırlar; "Kuyu" yazısı belirir. Dokununca geçilir.
-4. **Ana menü (v0.9):** Arka planda kuyunun içinde ipte sallanan kahraman ve ateşböcekleri. Üstte profil (avatar ve ad), toplam ödül puanı ve ateşböceği. Başparmak bölgesinde Oyna kartı (kalınan bölümün adı ve hedefleri), Sonsuz Kuyu (rekor) ve Günlük Kuyu (günün en iyisi ve seri) kartları. En altta gezinme çubuğu: Ana sayfa, Bölümler, Görevler, Profil, Ayarlar (ses, titreşim, tam ekran, oyuncu adı, nasıl oynanır, tanıtımı yeniden izle).
+4. **Ana menü (v0.9):** Arka planda kuyunun içinde ipte sallanan kahraman ve ateşböcekleri. Üstte profil (avatar ve ad), toplam ödül puanı ve ateşböceği. Başparmak bölgesinde Oyna kartı (kalınan bölümün adı ve hedefleri), Sonsuz Kuyu (rekor) ve Günlük Kuyu (günün en iyisi ve seri) kartları. En altta gezinme çubuğu: Ana sayfa, Bölümler, Görevler, Dolap, Ayarlar (Profil: üstteki "Merhaba" düğmesi) (ses, titreşim, tam ekran, oyuncu adı, nasıl oynanır, tanıtımı yeniden izle).
 
 Oyun ekranının üst şeridinde solda bölüm adı ve altında küçük göstergeler var: ateşböceği noktaları, atış/par (Kusursuz için), akış (x2 ve üstünde parlar). Sonsuz Kuyu'da metre, akış ve hız çarpanı, sağda büyük puan. Oyundaki **duraklat** düğmesi (II) paneli açar: Devam et, Baştan başla (Sonsuz'da Yeni koşu), Bölümü atla, ses ve titreşim, Ana menü. Duraklarken oyun ve su durur, tutunduğun ip bırakılmaz. Telefon arka plana alınınca (bildirim, arama) oyun kendiliğinden durur. Klavyede Esc ya da P duraklatır, Esc/Enter/Boşluk devam ettirir. `?bolum=N` ya da `?mod=sonsuz` bağlantısı açılıştan sonra tanıtımı atlayıp doğrudan oyuna girer.
 
@@ -90,10 +90,30 @@ Yolun üstünde, bir halkadan sıradakine giden hatta duran yatay şerit (112 bi
 - **Bölüm sonu kartı** ekranın altından açılır: ödül sayarak gelir ve hesabı yazılır, üç madalya (bu oyunda ilk kez kazanılan "YENİ" etiketiyle), süre ve en yüksek hız (kırılan rekorlar "REKOR" etiketiyle), büyük "Bölüm N ›" düğmesi, Tekrar ve Bölümler. Sonsuz Kuyu sonucu da aynı yapıda.
 - **Sonsuz Kuyu puanı** = (metre + akış bonusu + ateşböcekleri) × hız çarpanı.
 
+## Ekonomi, günlük giriş ve Dolap (v0.22)
+Oyunda güçlendirme yok; harcamalar yalnızca kozmetik. Para birimi **ateşböceği**; ana menünün üstündeki ateşböceği sayısı harcanabilir bakiyedir. Mantık `js/ekonomi.js`, testi `node tools/ekonomi-test.js`, kazanç ölçümü `node tools/ekonomi-olcum.js`.
+
+| Kaynak | Miktar |
+|---|---|
+| Bölüm | bölümde **ilk kez** alınan her ateşböceği (aynı bölümü tekrar oynayarak kasılmaz) |
+| Sonsuz ve Günlük Kuyu | koşuda toplanan her ateşböceği |
+| Görev | kolay 5, orta 10, zor 15 (▶ video ile ikiye katlanır) |
+| Başarım | her kademe: bronz 10, gümüş 25, altın 50 |
+| Günlük giriş | 7 günlük takvim 5, 5, 10, 10, 15, 15, 50 (▶ video ile ikiye katlanır) |
+
+- Eski kayıtlarda başlangıç bakiyesi, bölümlerde daha önce toplanan ateşböcekleridir. v0.22'den önce görevlerden gelen ödül puanları toplam ödülde kalır.
+- **Günlük giriş:** Ana menüye günün ilk gelişinde takvim açılır; "Sonra" denirse Görevler sekmesinin üstünden açılır. Gün kaçırınca sıfırlanmaz, kaldığın günden devam eder; 7. günden sonra başa döner. Gün sınırı Günlük Kuyu ile aynı (Türkiye saati).
+- **Video ile ikiye katla:** Yalnızca oyuncu seçerse (Pofi kuralı). Web sürümünde reklam yok: 3 saniyelik, "deneme sürümünde reklam yok" yazan bir bekleme ekranı çıkar. Unity'de gerçek ödüllü reklam buraya bağlanır.
+- **Dolap** (alt menü): üstte bakiye ve kuşanılan görünümle sallanan kahraman; Atkı / İp / Uçuş izi sekmeleri. Ürüne dokun: sahipsen kuşanır, değilsen satın alıp kuşanır; bakiye yetmezse kaç eksik olduğunu söyler.
+  - Atkı: Turkuaz (bedava), Kiraz 40, Mor 40, Altın 70, Gece 70, Pembe 100, Gökkuşağı 300 (renk döner).
+  - İp: Keten (bedava), Gök 30, Zümrüt 50, Altın 60, Ateş 90.
+  - Uçuş izi: Atkı rengi (bedava), Kar 40, Mor 60, Altın 80, Gökkuşağı 250. Akış sürerken iz yine sarı yanar (oyun geri bildirimi).
+- Kazanç ölçümü (tipik gün: 10 dk bölüm + 10 dk Sonsuz + 3 görev + giriş): ortalama oyuncu ~100 ateşböceği (videolarla ~145), ateşböceği avcısı ~150 (~195). En ucuz ürün ilk gün, orta ürünler birer günde, gökkuşağı 2–3 günde; bütün dolap (1280) 9–13 günde.
+
 ## Görevler ve başarımlar (v0.16)
 Alt menüdeki **Görevler** sekmesinde iki bölüm var. Mantık `js/gorevler.js` içinde, testi `node tools/gorev-test.js`.
 
-**Bugünün görevleri:** Her gün 3 görev gelir: kolay, orta ve zor, üçü de farklı türden. Görevler o gün herkes için aynıdır ve Türkiye saatiyle gece yarısı yenilenir. Ödüller 50, 100 ve 150 ödül puanıdır. Tamamlanan görevde "Al" düğmesi çıkar; alınan puan ana menüdeki toplam ödüle eklenir. Alınmamış ödül varsa alt menüdeki Görevler simgesinde turuncu nokta yanar.
+**Bugünün görevleri:** Her gün 3 görev gelir: kolay, orta ve zor, üçü de farklı türden. Görevler o gün herkes için aynıdır ve Türkiye saatiyle gece yarısı yenilenir. Ödüller 5, 10 ve 15 ateşböceğidir (v0.22'den önce 50/100/150 ödül puanıydı). Tamamlanan görevde "Al" ve "▶ ×2" (video) düğmeleri çıkar. Alınmamış ödül varsa alt menüdeki Görevler simgesinde turuncu nokta yanar.
 
 Görev türleri ve kolay / orta / zor hedefleri:
 
@@ -226,6 +246,7 @@ Bot rota bilmez; yalnızca ekrandaki sol ve sağ işarete bakar. Sonuçlar (6 el
 | `js/levels.js` | El yapımı 6 bölüm |
 | `js/gen.js` | Bölüm 7+ ve sonsuz kuyu üretici |
 | `js/gorevler.js` | Günlük görevler ve başarımlar (tarayıcı + Node) |
+| `js/ekonomi.js` | Cüzdan, günlük giriş, Dolap kataloğu (tarayıcı + Node) |
 | `js/game.js` | Oyun ekranı: çizim, ses, girdi, kayıt |
 | `js/screens.js` | Açılış, giriş, tanıtım, ana menü, bölümler, ayarlar ve arka plan sahnesi |
 | `assets/funday-morning-logo.webp` | Şirket logosu (Pofi ile aynı) |
@@ -237,6 +258,8 @@ Bot rota bilmez; yalnızca ekrandaki sol ve sağ işarete bakar. Sonuçlar (6 el
 | `tools/kontrol.js` | Duman testi: sözdizimi, sayfa bağlantıları, servis çalışanı listesi, sürüm etiketi |
 | `tools/tempo.js` | Sonsuz Kuyu su temposu ölçümü |
 | `tools/gorev-test.js` | Görev ve başarım mantığı testi |
+| `tools/ekonomi-test.js` | Cüzdan, günlük giriş ve Dolap testi |
+| `tools/ekonomi-olcum.js` | Sanal oyuncuların ateşböceği kazancı (fiyatlar buna göre) |
 | `tools/nisan.js` | Nişan denetimi: işaret yandaki sığ hedefi mi gösteriyor |
 | `tools/simge.py` | Uygulama simgelerini çizer |
 

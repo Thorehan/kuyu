@@ -276,3 +276,43 @@ button.oyna { padding: 10px 12px 10px 22px; min-height: 84px; }
 .kazanimlar .kz-basarim.t2 svg { color: #cdd8d6; }
 .kazanimlar .kz-daha { justify-content: center; color: var(--soluk); font-size: 12px; background: none; border-style: dashed; }
 @media (prefers-reduced-motion: reduce) { .kazanimlar li { animation: none; } }
+
+/* ---------- Dolap ve günlük giriş (v0.22) ---------- */
+.sayfa-ust .bakiye { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 999px; background: #16201f; border: 1px solid #2c3936; }
+.sayfa-ust .bakiye b { font-family: var(--font-oyun); font-weight: 800; font-size: 18px; font-variant-numeric: tabular-nums; }
+.sayfa-ust { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.dolap-onizleme { display: block; width: 100%; height: 150px; border-radius: 16px; border: 1px solid #2c3936; background: #121b1a; }
+.dolap-liste { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.d-urun { flex-direction: column; gap: 6px; padding: 12px 6px 10px; min-height: 104px; border-radius: 14px; }
+.d-urun b { font-size: 13px; font-weight: 600; }
+.d-urun.secili { border-color: var(--gok); box-shadow: 0 0 0 1px var(--gok) inset; }
+.d-urun .renk { width: 34px; height: 34px; border-radius: 50%; border: 2px solid rgba(255,255,255,.18); }
+.d-durum { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; color: var(--soluk); font-variant-numeric: tabular-nums; }
+.d-durum .ikon-ates { width: 14px; height: 14px; }
+.d-durum.fiyat { color: var(--atesbocegi); font-weight: 700; font-size: 14px; }
+.d-durum.fiyat.yetmez { color: var(--soluk); opacity: .7; }
+.d-durum.kusanili { color: var(--gok); font-weight: 600; }
+.giris-satir { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 14px; background: linear-gradient(160deg, rgba(66,58,28,.6), rgba(38,36,22,.6)); border: 1px solid #5b5f2e; }
+.giris-satir > span { flex: 1; display: flex; flex-direction: column; gap: 2px; }
+.giris-satir small { color: var(--soluk); font-size: 12px; }
+.g-al-ikili { display: inline-flex; flex-direction: column; gap: 4px; align-items: stretch; }
+.video-btn { background: #1d2a33; border-color: #2f4554; color: #a9dcff; }
+.g-odul .ikon-ates { width: 16px; height: 16px; }
+.katman-ust { position: fixed; inset: 0; z-index: 60; display: flex; align-items: center; justify-content: center; padding: 16px; background: rgba(8,13,14,.72); }
+.giris-kart { max-width: 380px; gap: 10px; }
+.giris-kart h2 { font-size: 28px; }
+.takvim { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; width: 100%; }
+.takvim .gun { position: relative; display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 8px 2px; border-radius: 12px; background: #1d2827; border: 1px solid #2c3936; }
+.takvim .gun small { color: var(--soluk); font-size: 11px; }
+.takvim .gun b { font-family: var(--font-oyun); font-weight: 800; font-size: 16px; font-variant-numeric: tabular-nums; }
+.takvim .gun em { position: absolute; top: 3px; right: 6px; font-style: normal; font-size: 11px; color: #7fc9a4; }
+.takvim .gun.alindi { opacity: .55; }
+.takvim .gun.bugun { border-color: var(--atesbocegi); background: #262818; box-shadow: 0 0 0 1px var(--atesbocegi) inset; }
+.takvim .gun.yarin em { color: var(--soluk); }
+.takvim .buyuk-gun { grid-column: span 2; }
+.takvim .buyuk-gun .ikon-ates { width: 24px; height: 24px; }
+.metin-btn { background: none; border: none; color: var(--soluk); min-height: 36px; font-size: 14px; }
+.video-kart { gap: 10px; }
+.video-sayac { font-family: var(--font-oyun); font-weight: 800; font-size: 54px; line-height: 1; color: #a9dcff; }
+.kazanimlar .kz-ates { background: rgba(232,242,124,.12); }
+.kazanimlar .kz-ates .ikon-ates { width: 18px; height: 18px; }

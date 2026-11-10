@@ -5,13 +5,13 @@
   var G = window.KuyuGame;
   var $ = function (id) { return document.getElementById(id); };
   var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  var EKRANLAR = ['ekAcilis', 'ekGiris', 'ekTanitim', 'ekAna', 'ekBolumler', 'ekAyarlar', 'ekProfil', 'ekGorevler'];
+  var EKRANLAR = ['ekAcilis', 'ekGiris', 'ekTanitim', 'ekAna', 'ekBolumler', 'ekAyarlar', 'ekProfil', 'ekGorevler', 'ekDolap'];
   var current = 'ekAcilis';
   var q = new URLSearchParams(location.search);
   var deepLink = q.get('mod') === 'gunluk' ? { mode: 'daily' } : q.get('mod') === 'sonsuz' ? { mode: 'endless' } : q.get('bolum') ? { mode: 'level', n: parseInt(q.get('bolum'), 10) || 1 } : null;
   var save = function () { return G.save(); };
 
-  var SEKMELER = ['ekAna', 'ekBolumler', 'ekGorevler', 'ekProfil', 'ekAyarlar'];
+  var SEKMELER = ['ekAna', 'ekBolumler', 'ekGorevler', 'ekDolap', 'ekProfil', 'ekAyarlar'];
   function show(id) {
     current = id;
     EKRANLAR.forEach(function (e) { $(e).hidden = e !== id; });
@@ -22,6 +22,7 @@
       if (b.dataset.sekme === id) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current');
     });
     if (id === 'ekAna' || id === 'ekTanitim') startScene(); else stopScene();
+    if (id === 'ekDolap') startPreview(); else stopPreview();
     if (SEKMELER.indexOf(id) >= 0) $('gorevNokta').hidden = !G.gorevBekleyen();
   }
 
@@ -132,7 +133,7 @@
     var tot = 0, ates = 0;
     Object.keys(s.best || {}).forEach(function (k2) { tot += s.best[k2].reward || 0; ates += s.best[k2].ff || 0; });
     $('toplamOdul').textContent = tot + (s.odulEk || 0);
-    $('toplamAtes').textContent = ates;
+    $('toplamAtes').textContent = G.cuzdan().ates; // harcanabilir bakiye
     var rec = s.endless || {};
     $('sonsuzRekor').textContent = rec.score ? 'Rekor ' + rec.score + ' · ' + rec.meters + ' m' : 'Bölüm yok, su yükselir';
     var di = G.dailyInfo();
@@ -140,7 +141,11 @@
     $('gunlukSeri').hidden = !di.streak;
     $('gunlukSeri').textContent = di.streak + ' gün seri' + (di.playedToday ? '' : ' · bugün oyna, seri sürsün');
     show('ekAna');
+    // günlük giriş: bugün alınmadıysa ana menüye ilk gelişte bir kez göster
+    var gd = G.giris();
+    if (gd.hazir && girisSorulan !== G.dailyInfo().key) { girisSorulan = G.dailyInfo().key; openGiris(); }
   }
+  var girisSorulan = null;
   $('oynaBtn').addEventListener('click', function () { G.startLevel(save().last || 1); });
   $('sonsuzBtn').addEventListener('click', function () { G.startEndless(); });
   $('gunlukBtn').addEventListener('click', function () { G.startDaily(); });
@@ -180,22 +185,31 @@
     b.addEventListener('click', function () {
       var t = b.dataset.sekme;
       if (t === current) return;
-      if (t === 'ekAna') home(); else if (t === 'ekBolumler') openLevels(); else if (t === 'ekGorevler') openTasks(); else if (t === 'ekProfil') openProfile(); else openSettings();
+      if (t === 'ekAna') home(); else if (t === 'ekBolumler') openLevels(); else if (t === 'ekGorevler') openTasks(); else if (t === 'ekDolap') openDolap(); else if (t === 'ekProfil') openProfile(); else openSettings();
     });
   });
 
   // ---------- görevler ve başarımlar ----------
-  var KADEME_AD = ['', 'Bronz', 'Gümüş', 'Altın'], ZORLUK = ['Kolay', 'Orta', 'Zor'], ODUL = [50, 100, 150];
+  var KADEME_AD = ['', 'Bronz', 'Gümüş', 'Altın'], ZORLUK = ['Kolay', 'Orta', 'Zor'], ODUL = [5, 10, 15]; // ateşböceği
   var ROZET = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="9" r="6.2" fill="currentColor" opacity=".22"/><circle cx="12" cy="9" r="6.2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M8.6 14l-1.6 7.5L12 19l5 2.5-1.6-7.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>';
   function openTasks() { renderTasks(); show('ekGorevler'); $('ekGorevler').scrollTop = 0; }
+  function renderGirisSatir() {
+    var gd = G.giris();
+    $('girisSatir').innerHTML = '<i class="ikon-ates" aria-hidden="true"></i><span><b>Günlük giriş · ' + (gd.gun + 1) + '. gün</b><small>' +
+      (gd.hazir ? 'Bugünün ödülü ' + gd.odul + ' ateşböceği' : 'Bugün alındı · yarın ' + gd.odul + ' ateşböceği') + '</small></span>' +
+      (gd.hazir ? '<button type="button" class="ana g-al" id="girisSatirBtn">Aç</button>' : '<span class="g-alindi">✓</span>');
+    var b = $('girisSatirBtn'); if (b) b.onclick = openGiris;
+  }
   function renderTasks() {
+    renderGirisSatir();
     var left = G.yeniGune(), hh = Math.floor(left / 3600000), mm = Math.floor(left % 3600000 / 60000);
     $('gorevSure').textContent = 'yenisi ' + (hh ? hh + ' sa ' : '') + mm + ' dk sonra';
     $('gorevListe').innerHTML = G.gorevler().map(function (m, i) {
       var pct = Math.round(m.prog / m.target * 100), text = window.KuyuGorev.missionText(m);
       var sag = m.claimed ? '<span class="g-alindi">✓ Alındı</span>'
-        : m.done ? '<button type="button" class="ana g-al" data-al="' + i + '">Al +' + ODUL[m.tier] + '</button>'
-        : '<span class="g-odul"><i class="ikon-odul" aria-hidden="true"></i>' + ODUL[m.tier] + '</span>';
+        : m.done ? '<span class="g-al-ikili"><button type="button" class="ana g-al" data-al="' + i + '">Al +' + ODUL[m.tier] + '</button>' +
+          '<button type="button" class="g-al video-btn" data-al2="' + i + '" aria-label="Video izle, ' + ODUL[m.tier] * 2 + ' ateşböceği al">▶ +' + ODUL[m.tier] * 2 + '</button></span>'
+        : '<span class="g-odul"><i class="ikon-ates" aria-hidden="true"></i>' + ODUL[m.tier] + '</span>';
       return '<div class="gorev' + (m.done ? ' tamam' : '') + (m.claimed ? ' alindi' : '') + '">' +
         '<div class="g-ic"><small class="g-zor z' + m.tier + '">' + ZORLUK[m.tier] + '</small><b>' + text + '</b>' +
         '<div class="cubuk ince" aria-hidden="true"><i style="width:' + pct + '%"></i></div>' +
@@ -217,11 +231,111 @@
     $('gorevNokta').hidden = !G.gorevBekleyen();
   }
   $('gorevListe').addEventListener('click', function (e) {
+    var b2 = e.target.closest('[data-al2]');
+    if (b2) { video(function () { var r2 = G.gorevAl(+b2.dataset.al2, 2); if (r2) { if (G.sfx) G.sfx.firefly(); toast('+' + r2 + ' ateşböceği'); } renderTasks(); }); return; }
     var b = e.target.closest('[data-al]'); if (!b) return;
     var r = G.gorevAl(+b.dataset.al);
-    if (r) { if (G.sfx) G.sfx.firefly(); toast('+' + r + ' ödül puanı'); }
+    if (r) { if (G.sfx) G.sfx.firefly(); toast('+' + r + ' ateşböceği'); }
     renderTasks();
   });
+
+  // ---------- ödüllü video (yer tutucu) ----------
+  // Web sürümünde reklam yok. Unity'de burada ödüllü reklam oynar; yalnızca oyuncu seçerse (Pofi kuralı).
+  function video(done) {
+    var k = $('videoKatman'), n = 3;
+    k.hidden = false; $('videoSayac').textContent = n;
+    var iv = setInterval(function () {
+      n--; $('videoSayac').textContent = Math.max(0, n);
+      if (n <= 0) { clearInterval(iv); k.hidden = true; done(); }
+    }, 1000);
+  }
+
+  // ---------- günlük giriş ----------
+  function openGiris() {
+    var gd = G.giris(), h = '';
+    for (var i = 0; i < gd.takvim.length; i++) {
+      var durum = i < gd.gun ? 'alindi' : i === gd.gun ? (gd.hazir ? 'bugun' : 'alindi') : '';
+      if (!gd.hazir && i === gd.gun) durum = 'yarin';
+      h += '<div class="gun ' + durum + (i === 6 ? ' buyuk-gun' : '') + '"><small>' + (i + 1) + '. gün</small><i class="ikon-ates" aria-hidden="true"></i><b>' + gd.takvim[i] + '</b>' +
+        (durum === 'alindi' ? '<em>✓</em>' : durum === 'yarin' ? '<em>yarın</em>' : '') + '</div>';
+    }
+    $('girisTakvim').innerHTML = h;
+    $('girisAlBtn').hidden = $('girisVideoBtn').hidden = !gd.hazir;
+    $('girisAlBtn').textContent = 'Al +' + gd.odul;
+    $('girisVideoBtn').textContent = '▶ Video izle, +' + gd.odul * 2 + ' al';
+    $('girisKapat').textContent = gd.hazir ? 'Sonra' : 'Kapat';
+    $('girisKatman').hidden = false;
+  }
+  function closeGiris() { $('girisKatman').hidden = true; if (current === 'ekAna') home2(); else if (current === 'ekGorevler') renderTasks(); }
+  function home2() { $('toplamAtes').textContent = G.cuzdan().ates; }
+  function girisAl(kat) {
+    var r = G.girisAl(kat);
+    if (r) { if (G.sfx) G.sfx.firefly(); toast('+' + r + ' ateşböceği'); }
+    closeGiris();
+  }
+  $('girisAlBtn').addEventListener('click', function () { girisAl(1); });
+  $('girisVideoBtn').addEventListener('click', function () { $('girisKatman').hidden = true; video(function () { girisAl(2); }); });
+  $('girisKapat').addEventListener('click', closeGiris);
+
+  // ---------- dolap ----------
+  var dolapTur = 'atki', previewRaf = 0;
+  function openDolap() { renderDolap(); show('ekDolap'); $('ekDolap').scrollTop = 0; }
+  function swatch(it) {
+    var c = it.renk === 'gokkusagi' ? 'conic-gradient(#ff5d5d, #ffd35d, #7ce36a, #5dd6ff, #9b6bff, #ff5d5d)' : it.renk === 'atki' ? 'linear-gradient(135deg, #2fb3a6 50%, #e2445c 50%)' : it.renk;
+    return '<span class="renk" style="background:' + c + '" aria-hidden="true"></span>';
+  }
+  function renderDolap() {
+    var sv = save(), bak = G.cuzdan().ates, kus = sv.dolap.kusan, sahip = sv.dolap.sahip;
+    $('dolapBakiye').textContent = bak;
+    document.querySelectorAll('[data-dolap]').forEach(function (b) { b.setAttribute('aria-selected', b.dataset.dolap === dolapTur ? 'true' : 'false'); });
+    $('dolapListe').innerHTML = window.KuyuEkonomi.KATALOG.filter(function (it) { return it.tur === dolapTur; }).map(function (it) {
+      var has = sahip.indexOf(it.id) >= 0, on = kus[it.tur] === it.id, durum;
+      if (on) durum = '<span class="d-durum kusanili">Kuşanıldı</span>';
+      else if (has) durum = '<span class="d-durum">Kuşan</span>';
+      else durum = '<span class="d-durum fiyat' + (bak < it.fiyat ? ' yetmez' : '') + '"><i class="ikon-ates" aria-hidden="true"></i>' + it.fiyat + '</span>';
+      return '<button type="button" class="d-urun' + (on ? ' secili' : '') + '" data-urun="' + it.id + '" aria-label="' + it.ad + (on ? ', kuşanıldı' : has ? ', kuşan' : ', ' + it.fiyat + ' ateşböceği') + '">' +
+        swatch(it) + '<b>' + it.ad + '</b>' + durum + '</button>';
+    }).join('');
+  }
+  document.querySelectorAll('[data-dolap]').forEach(function (b) { b.addEventListener('click', function () { dolapTur = b.dataset.dolap; renderDolap(); }); });
+  $('dolapListe').addEventListener('click', function (e) {
+    var b = e.target.closest('[data-urun]'); if (!b) return;
+    var id = b.dataset.urun, it = window.KuyuEkonomi.item(id);
+    if (save().dolap.sahip.indexOf(id) >= 0) { G.kusan(id); renderDolap(); return; }
+    var r = G.satinAl(id);
+    if (r.ok) { if (G.sfx) G.sfx.won(); toast(it.ad + ' alındı ve kuşanıldı'); }
+    else if (r.neden === 'yetersiz') toast(r.eksik + ' ateşböceği eksik. Bölüm, Sonsuz Kuyu, görev ve günlük girişten toplanır.');
+    renderDolap();
+  });
+  // önizleme: halkada sallanan kahraman, kuşanılan atkı, ip ve iz
+  function startPreview() {
+    var cv = $('dolapOnizleme'), dpr = Math.min(2, window.devicePixelRatio || 1);
+    var w = cv.clientWidth || 300, h = 150;
+    cv.width = w * dpr; cv.height = h * dpr; cv.style.height = h + 'px';
+    var c = cv.getContext('2d');
+    cancelAnimationFrame(previewRaf);
+    (function tick(now) {
+      var t = now / 1000, L = G.gorunum();
+      c.setTransform(dpr, 0, 0, dpr, 0, 0);
+      c.fillStyle = '#121b1a'; c.fillRect(0, 0, w, h);
+      var cx = w / 2, ringY = 26, rope = 78, r = 16;
+      var ang = Math.sin(t * 1.7) * 0.5, hx = cx + Math.sin(ang) * rope, hy = ringY + Math.cos(ang) * rope;
+      // iz: sallanmanın gerisinde kalan kısa çizgi
+      var izc = L.iz === 'atki' ? G.renk(L.atki, now) : G.renk(L.iz, now);
+      c.strokeStyle = izc; c.lineCap = 'round';
+      for (var i = 1; i < 7; i++) {
+        var a2 = Math.sin((t - i * 0.05) * 1.7) * 0.5, a1 = Math.sin((t - (i - 1) * 0.05) * 1.7) * 0.5;
+        c.lineWidth = 9 - i * 1.1; c.globalAlpha = 1 - i * 0.12;
+        c.beginPath(); c.moveTo(cx + Math.sin(a1) * rope, ringY + Math.cos(a1) * rope + 5); c.lineTo(cx + Math.sin(a2) * rope, ringY + Math.cos(a2) * rope + 5); c.stroke();
+      }
+      c.globalAlpha = 1;
+      c.lineWidth = 3; c.strokeStyle = '#d08a45'; c.beginPath(); c.arc(cx, ringY, 9, 0, 6.29); c.stroke();
+      c.strokeStyle = G.renk(L.ip, now); c.lineWidth = 2.5; c.beginPath(); c.moveTo(cx, ringY); c.lineTo(hx, hy - r * 0.2); c.stroke();
+      hero(c, hx, hy, r, { x: Math.sin(t * 0.8) * 0.6, y: -0.5 }, G.renk(L.atki, now));
+      previewRaf = requestAnimationFrame(tick);
+    })(performance.now());
+  }
+  function stopPreview() { cancelAnimationFrame(previewRaf); }
 
   // ---------- bölümler ----------
   // Gruplar: 1–6 Öğrenme (el yapımı), sonra 10'arlı. Sıradaki bölüm = geçilmemiş ilk bölüm.
@@ -379,7 +493,7 @@
     ctx.fillStyle = '#b8401b'; ctx.beginPath(); ctx.arc(x, y + 1.2, r, 0, 6.29); ctx.fill();
     ctx.fillStyle = '#f26a3a'; ctx.beginPath(); ctx.arc(x, y, r, 0, 6.29); ctx.fill();
     ctx.fillStyle = 'rgba(255,255,255,.18)'; ctx.beginPath(); ctx.arc(x - r * 0.32, y - r * 0.36, r * 0.32, 0, 6.29); ctx.fill();
-    ctx.fillStyle = scarf || '#2fb3a6'; ctx.fillRect(x - r * 0.75, y + r * 0.2, r * 1.5, r * 0.36);
+    ctx.fillStyle = scarf || G.renk(G.gorunum().atki); ctx.fillRect(x - r * 0.75, y + r * 0.2, r * 1.5, r * 0.36);
     ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(x + look.x * r * 0.27, y - r * 0.18 + look.y * r * 0.18, r * 0.4, 0, 6.29); ctx.fill();
     ctx.fillStyle = '#1a1210'; ctx.beginPath(); ctx.arc(x + look.x * r * 0.45, y - r * 0.18 + look.y * r * 0.3, r * 0.18, 0, 6.29); ctx.fill();
   }
@@ -471,7 +585,7 @@
   function swing(ctx, cx, ringY, rope, r, t, amp) {
     var ang = Math.sin(t * 1.7) * 0.42 * amp;
     var hx = cx + Math.sin(ang) * rope, hy = ringY + Math.cos(ang) * rope;
-    ctx.strokeStyle = '#eadfc4'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(cx, ringY); ctx.lineTo(hx, hy - r * 0.2); ctx.stroke();
+    ctx.strokeStyle = G.renk(G.gorunum().ip); ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(cx, ringY); ctx.lineTo(hx, hy - r * 0.2); ctx.stroke();
     hero(ctx, hx, hy, r, { x: Math.sin(t * 0.8) * 0.6, y: -0.5 });
   }
 

@@ -64,9 +64,9 @@ Karar (2026-11-10): oyunda güçlendirme yok, **harcamalar yalnızca kozmetik**.
   - Bölüm sonu kartı (madalya + 3–4 kazanım satırı) sahneden uzundu, başlık kesiliyordu ve kaydırılamıyordu. Artık kart sahneden uzunsa üstten başlar ve kaydırılır; 720 pikselden kısa ekranlarda kart sıkı dizilir ve en çok 2 kazanım satırı gösterir (fazlası "ve N tane daha").
   - 7. bölümde yay, sarkaç ve rüzgâr şeridi aynı bölümde ilk kez çıkıyordu: yeni oyuncu art arda 3 tanıtım kartıyla kesiliyordu. Artık el yapımı 1–6. bölümler dışında bir koşuda en çok bir yeni öğe kartı; kalanı sonraki bölümlerde (7, 8, 9. bölümler birer yeni şey öğretir). Acil kartlar (boş atış, kurtarma, su, akış, el yorulması) sınırsız.
   - Servis çalışanı internetsiz açılışta en eski kayıtlı sürümü açıyordu (v0.22'de düzeltildi).
-- [ ] Erişilebilirlik: işaretlerde renk dışında yön oku zaten var (sol ◀, sağ ▶); kalan: yazı boyutu ayarı.
+- [x] Erişilebilirlik (v0.27): işaretlerde renk dışında yön oku zaten var (sol ◀, sağ ▶). Ayarlar → "Büyük yazı": menülerdeki 10–13 px'lik yazılar 2–3 px büyür (oyun alanı ve büyük başlıklar değişmez), cihazda saklanır. 360×640'ta yana taşma yok, ana menü tek ekrana sığar.
 - [x] Ana menüde görev şeridi (v0.24): Oyna kartının üstünde "Görevler 1/3", üç küçük ilerleme çubuğu ve tamamlanmaya en yakın görev ("10 ateşböceği topla · 6/10"); alınmamış ödül varsa altın renkte "Ödül hazır", hepsi bittiyse yeni görevlere kalan süre. Dokununca Görevler açılır. Menü sahnesindeki kahraman artık logo ile şerit arasındaki boşlukta sallanır.
-- [ ] Sonuç kartında Dolap'a kısa yol: yeni bir ürüne yetecek ateşböceği birikince "Dolap'ta X alınabilir".
+- [x] Sonuç kartında Dolap kısa yolu (v0.26): bu koşunun kazancıyla ilk kez yetişilen en ucuz ürün için "Dolap'ta yeni · Gök ip alınabilir ›"; yalnızca eşik o koşuda aşıldığında çıkar. Dokununca oyun durur ve Dolap o ürünün önizlemesiyle açılır (satın alma yine "Al" ile).
 
 ### 4. Görsellik (şimdilik öncelik değil)
 - [ ] Kozmetik dolap: atkı rengi, kanca/ip görünümü, uçuş izi (2. aşamadaki mağaza mantığının görünümleri).
@@ -92,6 +92,7 @@ Karar (2026-11-10): oyunda güçlendirme yok, **harcamalar yalnızca kozmetik**.
 - [ ] Hikâyenin meta ile bağı (bölgeler, kozmetikler).
 
 ## Yapılanlar
+- 2026-11-10 · v0.27 · Büyük yazı ayarı; sonuç kartında Dolap kısa yolu (v0.26).
 - 2026-11-10 · v0.25 · Dolap: ilk dokunuş önizleme, satın alma ayrı "Al" düğmesiyle (oyuncu geri bildirimi: dokununca hemen satın alınıyordu).
 - 2026-11-10 · v0.24 · Ana menüde görev şeridi.
 - 2026-11-10 · v0.23 · UI/UX denetimi (360×640): sonuç kartı kısa ekranda taşmıyor ve kaydırılabiliyor; tanıtım kartı sınırı (koşu başına bir yeni öğe kartı).

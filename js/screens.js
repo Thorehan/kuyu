@@ -465,12 +465,21 @@
     var s = save();
     $('sesAnahtar').setAttribute('aria-checked', s.mute ? 'false' : 'true');
     $('titresimAnahtar').setAttribute('aria-checked', s.haptics === false ? 'false' : 'true');
+    $('yaziAnahtar').setAttribute('aria-checked', s.buyukYazi ? 'true' : 'false');
     $('adDegis').value = (s.profile && s.profile.name) || '';
     show('ekAyarlar');
   }
   $('sesAnahtar').addEventListener('click', function () {
     var muted = G.toggleMute();
     $('sesAnahtar').setAttribute('aria-checked', muted ? 'false' : 'true');
+  });
+  // Büyük yazı (erişilebilirlik): <html class="buyuk-yazi">; menülerdeki küçük yazılar büyür, oyun alanı değişmez.
+  function yaziUygula() { document.documentElement.classList.toggle('buyuk-yazi', !!save().buyukYazi); }
+  yaziUygula();
+  $('yaziAnahtar').addEventListener('click', function () {
+    var on = G.toggleBuyukYazi();
+    $('yaziAnahtar').setAttribute('aria-checked', on ? 'true' : 'false');
+    yaziUygula();
   });
   $('titresimAnahtar').addEventListener('click', function () {
     var on = G.toggleHaptics();
@@ -669,6 +678,12 @@
   // oyunun kullandığı arayüz
   window.KuyuScreens = {
     home: home,
+    // sonuç kartındaki kısa yol: Dolap o ürünün önizlemesiyle açılır
+    dolap: function (id) {
+      var it = window.KuyuEkonomi.item(id);
+      openDolap();
+      if (it) { dolapTur = it.tur; onizleme = id; renderDolap(); }
+    },
     levels: function () { openLevels(); },
     showGame: function () { show('oyun'); },
     toast: toast

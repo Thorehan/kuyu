@@ -16,8 +16,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&family=Figtree:wght@400;600&display=swap">
-<link rel="stylesheet" href="css/kuyu.css?v=0.25">
-<link rel="stylesheet" href="css/ekranlar.css?v=0.25">
+<link rel="stylesheet" href="css/kuyu.css?v=0.27">
+<link rel="stylesheet" href="css/ekranlar.css?v=0.27">
 </head>
 <body>
 <div class="app" id="oyunEkrani" hidden>
@@ -69,7 +69,7 @@
   <img id="acilisLogo" class="marka-logo" src="assets/funday-morning-logo.webp" alt="Funday Morning Games">
   <div class="yukleme" aria-hidden="true"><div id="yuklemeDolgu"></div></div>
   <div class="yukleme-not" id="yuklemeNot">Yükleniyor…</div>
-  <div class="ek-surum">Kuyu v0.25</div>
+  <div class="ek-surum">Kuyu v0.27</div>
 </section>
 
 <!-- Giriş: yalnızca ilk açılışta -->
@@ -222,6 +222,7 @@
   <div class="sayfa-ust"><h2>Ayarlar</h2></div>
   <div class="sayfa-ic">
     <div class="ayar-satir"><div><b>Ses</b><span>Kanca, akış ve ateşböceği sesleri</span></div><button type="button" class="anahtar" id="sesAnahtar" role="switch" aria-checked="true" aria-label="Ses"><i></i></button></div>
+    <div class="ayar-satir"><div><b>Büyük yazı</b><span>Menülerdeki küçük yazılar, açıklamalar ve ipuçları büyür</span></div><button type="button" class="anahtar" id="yaziAnahtar" role="switch" aria-checked="false" aria-label="Büyük yazı"><i></i></button></div>
     <div class="ayar-satir"><div><b>Titreşim</b><span>Tutunurken ve ateşböceği alınca kısa titreşim (Android)</span></div><button type="button" class="anahtar" id="titresimAnahtar" role="switch" aria-checked="true" aria-label="Titreşim"><i></i></button></div>
     <form class="ayar-satir ad-satir" id="adForm">
       <label for="adDegis"><b>Oyuncu adı</b></label>
@@ -240,7 +241,7 @@
     <div class="ayar-satir" id="tamEkranSatir"><div><b>Tam ekran</b><span id="tamEkranYazi">Tarayıcı çubukları gizlenir. Ana ekrana eklersen oyun kendiliğinden tam ekran açılır.</span></div><button type="button" id="tamEkranBtn">Aç</button></div>
     <button type="button" id="tanitimBtn">Tanıtımı yeniden izle</button>
     <button type="button" id="ipucuSifirBtn">Tanıtım kartlarını yeniden göster</button>
-    <p class="surum">Kuyu v0.25 · prototip · Funday Morning Games</p>
+    <p class="surum">Kuyu v0.27 · prototip · Funday Morning Games</p>
   </div>
 </section>
 
@@ -275,12 +276,12 @@
 
 <div class="bildirim" id="bildirim" role="status" hidden></div>
 
-<script src="js/engine.js?v=0.25"></script>
-<script src="js/levels.js?v=0.25"></script>
-<script src="js/gen.js?v=0.25"></script>
-<script src="js/gorevler.js?v=0.25"></script>
-<script src="js/ekonomi.js?v=0.25"></script>
-<script src="js/game.js?v=0.25"></script>
-<script src="js/screens.js?v=0.25"></script>
+<script src="js/engine.js?v=0.27"></script>
+<script src="js/levels.js?v=0.27"></script>
+<script src="js/gen.js?v=0.27"></script>
+<script src="js/gorevler.js?v=0.27"></script>
+<script src="js/ekonomi.js?v=0.27"></script>
+<script src="js/game.js?v=0.27"></script>
+<script src="js/screens.js?v=0.27"></script>
 </body>
 </html>

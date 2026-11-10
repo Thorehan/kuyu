@@ -347,3 +347,18 @@ button.oyna { padding: 10px 12px 10px 22px; min-height: 84px; }
 .satin-cubuk #scAl .ikon-ates { width: 15px; height: 15px; }
 .satin-cubuk #scAl:disabled { opacity: .55; }
 .satin-cubuk .metin-btn { min-height: 42px; padding: 0 6px; }
+
+/* ---------- Büyük yazı (v0.27, Ayarlar) ----------
+   Menülerdeki 10–13 px'lik yazılar 2–3 px büyür. Oyun alanı ve büyük başlıklar değişmez. */
+.buyuk-yazi .ayar-satir span, .buyuk-yazi .ana-kart span, .buyuk-yazi .oyna-alt, .buyuk-yazi .selam-yazi > span,
+.buyuk-yazi .profil-bas span, .buyuk-yazi .profil-hiz span, .buyuk-yazi .ozet-satir, .buyuk-yazi .not, .buyuk-yazi .nasil,
+.buyuk-yazi .sonuc-bas span, .buyuk-yazi .odul-hesap, .buyuk-yazi .rekor-satir, .buyuk-yazi .ipucu, .buyuk-yazi .bildirim,
+.buyuk-yazi .d-urun b, .buyuk-yazi .g-alindi, .buyuk-yazi .kazanimlar li, .buyuk-yazi .yeni-kart p { font-size: 16px; }
+.buyuk-yazi .profil-izgara small, .buyuk-yazi .profil-hiz small, .buyuk-yazi .bgrup-ust span, .buyuk-yazi .ana-kart .seri,
+.buyuk-yazi .gorev-bas span, .buyuk-yazi .g-ilerleme, .buyuk-yazi .b-ic small, .buyuk-yazi .kazanimlar li small, .buyuk-yazi .kazanimlar .kz-daha,
+.buyuk-yazi .d-durum, .buyuk-yazi .giris-satir small, .buyuk-yazi .ag-yazi span, .buyuk-yazi .sc-urun small, .buyuk-yazi .madalya,
+.buyuk-yazi .surum, .buyuk-yazi .dolap-kisayol small { font-size: 14px; }
+.buyuk-yazi .g-ic b, .buyuk-yazi .ag-yazi b, .buyuk-yazi .b-ic b, .buyuk-yazi .bkart b, .buyuk-yazi .madalya b { font-size: 17px; }
+.buyuk-yazi .alt-menu button { font-size: 12.5px; }
+.buyuk-yazi .takvim .gun small, .buyuk-yazi .takvim .gun em, .buyuk-yazi .bolum-rozet small, .buyuk-yazi .g-zor, .buyuk-yazi .bkart .etiket { font-size: 12.5px; }
+.buyuk-yazi .serit .bilgi span { font-size: 13px; }

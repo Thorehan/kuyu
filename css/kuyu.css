@@ -204,3 +204,11 @@ button.anahtar-dugme[aria-checked="false"] { color: var(--soluk); }
   .kart.sonuc .buyuk.genis { min-height: 48px; }
   .dur-iki > button { min-height: 40px; }
 }
+
+/* sonuç kartı: Dolap kısa yolu (v0.26) */
+.dolap-kisayol { display: flex; align-items: center; gap: 10px; width: 100%; min-height: 44px; padding: 6px 12px; border-radius: 12px; text-align: left; justify-content: flex-start;
+  background: #1d2a33; border: 1px solid #2f4554; color: var(--yazi); font-size: 14px; }
+.dolap-kisayol .renk { width: 24px; height: 24px; border-radius: 50%; border: 2px solid rgba(255,255,255,.18); flex: none; }
+.dolap-kisayol > span:not(.renk) { flex: 1; min-width: 0; display: flex; flex-direction: column; line-height: 1.2; }
+.dolap-kisayol small { color: #a9dcff; font-size: 11px; }
+.dolap-kisayol em { font-style: normal; color: #a9dcff; font-size: 20px; }

@@ -848,12 +848,32 @@
     var more = items.length > max ? '<li class="kz-daha">ve ' + (items.length - max) + ' tane daha · Görevler sekmesinde</li>' : '';
     return '<ul class="kazanimlar" aria-label="Kazanımlar">' + items.slice(0, max).join('') + more + '</ul>';
   }
+  // Dolap kısa yolu: bu koşunun kazancıyla İLK KEZ yetişilen en ucuz ürün (eşik bu koşuda aşıldıysa; her seferinde değil).
+  function dolapKisaYol(once) {
+    var simdi = save.cuzdan.ates, sahip = save.dolap.sahip;
+    var aday = EKO.KATALOG.filter(function (it) { return it.fiyat > once && it.fiyat <= simdi && sahip.indexOf(it.id) < 0; })
+      .sort(function (a, b) { return a.fiyat - b.fiyat; })[0];
+    if (!aday) return '';
+    var renk = aday.renk === 'gokkusagi' ? 'conic-gradient(#ff5d5d, #ffd35d, #7ce36a, #5dd6ff, #9b6bff, #ff5d5d)' : aday.renk === 'atki' ? scarfCol() : aday.renk;
+    return '<button type="button" class="dolap-kisayol" id="dolapKisaBtn" data-urun="' + aday.id + '">' +
+      '<span class="renk" style="background:' + renk + '" aria-hidden="true"></span>' +
+      '<span><small>Dolap&#39;ta yeni</small>' + aday.ad + ' ' + EKO.TURLER[aday.tur].toLocaleLowerCase('tr-TR') + ' alınabilir</span><em>›</em></button>';
+  }
+  function dolapKisaBagla() {
+    var b = $('dolapKisaBtn'); if (!b) return;
+    b.onclick = function () {
+      // oyundan çıkarken döngüyü durdur (goHome gibi); yoksa gizli tuvale çizmeye devam eder
+      closePause(); paused = true; if (sim) E.release(sim);
+      if (window.KuyuScreens && window.KuyuScreens.dolap) window.KuyuScreens.dolap(b.dataset.urun);
+    };
+  }
   function showSheet() {
     $('katman').classList.add('alt');
     $('katman').hidden = false;
   }
   function showLevelResult() {
     resultShown = true;
+    var cuzdanOnce = save.cuzdan.ates;
     var ff = E.fireflyCount(sim), ffT = sim.fireflies.length, time = sim.t;
     // Kusursuz: boş atışlar (o tarafta hedef yokken basmak) sayılmaz; kurtarma kancası sayılır.
     var shots = sim.shots - sim.misses;
@@ -891,17 +911,20 @@
       stat(SURE_IK, fmt(time, 1) + ' sn', 'süre ' + fmt(time, 1) + ' saniye', recTime) +
       stat(IK.hiz, fmt(speed, 0) + ' m/sn', 'en yüksek hız ' + fmt(speed, 1) + ' metre/saniye', recSpeed) +
       '</div>' + kazanimHtml(kaz, odenen) +
+      dolapKisaYol(cuzdanOnce) +
       '<button type="button" class="ana buyuk genis" id="sonrakiBtn">Bölüm ' + (levelNo + 1) + ' ›</button>' +
       '<div class="dur-iki"><button type="button" id="tekrarBtn">Tekrar</button><button type="button" id="bolumlerDonBtn">Bölümler</button></div>';
     showSheet();
     countUp($('odulSayi'), reward);
     $('tekrarBtn').onclick = function () { reset(); };
     $('sonrakiBtn').onclick = function () { startLevel(levelNo + 1); };
+    dolapKisaBagla();
     $('bolumlerDonBtn').onclick = function () { goLevels(); };
     $('sonrakiBtn').focus({ preventScroll: true });
   }
   function showEndlessResult() {
     resultShown = true;
+    var cuzdanOnce = save.cuzdan.ates;
     var raw = E.score(sim), mult = E.speedMult(sim), sc = E.finalScore(sim), m = E.meters(sim);
     var speed = E.speedMs(sim.maxSpeed);
     var isRecord, recM, recC = false, title, sub, recLine;
@@ -940,12 +963,14 @@
       stat(IK.hiz, fmt(speed, 0) + ' m/sn', 'en yüksek hız', false) +
       '</div>' +
       '<p class="rekor-satir">' + recLine + '</p>' + kazanimHtml(kaz, odenen) +
+      dolapKisaYol(cuzdanOnce) +
       '<button type="button" class="ana buyuk genis" id="yenidenBtn">' + (dailyKey ? 'Bir daha dene' : 'Yeniden dene') + '</button>' +
       '<button type="button" class="genis" id="menuDonBtn">Ana menü</button>';
     showSheet();
     countUp($('odulSayi'), sc);
     $('menuDonBtn').onclick = function () { goHome(); };
     $('yenidenBtn').onclick = function () { reset(); };
+    dolapKisaBagla();
     $('yenidenBtn').focus({ preventScroll: true });
   }
 
@@ -1160,6 +1185,7 @@
     handCount: HAND.length,
     toggleMute: function () { save.mute = !save.mute; persist(); setMuteIcon(); return save.mute; },
     resetIntros: function () { save.seen = {}; persist(); },
+    toggleBuyukYazi: function () { save.buyukYazi = !save.buyukYazi; persist(); return save.buyukYazi; },
     toggleHaptics: function () { save.haptics = save.haptics === false; persist(); if (save.haptics) buzz(20); return save.haptics; },
     unlockAudio: function () { ac(); },
     pause: function () { pauseGame(); },

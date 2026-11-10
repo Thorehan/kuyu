@@ -1,6 +1,6 @@
 # Kuyu
 
-**Funday Morning Games** · 2D mobil oyun · prototip v0.37
+**Funday Morning Games** · 2D mobil oyun · prototip v0.38
 
 Derin bir kuyunun dibindesin. Telefonu tek elle tut: ekranın soluna ya da sağına dokun, kanca o taraftaki hedefe fırlasın; basılı tut, ipe sarıl; bırak, savrul. Halkadan halkaya, ahşaptan ahşaba tırmanıp kuyudan çık.
 
@@ -82,6 +82,11 @@ Yolun üstünde, bir halkadan sıradakine giden hatta duran yatay şerit (112 bi
 - Akış yokken şerit soluk ve kesiklidir, geçmek bir şey vermez. Ceza yok.
 - Üretici şeridi yalnızca karar noktası olmayan adımlara koyar (yol tek), en az bir adım arayla; rastgele sayı kullanmaz, mevcut bölümler ve Günlük Kuyu tohumları değişmez. El yapımı 1–6. bölümlerde şerit yok.
 - Botlarla (74 üretilen bölümde 164 şerit): akışla oynayan %79'unu, asılarak oynayan ~%40'ını, tek tarafa basan hiçbirini almaz.
+
+## Hayalet (v0.38)
+En iyi koşunun soluk bir kopyası seninle aynı zamanlamayla tırmanır: bölümde en kısa süreli geçişin, Sonsuz Kuyu'da rekor koşun, Günlük Kuyu'da günün en iyisi. Sonsuz her koşuda farklı olduğundan orada bir yükseklik yarışıdır. Hayalet ekranın dışındaysa üst ya da alt kenarda küçük bir işaret görünür. Yalnızca görüntüdür; nişan, puan ve fizik etkilenmez. Ayarlar → Hayalet ile kapatılır.
+
+Kayıt `js/hayalet.js`: kahramanın yeri sim zamanına göre saniyede 15 kez alınır, farklarla yazılır (~60 bayt/sn) ve ana kayıttan ayrı `kuyu.hayalet` anahtarında durur. Test: `node tools/hayalet-test.js`.
 
 ## Tam zamanında bırakma (v0.37)
 İp halkaya varmadan hemen önce (son ~0,09 sn, `TAM_PENCERE` 70 birim) bırakılırsa altın bir ışıltı, iki notalı tını ve "TAM!" yazısı gelir; Sonsuz Kuyu'da +10 puan (`TAM_PTS`). Bölüm ödülü değişmez, fizik aynıdır: yalnızca akışı öğreten bir geri bildirim. O tutunuşta ip en az 80 birim sarılmış olmalı (`TAM_SARIM`), yoksa yakın halkada kendiliğinden olurdu. Sonuç kartında kaç kez yapıldığı görünür.
@@ -301,6 +306,7 @@ Bot rota bilmez; yalnızca ekrandaki sol ve sağ işarete bakar. Sonuçlar (6 el
 | `js/gorevler.js` | Günlük görevler ve başarımlar (tarayıcı + Node) |
 | `js/ekonomi.js` | Cüzdan, günlük giriş, Dolap kataloğu (tarayıcı + Node) |
 | `js/istatistik.js` | Yerel oyun istatistiği (tarayıcı + Node) |
+| `js/hayalet.js` | Hayalet: koşu kaydı, kodlama, ara değer, saklama (tarayıcı + Node) |
 | `js/notlar.js` | Bekçinin notları: 12 metin, hangi bölümde, hangi halkada |
 | `js/muzik.js` | Üretilen ortam müziği (bölge ve akışa göre) |
 | `js/game.js` | Oyun ekranı: çizim, ses, girdi, kayıt |

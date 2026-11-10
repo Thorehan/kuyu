@@ -27,7 +27,7 @@ Bir aşamadaki işler bitmeden sonrakine geçilmez; yeni bulunan oynanış sorun
 ## Sıradaki iş sırası (2026-11-11)
 Kalan işler geliştirme sırasına göre. Bekleyenler senden bir karar ya da telefon denemesi istiyor.
 1. [x] Tam zamanında bırakma (v0.37): ip halkaya varmadan hemen önce bırakılırsa ışıltı, tını, "TAM!" ve Sonsuz'da +10 puan.
-2. [ ] Kendi hayaletinle yarış (internetsiz): en iyi Sonsuz ve Günlük koşun soluk bir kopya olarak seninle tırmanır.
+2. [x] Kendi hayaletinle yarış (v0.38): bölümde en kısa süreli, Sonsuz'da rekor, Günlük'te günün en iyi koşun soluk bir kopya olarak seninle tırmanır; ekran dışındaysa kenarda işaret. Ayarlar → Hayalet.
 3. [ ] Günlük Kuyu'ya günün kuralı: herkes için aynı tek değişiklik (zorluk eklemeyen kurallar).
 4. [ ] Ateşböceği ışığı: toplanan ateşböcekleri menüdeki kuyuyu kalıcı aydınlatır.
 5. [ ] İkinci yolculuk (77+) metinleri.
@@ -92,7 +92,7 @@ Karar (2026-11-10): oyunda güçlendirme yok, **harcamalar yalnızca kozmetik**.
 - [?] Arka uç seçimi ve maliyet (Firebase, Supabase vb.).
 - [ ] Google / Apple girişi, bulut kayıt (şu an misafir, ilerleme cihazda).
 - [ ] Skor tabloları: Sonsuz Kuyu genel ve haftalık, Günlük Kuyu günlük.
-- [ ] Hayalet yarışı: koşu "hangi anda hangi taraf" listesiyle birebir tekrar oynatılır (motor deterministik); arkadaşının ya da rekor sahibinin hayaletiyle yarış.
+- [ ] Hayalet yarışı (online): kendi hayaletin v0.38'de var (`js/hayalet.js`, yer kaydı); arkadaşının ya da rekor sahibinin hayaleti aynı biçimle eklenir.
 - [ ] Hile denetimi: sunucu gönderilen koşuyu yeniden oynatıp skoru doğrular.
 - [ ] Arkadaş rekorları ve "bu kuyuyu benimle oyna" paylaşım bağlantısı.
 - [?] Yayın: Unity'ye taşıma zamanı, mağaza hesabı, yalnızca seçilen ödüllü reklam (Pofi kuralı).
@@ -113,6 +113,7 @@ Kullanıcı hikâyeye online'dan önce geçti; online (5) sonra.
 ## Yapılanlar
 - 2026-11-11 · v0.34 · Hikâye: Çıra (önsöz, bölge kartları, Çıra'nın yolu, metinler); oyun ekranı gizliyken döngü çizim yapmaz.
 - 2026-11-11 · v0.35 · Bekçinin notları: 12 not, ateşböceği yolunda; Çıra'nın yolu'nda okunur.
+- 2026-11-11 · v0.38 · Hayalet: en iyi koşunun soluk kopyası (bölüm, Sonsuz, Günlük); yalnızca görüntü, ayrı kayıt (`kuyu.hayalet`, ~60 bayt/sn). Ayarlar'dan kapatılır.
 - 2026-11-11 · v0.37 · Tam zamanında bırakma: ip halkaya ~0,09 sn kala bırakılınca ışıltı + "TAM!" (+10 Sonsuz puanı); sonuç kartında sayısı. Fizik ve tempo aynı.
 - 2026-11-11 · v0.36 · Bölge finalleri: 16, 36, 56, 76. bölüm sonunda bir kez oynayan sözsüz sahne; menü düğmesi bölüm sonu sırasında sonuç kartını açar (bölüm kaydedilmeden çıkılmaz).
 - 2026-11-10 · v0.33 · Müzik brifi (Mustafa için); servis çalışanı müzik dosyalarını da internetsiz saklar.

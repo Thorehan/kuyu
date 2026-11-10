@@ -1,7 +1,7 @@
 /* Kuyu — ekranlar, çizim, ses ve girdi. Kurallar js/engine.js, bölümler js/levels.js ve js/gen.js. */
 (function () {
   'use strict';
-  var E = window.KuyuEngine, HAND = window.KuyuLevels, GEN = window.KuyuGen, GOREV = window.KuyuGorev, EKO = window.KuyuEkonomi, IST = window.KuyuIstat, NOT = window.KuyuNotlar, CFG = E.CFG;
+  var E = window.KuyuEngine, HAND = window.KuyuLevels, GEN = window.KuyuGen, GOREV = window.KuyuGorev, EKO = window.KuyuEkonomi, IST = window.KuyuIstat, NOT = window.KuyuNotlar, HY = window.KuyuHayalet, CFG = E.CFG;
   var $ = function (id) { return document.getElementById(id); };
   var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -316,6 +316,7 @@
     if (mode === 'endless') def = newEndlessDef();
     sim = E.createSim(def);
     notKur();
+    hayaletKur();
     sonsuzBolge = 0;
     if (mode === 'endless') MZ.sahne('tas');
     MZ.kis(false);
@@ -328,6 +329,55 @@
     cam = camTarget();
     updateHud(true);
     notGoster(); // önceki denemede bulunup su yetişen notun metni
+  }
+
+  // ---------- Hayalet (js/hayalet.js) ----------
+  // En iyi koşunun soluk kopyası aynı zamanlamayla tırmanır. Yalnızca görüntü: nişan, puan ve fizik etkilenmez.
+  // Sonsuz Kuyu her koşuda farklı olduğundan orada hayalet yükseklik yarışıdır; Günlük ve bölümlerde aynı yolu izler.
+  var hayaletKayit = null, hayaletIz = null;
+  function hayaletAcik() { return save.hayalet !== false; }
+  function hayaletYeri() {
+    if (mode === 'level') return { tur: 'bolum', n: levelNo };
+    return dailyKey ? { tur: 'gunluk', gun: dailyKey } : { tur: 'sonsuz' };
+  }
+  function hayaletKur() {
+    hayaletKayit = HY ? HY.yeni(sim.startY) : null;
+    hayaletIz = HY && hayaletAcik() ? HY.al(hayaletYeri()) : null;
+  }
+  function drawHayalet(t) {
+    if (!hayaletIz || sim.status !== 'play') return;
+    var p = HY.yer(hayaletIz, sim.t);
+    if (!p) return;
+    var x = p.x, y = sim.startY + p.y, vh = viewH / K, ust = cam + 18, alt = cam + vh - 18;
+    var a = 0.38 * Math.min(1, sim.t / 0.6);
+    ctx.save();
+    if (y < ust || y > alt) {
+      // ekran dışında: kenarda küçük bir işaret (yukarıdaysa önde, aşağıdaysa geride)
+      var yukari = y < ust, ey = yukari ? ust : alt;
+      ctx.globalAlpha = a + 0.1;
+      ctx.fillStyle = '#dff3f6';
+      ctx.beginPath(); ctx.arc(x, ey, 5, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath();
+      if (yukari) { ctx.moveTo(x - 5, ey - 7); ctx.lineTo(x + 5, ey - 7); ctx.lineTo(x, ey - 13); }
+      else { ctx.moveTo(x - 5, ey + 7); ctx.lineTo(x + 5, ey + 7); ctx.lineTo(x, ey + 13); }
+      ctx.closePath(); ctx.fill();
+      ctx.restore();
+      return;
+    }
+    ctx.globalAlpha = a;
+    var g = ctx.createRadialGradient(x, y, 2, x, y, CFG.R * 2.2);
+    g.addColorStop(0, 'rgba(223,243,246,0.55)'); g.addColorStop(1, 'rgba(223,243,246,0)');
+    ctx.fillStyle = g; ctx.fillRect(x - CFG.R * 2.2, y - CFG.R * 2.2, CFG.R * 4.4, CFG.R * 4.4);
+    ctx.fillStyle = '#dff3f6'; ctx.beginPath(); ctx.arc(x, y, CFG.R, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#5b6f73'; ctx.beginPath(); ctx.arc(x + 2, y - 2, 2.6, 0, Math.PI * 2); ctx.fill();
+    if (sim.t < 3) {
+      ctx.globalAlpha = Math.min(1, (3 - sim.t)) * 0.8;
+      ctx.font = '700 11px "Figtree", system-ui, sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'bottom';
+      ctx.lineWidth = 3; ctx.strokeStyle = 'rgba(8,13,14,0.85)'; ctx.strokeText('en iyi koşun', x, y - CFG.R - 6);
+      ctx.fillStyle = '#dff3f6'; ctx.fillText('en iyi koşun', x, y - CFG.R - 6);
+    }
+    ctx.restore();
+    void t;
   }
 
   // ---------- Bekçinin notları (js/notlar.js) ----------
@@ -947,6 +997,7 @@
     sim.rings.forEach(function (r) { if (r.y > cam - 30 - (r.sw ? CFG.SARKAC_L : 0) && r.y < cam + vh + 30) { if (r.kapi) { drawGate(r, t); return; } if (r.gecit || r.cikis) { drawPortal(r, t); return; } if (r.sw) drawSwingChain(r); drawRing(r.x, r.y); if (r.yay != null) drawSpringRing(r, t); if (r.ff && !r.got) { drawFireflyRing(r, t); if (r === notHalka && notAktif) drawNot(r, t); } if (r.hiz) drawSpeedRing(r, t); } });
     sim.fireflies.forEach(function (f) { if (f.y > cam - 20 && f.y < cam + vh + 20) drawFirefly(f, t); });
     sim.boxes.forEach(drawBox);
+    drawHayalet(t);
     drawAimMarkers(t);
     drawRope();
     if (sim.status !== 'dead') { drawHero(t); drawGrip(); }
@@ -1110,6 +1161,7 @@
       var n = 0;
       while (acc >= CFG.DT && n < 8) { E.step(sim); acc -= CFG.DT; n++; if (sim.status !== 'play') break; }
       if (n === 8) acc = 0;
+      if (HY) HY.ornekle(hayaletKayit, sim);
     } else if (sim.status === 'won' && winT !== null) {
       winT += dt;
       sim.p.px = sim.p.x; sim.p.py = sim.p.y;
@@ -1231,6 +1283,7 @@
     var first = !b.done;
     var newFF = ff > (b.ff || 0) && ff >= ffT && ffT > 0, newPerfect = perfect && !b.perfect, newFlow = flow && !b.flow;
     var recTime = !first && time < (b.time || Infinity), recReward = !first && reward > (b.reward || 0), recSpeed = !first && speed > (b.speed || 0) + 0.05;
+    if (HY && (first || recTime || !b.time)) HY.sakla(hayaletYeri(), hayaletKayit, time); // en kısa süreli koşu hayalet olur
     save.best[levelNo] = {
       ff: Math.max(b.ff || 0, ff), time: b.time ? Math.min(b.time, time) : time,
       perfect: !!(b.perfect || perfect), flow: !!(b.flow || flow), done: true,
@@ -1296,6 +1349,7 @@
       recLine = 'Rekor ' + save.endless.score + ' puan · en yüksek ' + save.endless.meters + ' m';
     }
     noteStats(speed, 0);
+    if (HY && isRecord) HY.sakla(hayaletYeri(), hayaletKayit, sc); // rekor koşu (Günlük'te günün en iyisi) hayalet olur
     var odenen = EKO.kazan(save, E.fireflyCount(sim));
     var kaz = recordRun({ mode: dailyKey ? 'daily' : 'endless', ff: E.fireflyCount(sim), boosts: sim.boosts, gates: sim.gates, maxCombo: sim.maxCombo, meters: m, speed: speed });
     $('kart').className = 'kart sonuc';
@@ -1567,6 +1621,8 @@
     istatOzet: function () { return IST.ozet(save); },
     istatSifirla: function () { IST.sifirla(save); persist(); },
     toggleBuyukYazi: function () { save.buyukYazi = !save.buyukYazi; persist(); return save.buyukYazi; },
+    toggleHayalet: function () { save.hayalet = !hayaletAcik(); persist(); return hayaletAcik(); },
+    hayaletAcik: function () { return hayaletAcik(); },
     toggleHaptics: function () { save.haptics = save.haptics === false; persist(); if (save.haptics) buzz(20); return save.haptics; },
     unlockAudio: function () { ac(); },
     pause: function () { pauseGame(); },

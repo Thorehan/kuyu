@@ -498,6 +498,7 @@
     $('titresimAnahtar').setAttribute('aria-checked', s.haptics === false ? 'false' : 'true');
     $('muzikAnahtar').setAttribute('aria-checked', G.muzikAcik() ? 'true' : 'false');
     $('yaziAnahtar').setAttribute('aria-checked', s.buyukYazi ? 'true' : 'false');
+    $('hayaletAnahtar').setAttribute('aria-checked', G.hayaletAcik() ? 'true' : 'false');
     $('adDegis').value = (s.profile && s.profile.name) || '';
     show('ekAyarlar');
   }
@@ -516,6 +517,10 @@
     var on = G.toggleBuyukYazi();
     $('yaziAnahtar').setAttribute('aria-checked', on ? 'true' : 'false');
     yaziUygula();
+  });
+  $('hayaletAnahtar').addEventListener('click', function () {
+    var on = G.toggleHayalet();
+    $('hayaletAnahtar').setAttribute('aria-checked', on ? 'true' : 'false');
   });
   $('titresimAnahtar').addEventListener('click', function () {
     var on = G.toggleHaptics();

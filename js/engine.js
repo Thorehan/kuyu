@@ -39,6 +39,9 @@
     YAY_FLOAT: 1.0,     // fırlatmanın tepesinde bu kadar süzülürsün (yavaş oyuncuya dokunma zamanı)
     YAY_FALL: 70,       // süzülürken en çok bu hızla alçalırsın (birim/sn)
     GECIT_LEN: 80,      // geçit: girişe bu kadar yaklaşınca çıkışa taşınırsın (akışla erken basan da girer)
+    SARKAC_L: 100,      // sarkaç halka: zincir boyu (birim)
+    SARKAC_AMP: 33,     // en büyük açı (derece): halka ±55 birim sallanır
+    SARKAC_T: 2.6,      // bir tam salınım (sn)
     BOOST: 650,         // hız halkasından bırakınca eklenen yukarı hız (birim/sn)
     WATER_GRACE: 1.0,   // ilk halkaya tutunduktan bu kadar sonra su yükselmeye başlar
     RESCUE_MAX: 1000,   // kurtarma kancası: menzilde hedef yokken en yakın yukarıdaki hedefe bu kadar uzağa atılır
@@ -47,6 +50,18 @@
     COMBO_PTS: 3,       // sonsuz mod: akışlı her tutunma min(akış, COMBO_CAP) × bu kadar puan
     COMBO_CAP: 12
   };
+
+  // Sarkaç halka: (x, y) salınımın en alt noktası, pim onun SARKAC_L üstünde. Faz konumdan türetilir (deterministik).
+  function makeSwing(o) {
+    o.sw = { px: o.x, py: o.y - CFG.SARKAC_L, ph: ((o.x * 7 + o.y * 13) % 628) / 100 };
+    swingAt(o, 0);
+    return o;
+  }
+  function swingAt(o, t) {
+    var th = CFG.SARKAC_AMP * Math.PI / 180 * Math.sin(2 * Math.PI * t / CFG.SARKAC_T + o.sw.ph);
+    o.x = o.sw.px + CFG.SARKAC_L * Math.sin(th);
+    o.y = o.sw.py + CFG.SARKAC_L * Math.cos(th);
+  }
 
   function rect(a) { return { x: a[0], y: a[1], w: a[2], h: a[3], type: a[4], dir: a[5] || 'u' }; }
 
@@ -66,6 +81,7 @@
         if (r[2] === 'yay') o.yay = r[3] || 0; // okun dikeyden açısı (derece, eksi sol)
         if (r[2] === 'gecit') o.gecitId = r[3];  // geçit girişi; çıkışı aynı numaralı 'cikis'
         if (r[2] === 'cikis') o.cikisId = r[3];
+        if (r[2] === 'sarkac') { o.sarkac = true; makeSwing(o); }
         return o;
       }),
       goal: def.goal ? { x: def.goal[0], y: def.goal[1] } : null,
@@ -80,7 +96,7 @@
       grounded: false,
       // akış ve skor
       hang: 0, air: 0, chain: false, combo: 0, maxCombo: 0, hooks: 0, shots: 0, slips: 0,
-      startY: sy, topY: sy, bonus: 0, fireflyPts: 0, maxSpeed: 0, rescues: 0, misses: 0, boosts: 0, gates: 0, springs: 0, float: 0, portals: 0
+      startY: sy, topY: sy, bonus: 0, fireflyPts: 0, maxSpeed: 0, rescues: 0, misses: 0, boosts: 0, gates: 0, springs: 0, float: 0, portals: 0, swings: 0
     };
     // geçit çiftlerini bağla
     s.rings.forEach(function (g) {
@@ -133,7 +149,7 @@
     for (i = 0; i < s.rings.length; i++) {
       var rg = s.rings[i];
       if (rg === ignore || rg.kapi || rg.y < minY || rg.y > maxY) continue;
-      consider(segCircle(x0, y0, x1, y1, rg.x, rg.y, CFG.RING_R + 2), { kind: 'ring', ring: rg });
+      consider(segCircle(x0, y0, x1, y1, rg.x, rg.y, CFG.RING_R + (rg.sw ? 12 : 2)), { kind: 'ring', ring: rg });
     }
     if (s.goal) consider(segCircle(x0, y0, x1, y1, s.goal.x, s.goal.y, 16), { kind: 'goal' });
     for (i = 0; i < s.boxes.length; i++) consider(segCircle(x0, y0, x1, y1, s.boxes[i].x, s.boxes[i].y, CFG.BOX_R + 2), { kind: 'box', box: s.boxes[i] });
@@ -359,13 +375,26 @@
     var dt = CFG.DT, i, j, p = s.p;
     s.t += dt;
     if (s.endless && s.def.extend) s.def.extend(s);
+    // sarkaç halkalar sallanır; tutunduğun sarkacın ipi de onunla gider
+    for (i = 0; i < s.rings.length; i++) {
+      var sg = s.rings[i];
+      if (sg.sarkac && !sg.sw) makeSwing(sg);
+      if (sg.sw) swingAt(sg, s.t);
+    }
+    if (s.rope && s.rope.kind === 'anchor' && s.rope.ref && s.rope.ref.sw) { s.rope.x = s.rope.ref.x; s.rope.y = s.rope.ref.y; }
 
     // kanca uçuşu
     var hk = s.hook;
     if (hk && hk.state === 'fly') {
       var hs = hk.rescue ? CFG.HOOK_SPEED * 2 : CFG.HOOK_SPEED;
       var nx = hk.x + hk.dx * hs * dt, ny = hk.y + hk.dy * hs * dt;
-      var hit = hookRay(s, hk.x, hk.y, nx, ny, hk.ignore);
+      // Sarkaç kancanın üstüne kayarsa kanca onun içinde kalır; çizgi testi içeriden başlayanı saymaz, burada yakala.
+      var hit = null;
+      for (i = 0; i < s.rings.length && !hit; i++) {
+        var sgr = s.rings[i];
+        if (sgr.sw && sgr !== hk.ignore && dist(hk.x, hk.y, sgr.x, sgr.y) < CFG.RING_R + 12) hit = { kind: 'ring', ring: sgr, x: hk.x, y: hk.y };
+      }
+      if (!hit) hit = hookRay(s, hk.x, hk.y, nx, ny, hk.ignore);
       if (hit) {
         if ((hit.kind === 'ring' || hit.kind === 'wood' || hit.kind === 'goal' || hit.kind === 'box') && s.rope) detach(s, 'repress');
         if (hit.kind === 'ring' || hit.kind === 'wood' || hit.kind === 'goal') {
@@ -374,6 +403,7 @@
           s.rope = { kind: 'anchor', x: ax, y: ay, len: dist(p.x, p.y, ax, ay), target: hit.kind, ref: hit.ring || hit.rect || null };
           s.hook = null;
           onAttach(s, ax, ay, hit.kind);
+          if (hit.ring && hit.ring.sw) s.swings++;
           if (hit.ring && hit.ring.ff) collectRing(s, hit.ring);
           if (hit.kind === 'goal') { s.status = 'won'; s.events.push({ type: 'won' }); return; }
         } else if (hit.kind === 'box') {
@@ -560,7 +590,7 @@
   var api = {
     CFG: CFG, createSim: createSim, step: step, press: press, release: release,
     fireflyCount: fireflyCount, hookRay: hookRay, meters: meters, score: score, segRect: segRect, aim: aim,
-    candidates: candidates, reachable: reachable, currentIgnore: currentIgnore,
+    candidates: candidates, reachable: reachable, currentIgnore: currentIgnore, makeSwing: makeSwing,
     speedMult: speedMult, speedMs: speedMs, finalScore: finalScore
   };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;

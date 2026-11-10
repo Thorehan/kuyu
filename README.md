@@ -1,6 +1,6 @@
 # Kuyu
 
-**Funday Morning Games** · 2D mobil oyun · prototip v0.20
+**Funday Morning Games** · 2D mobil oyun · prototip v0.21
 
 Derin bir kuyunun dibindesin. Telefonu tek elle tut: ekranın soluna ya da sağına dokun, kanca o taraftaki hedefe fırlasın; basılı tut, ipe sarıl; bırak, savrul. Halkadan halkaya, ahşaptan ahşaba tırmanıp kuyudan çık.
 
@@ -50,6 +50,15 @@ Yeni bir şey ilk kez karşına çıktığında oyun kısa süre durur, ekranın
 - Halkalar **karar noktalarında**: ana yoldaki bir halkanın karşı tarafında, aynı yükseklik civarında. Oradan sıradaki halkaya da ulaşılabilir. İstemeyen ana halkaya gidip es geçer.
 - İşaret ateşböceği halkasını gösteriyorsa o yana dokunmak yeter. Gerçek oyuncu gibi oynayan bot ateşböceklerinin 215/221'ini yalnızca işaretlere bakarak topluyor.
 - El yapımı bölümlerde 3 (Kutu bölümünde 2), üretilen bölümlerin 73/74'ünde 3, sonsuz kuyuda ara ara.
+
+## Sarkaç halka (v0.21)
+Tepedeki pimden zincirle asılı bakır halka; sağa sola sallanır (±55 birim, bir tam salınım 2,6 sn; `CFG.SARKAC_L`, `SARKAC_AMP`, `SARKAC_T`).
+- Hangi taraftaysa o tarafın işareti onu gösterir; tam tepedeyken iki taraftan da alınır. Uzak uçtayken menzil dışında kalabilir: biraz bekle.
+- Tutununca ip onunla gider, seni de sallar; doğru anda bırakırsan savrulursun.
+- Kanca hareketli halkayı daha geniş yakalar (yarıçap +12). Sarkaç uçan kancanın üstüne kayarsa kanca doğrudan tutunur (çizgi testi içeriden başlayanı saymadığı için önce ıskalıyordu).
+- Faz halkanın konumundan türetilir: aynı bölüm ve aynı Günlük Kuyu herkes için aynı sallanır.
+- Üretici: ana yolda, duvara değmesin diye ortadaki (x 100–260), karar noktası, yay ve geçit olmayan halkalar, en az 5 adım arayla (74 üretilen bölümde 154). El yapımı 1–6. bölümlerde yok.
+- Rota botu (`tools/bot.js`) sarkaca o anki yerinden atar ve sarkaçla ilgili adımlarda hedef menzile girene kadar ipi bırakmadan bekler (gerçek oyuncu gibi).
 
 ## Geçit çifti (v0.20)
 Mor giriş halkasında dönen girdap, yukarıdaki mor çıkış halkasında dışa yayılan halka; aralarında soluk noktalı çizgi çıkışı gösterir.

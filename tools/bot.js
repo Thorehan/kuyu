@@ -2,6 +2,7 @@
 //   node tools/bot.js            el yapımı bölümler + üretilen 7..80 + sonsuz mod
 //   node tools/bot.js 3 --trace  tek bölüm, ayrıntılı
 //   node tools/bot.js --gen 200  üretilen bölümleri 7..200 arası dene
+//   IZ_TOHUM=8 IZ_TARZ=rahat node tools/bot.js --gen 7   sonsuz kuyuda bir tohumu adım adım yazdır
 const E = require('../js/engine.js');
 const LEVELS = require('../js/levels.js');
 const G = require('../js/gen.js');
@@ -13,6 +14,34 @@ const genMax = args.includes('--gen') ? +args[args.indexOf('--gen') + 1] : 80;
 
 // Yay halkası fırlattıysa oyuncu tepe noktasında sıradakine dokunur.
 const springApex = s => !s.rope && !s.hook && s.springs > 0 && s.p.y - s.p.py > -0.4;
+// Rota sabit koordinat tutar; sarkaç halkaysa kanca onun o anki yerine atılır.
+// Sarkaç menzil dışındaysa (uzak uçta) menzile girene kadar beklenir: gerçek oyuncu da bekler.
+function liveTarget(s, x, y) {
+  const r = s.rings.find(g => g.sw && g.sw.px === x && Math.abs(g.sw.py + C.SARKAC_L - y) < 1);
+  return r ? { x: r.x, y: r.y, ring: r } : { x, y };
+}
+// Hedef (sarkaç ya da sarkaçta sallanırken uzak kalan halka) menzile girene kadar bekle; ip bırakılmaz.
+function waitReach(s, x, y) {
+  if (!s.rope || s.rope.kind !== 'anchor') return;
+  if (!(s.rope.ref && s.rope.ref.sw) && !liveTarget(s, x, y).ring) return; // yalnızca sarkaçla ilgili adımlar
+  for (let k = 0; k < 400 && s.status === 'play'; k++) {
+    const t = liveTarget(s, x, y);
+    const seen = !t.ring || E.reachable(s, { x: t.x, y: t.y, kind: 'ring', ref: t.ring }, E.currentIgnore(s));
+    if (Math.hypot(t.x - s.p.x, t.y - s.p.y) < C.HOOK_MAX - 30 && seen) return;
+    E.step(s);
+  }
+}
+function pressAt(s, x, y) {
+  let t = liveTarget(s, x, y);
+  if (t.ring) {
+    for (let k = 0; k < 400 && s.status === 'play'; k++) {
+      t = liveTarget(s, x, y);
+      if (Math.hypot(t.x - s.p.x, t.y - s.p.y) < C.HOOK_MAX - 30 && E.reachable(s, { x: t.x, y: t.y, kind: 'ring', ref: t.ring }, E.currentIgnore(s))) break;
+      E.step(s);
+    }
+  }
+  E.press(s, t.x, t.y);
+}
 function runFor(s, sec, until) {
   const n = Math.round(sec / C.DT);
   for (let i = 0; i < n; i++) {
@@ -48,16 +77,18 @@ function play(def, style, route) {
     }
     const [kind, x, y, relLen] = a;
     const asFling = kind === 'fling' && style !== 'akis'; // akış koşusunda fırlama noktaları normal tutunma
+    waitReach(s, x, y);
     if (style !== 'akis') E.release(s);
-    E.press(s, x, y);
+    pressAt(s, x, y);
     runFor(s, 0.6, () => s.rope || !s.hook);
     for (let k = 0; k < 3 && !s.rope && style === 'akis' && s.status === 'play'; k++) { // akış koptu: düşerken yeniden dene
-      E.release(s); runFor(s, 0.3); E.press(s, x, y); runFor(s, 0.6, () => s.rope || !s.hook);
+      E.release(s); runFor(s, 0.3); pressAt(s, x, y); runFor(s, 0.6, () => s.rope || !s.hook);
       log.push(`${tag} -> akış koptu, yeniden denendi`);
     }
     if (s.status === 'won') { log.push(`${tag} -> KAZANDI t=${s.t.toFixed(2)}s`); break; }
     if (!s.rope) return { ok: false, s, log, why: `${tag}: tutunamadı (oyuncu ${s.p.x.toFixed(0)},${s.p.y.toFixed(0)}, mesafe ${Math.hypot(x - s.p.x, y - s.p.y).toFixed(0)})` };
-    if (s.rope.kind === 'anchor' && Math.hypot(s.rope.x - x, s.rope.y - y) > 20) return { ok: false, s, log, why: `${tag}: yanlış yere tutundu (${s.rope.x.toFixed(0)},${s.rope.y.toFixed(0)})` };
+    const okSw = s.rope.ref && s.rope.ref.sw && s.rope.ref.sw.px === x && Math.abs(s.rope.ref.sw.py + C.SARKAC_L - y) < 1;
+    if (s.rope.kind === 'anchor' && !okSw && Math.hypot(s.rope.x - x, s.rope.y - y) > 20) return { ok: false, s, log, why: `${tag}: yanlış yere tutundu (${s.rope.x.toFixed(0)},${s.rope.y.toFixed(0)})` };
     if (asFling) {
       runFor(s, 1.0, () => s.rope.len <= relLen);
       E.release(s);
@@ -144,11 +175,13 @@ if (!only) {
         const n = def.path[i];
         if (!n) { runFor(s, 0.1); continue; }
         const t = G.target(n);
+        waitReach(s, t.x, t.y);
         if (style !== 'akis') E.release(s);
-        E.press(s, t.x, t.y);
+        pressAt(s, t.x, t.y);
         runFor(s, 0.6, () => s.rope || !s.hook);
-        if (!s.rope && s.status === 'play') { E.release(s); runFor(s, 0.35); E.press(s, t.x, t.y); runFor(s, 0.6, () => s.rope || !s.hook); }
+        if (!s.rope && s.status === 'play') { E.release(s); runFor(s, 0.35); pressAt(s, t.x, t.y); runFor(s, 0.6, () => s.rope || !s.hook); }
         if (!s.rope) { why = `tutunamadı #${i}`; break; }
+        if (+process.env.IZ_TOHUM === seed && process.env.IZ_TARZ === style) console.log(`  #${i} t=${s.t.toFixed(2)} hedef (${t.x.toFixed(0)},${t.y.toFixed(0)}) ip (${s.rope.x.toFixed(0)},${s.rope.y.toFixed(0)})${s.rope.ref && s.rope.ref.sw ? ' SARKAÇ' : ''} oyuncu (${s.p.x.toFixed(0)},${s.p.y.toFixed(0)}) su ${s.water != null ? (s.water - s.p.y).toFixed(0) : '-'}`);
         if (style === 'akis') runFor(s, 1.2, () => s.rope && s.rope.len <= 70);
         else runFor(s, 1.6, () => (s.rope && s.rope.len <= C.MIN_LEN + 0.01 && speed(s.p) < 120) || springApex(s));
         i++;

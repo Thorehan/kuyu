@@ -192,6 +192,12 @@
     return Math.round(clamp(a, -40, 40));
   }
 
+  // ---------- sarkaç halkalar ----------
+  // Ana yoldaki bazı halkalar zincirde sallanır. Duvara değmesin diye yalnızca ortadakiler (x 100–260),
+  // karar noktası, yay ve geçit olmayanlar, en az 5 adım arayla. Rastgele sayı kullanmaz.
+  var SARKAC_GAP = 5;
+  function swingOk(n) { return n.kind === 'ring' && n.x >= 100 && n.x <= 260; }
+
   // ---------- sonlu bölüm ----------
   function createLevel(num) {
     var r = rng(num * 7919 + 13);
@@ -269,6 +275,15 @@
       lastYay = yi;
     }
 
+    // sarkaç halkalar
+    var lastSw = -9;
+    for (var si = 2; si < nodesN - 1; si++) {
+      if (!swingOk(nodes[si]) || altAt(si) || portalAt[si] || si - lastSw < SARKAC_GAP) continue;
+      var sr = out.rings.filter(function (rg) { return rg.x === nodes[si].x && rg.y === nodes[si].y; })[0];
+      if (!sr || sr.yay != null) continue;
+      sr.sarkac = true; lastSw = si;
+    }
+
     // koordinatları kaydır: kova y=50'de, taban aşağıda
     var off = 50 - goal.y;
     function sh(p) { return [Math.round(p.x), Math.round(p.y + off)]; }
@@ -289,7 +304,7 @@
       start: [180, Math.round(off - 20)], goal: sh(goal),
       water: waterLevel ? Math.min(90, 45 + num * 0.5) : 0,
       rects: rects,
-      rings: out.rings.map(function (p) { var a = sh(p); if (p.yay != null) a.push('yay', p.yay); return a; }).concat(ffRings.map(function (a) { return [a.x, Math.round(a.y + off), 'ff']; }))
+      rings: out.rings.map(function (p) { var a = sh(p); if (p.yay != null) a.push('yay', p.yay); else if (p.sarkac) a.push('sarkac'); return a; }).concat(ffRings.map(function (a) { return [a.x, Math.round(a.y + off), 'ff']; }))
         .concat(hizRings.map(function (a) { return [a.x, Math.round(a.y + off), 'hiz']; }))
         .concat(gates.map(function (a) { return [a.x, Math.round(a.y + off), 'kapi']; }))
         .concat(portal ? [[portal.a.x, Math.round(portal.a.y + off), 'gecit', 1], [portal.b.x, Math.round(portal.b.y + off), 'cikis', 1]] : []),
@@ -310,7 +325,7 @@
   function createEndless(seed) {
     var r = rng(seed >>> 0);
     var startY = 0;
-    var st = { hp: { x: 180, y: startY }, prevKind: null, nodes: [], frontier: startY, segs: [], anchors: [], prevHp: null, prevT: null, lastFF: -9, altPrev: true, lastGate: -9, lastYay: -9, prevRing: null, hist: [], lastPortal: -9, portalN: 0 };
+    var st = { hp: { x: 180, y: startY }, prevKind: null, nodes: [], frontier: startY, segs: [], anchors: [], prevHp: null, prevT: null, lastFF: -9, altPrev: true, lastGate: -9, lastYay: -9, prevRing: null, hist: [], lastPortal: -9, portalN: 0, lastSw: -9 };
     var def = {
       id: 'sonsuz', name: 'Sonsuz Kuyu', endless: true, seed: seed,
       hint: 'Su durmadan yükselir. Sağa ya da sola dokunarak tırman; ipi erken bırakıp zincirlersen ekstra puan.',
@@ -388,6 +403,10 @@
         var kPrev = st.nodes.length - 1;
         if (st.prevRing && !altNow && !portalHere && kPrev >= 2 && kPrev - st.lastYay >= YAY_GAP) {
           st.prevRing.yay = yayAngle(st.prevRing, t); st.lastYay = kPrev;
+        } else if (st.prevRing && !altNow && !portalHere && kPrev >= 2 && kPrev - st.lastSw >= SARKAC_GAP && swingOk({ kind: 'ring', x: st.prevRing.x })) {
+          // sarkaç halka (yay olmayan ana halka)
+          st.prevRing.sarkac = true;   // motor ilk adımda salınımı kurar
+          st.lastSw = kPrev;
         }
         st.altPrev = altNow;
         st.prevHp = st.hp; st.prevT = t; st.prevRing = curRing;

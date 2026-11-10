@@ -3,7 +3,10 @@
 // sonra eski ve yeni dosyalar karışmaz. Ağ yoksa son kaydedilen sürüm açılır.
 // Görseller önbellekten gelir (değişmezler; değişirse adları değişir).
 // Liste elle tutulur; tools/kontrol.js index.html'in yüklediği her dosyanın burada ve diskte olduğunu denetler.
-const CODE = 'kuyu-code-v1';
+// Her kod dosyası önbellekte TEK kayıt tutar (?v= etiketi atılır, hep en son alınan sürüm). Sayfa açılışları
+// index.html kaydına yazılır. Böylece internetsiz açılış en son sürümü açar ve önbellek her sürümde şişmez.
+// v1'de her ?v= ayrı kaydediliyordu ve internetsizken en ESKİ kayıt açılıyordu; v2 eskisini silerek başlar.
+const CODE = 'kuyu-code-v2';
 const MEDIA = 'kuyu-media-v1';
 
 const CORE = [
@@ -57,15 +60,17 @@ self.addEventListener('fetch', e => {
     })());
     return;
   }
+  // Önbellek anahtarı: sorgu (?v=, ?bolum=, ?mod=) atılmış adres; sayfa açılışları index.html.
+  const key = req.mode === 'navigate' ? new URL('index.html', location.href).href : url.origin + url.pathname;
   e.respondWith((async () => {
     const cache = await caches.open(CODE);
     try {
       const res = await fetch(req, { cache: 'no-cache' });
-      if (res.ok && res.status === 200) cache.put(req, res.clone()).catch(() => {});
+      if (res.ok && res.status === 200) cache.put(key, res.clone()).catch(() => {});
       return res;
     } catch (err) {
-      // ağ yok: ?v= sürüm etiketi farklı olsa da son kaydedilen dosya açılır
-      const hit = await cache.match(req, { ignoreSearch: true }) || (req.mode === 'navigate' && await cache.match(new URL('index.html', location.href).href));
+      // ağ yok: son kaydedilen (en yeni) dosya açılır
+      const hit = await cache.match(key);
       if (hit) return hit;
       throw err;
     }

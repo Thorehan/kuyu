@@ -263,4 +263,4 @@ Bot rota bilmez; yalnızca ekrandaki sol ve sağ işarete bakar. Sonuçlar (6 el
 | `tools/nisan.js` | Nişan denetimi: işaret yandaki sığ hedefi mi gösteriyor |
 | `tools/simge.py` | Uygulama simgelerini çizer |
 
-Düz JavaScript, derleme adımı yok. Her yayında `index.html` içindeki `?v=` sürüm etiketini artırın ve `node tools/kontrol.js` çalıştırın; yeni bir js/css dosyası eklenirse `sw.js` listesine de yazılmalı; yoksa telefonlar eski CSS/JS'i önbellekten kullanabilir. Kayıt tarayıcıda `kuyu.v2` anahtarıyla tutulur.
+Düz JavaScript, derleme adımı yok. Her yayında `index.html` içindeki `?v=` sürüm etiketini artırın ve `node tools/kontrol.js` çalıştırın; yeni bir js/css dosyası eklenirse `sw.js` listesine de yazılmalı; yoksa telefonlar eski CSS/JS'i önbellekten kullanabilir. Kayıt tarayıcıda `kuyu.v2` anahtarıyla tutulur. Servis çalışanı her kod dosyasının önbellekte tek kaydını tutar (?v= atılır, hep en son alınan); internetsiz açılış en son sürümü açar.

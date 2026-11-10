@@ -86,6 +86,7 @@ Karar (2026-11-10): oyunda güçlendirme yok, **harcamalar yalnızca kozmetik**.
 - [ ] Hikâyenin meta ile bağı (bölgeler, kozmetikler).
 
 ## Yapılanlar
+- 2026-11-10 · v0.22 · Servis çalışanı düzeltmesi: internetsiz açılışta en eski kayıtlı sürüm açılıyordu ve önbellek her sürümde şişiyordu; artık dosya başına tek (en son) kayıt.
 - 2026-11-10 · v0.22 · Ekonomi, günlük giriş, Dolap, video ile ikiye katlama; görev ödülleri ateşböceği. Düzeltme: Sonsuz/Günlük'te toplanan ateşböcekleri sayılmıyordu (görevler dahil).
 - 2026-11-10 · v0.21 · Sarkaç halka (yeni halka türlerinin sonuncusu), tanıtım kartı; rota botu sarkaçları canlı konumundan hedefler.
 - 2026-11-10 · v0.20 · Geçit çifti: mor giriş → yukarıdaki çıkış, tanıtım kartı, "GEÇİT +N m".

@@ -388,7 +388,7 @@
   // ---------- bölümler ----------
   // Gruplar: 1–6 Öğrenme (el yapımı), sonra 10'arlı. Sıradaki bölüm = geçilmemiş ilk bölüm.
   var listUpto = 0, filtre = 'tumu';
-  function groupOf(n) { return n <= 6 ? { a: 1, b: 6, ad: 'Öğrenme' } : { a: 7 + Math.floor((n - 7) / 10) * 10, b: 16 + Math.floor((n - 7) / 10) * 10, ad: '' }; }
+  function groupOf(n) { if (n <= 6) return { a: 1, b: 6, ad: 'Öğrenme' }; var a = 7 + Math.floor((n - 7) / 10) * 10; return { a: a, b: a + 9, ad: G.bolgeAdi(a) }; }
   function goalsOf(n) {
     var d = G.levelDef(n), ff = (d.rings || []).filter(function (r) { return r[2] === 'ff'; }).length;
     var b = (save().best || {})[n] || {};

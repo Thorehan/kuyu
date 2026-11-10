@@ -1,6 +1,6 @@
 # Kuyu
 
-**Funday Morning Games** · 2D mobil oyun · prototip v0.29
+**Funday Morning Games** · 2D mobil oyun · prototip v0.30
 
 Derin bir kuyunun dibindesin. Telefonu tek elle tut: ekranın soluna ya da sağına dokun, kanca o taraftaki hedefe fırlasın; basılı tut, ipe sarıl; bırak, savrul. Halkadan halkaya, ahşaptan ahşaba tırmanıp kuyudan çık.
 
@@ -89,6 +89,21 @@ Yolun üstünde, bir halkadan sıradakine giden hatta duran yatay şerit (112 bi
 - **Bölüm ödülü** = (100 + 25 × ateşböceği + 50 Kusursuz + 50 Akış) × hız çarpanı.
 - **Bölüm sonu kartı** ekranın altından açılır: ödül sayarak gelir ve hesabı yazılır, üç madalya (bu oyunda ilk kez kazanılan "YENİ" etiketiyle), süre ve en yüksek hız (kırılan rekorlar "REKOR" etiketiyle), büyük "Bölüm N ›" düğmesi, Tekrar ve Bölümler. Sonsuz Kuyu sonucu da aynı yapıda.
 - **Sonsuz Kuyu puanı** = (metre + akış bonusu + ateşböcekleri) × hız çarpanı.
+
+## Bölgeler (v0.30)
+Yalnızca görünüm değişir; oynanış, halkalar, işaretler ve oyun renkleri her bölgede aynıdır (okunabilirlik).
+
+| Bölge | Bölümler | Sonsuz Kuyu | Görünüm |
+|---|---|---|---|
+| Taş Kuyu | 1–16, 77–96, … | 0–500 m, 2000–2500 m, … | yosunlu yeşil-gri taş |
+| Maden | 17–36, 97–116, … | 500–1000 m, … | sıcak kahverengi taş, altın damar benekleri, zincirle asılı fenerler |
+| Kristal Mağara | 37–56, … | 1000–1500 m, … | mor-mavi taş, duvar diplerinde parlayan kristaller |
+| Eski Kule | 57–76, … | 1500–2000 m, … | açık gri taş, kemerli pencereler ve ay ışığı |
+
+- Bölümlerde bölge bölüm numarasından gelir (`bolgeBolum`), Sonsuz ve Günlük Kuyu'da kuyunun yüksekliğinden (`SONSUZ_BOLGE_M` 500): sınır kuyunun içinde görünür, ekran birden değişmez.
+- Duvar dokusu her bölge için ayrı karo olarak bir kez çizilir; süsler arka planda, soluk ve duvara yakın (halkaya ya da ahşaba benzemesin diye).
+- Yeni bölgeye ilk girişte oyunu durdurmayan kısa duyuru ("Yeni bölge: Maden", Sonsuz'da "· 504 m"); Sonsuz'da bölge adı kahramanın üstünde de yazar (en yüksek noktaya göre, sınırda inip çıkınca tekrar etmez).
+- Bölümler ekranında 10'arlı grupların adı bölge adıdır.
 
 ## Oyun istatistikleri (v0.28)
 Ayarlar → **Oyun istatistikleri**. Denge kararları için yerel kayıt; hiçbir yere gönderilmez. Mantık `js/istatistik.js`, testi `node tools/istatistik-test.js`.

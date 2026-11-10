@@ -71,7 +71,8 @@ Karar (2026-11-10): oyunda güçlendirme yok, **harcamalar yalnızca kozmetik**.
 
 ### 4. Görsellik (şimdilik öncelik değil)
 - [ ] Kozmetik dolap: atkı rengi, kanca/ip görünümü, uçuş izi (2. aşamadaki mağaza mantığının görünümleri).
-- [ ] Bölgeler: her 10–15 bölümde görünüm değişir (taş kuyu → maden → kristal mağara → eski kule).
+- [x] Bölgeler (v0.30): Taş Kuyu (1–16) → Maden (17–36) → Kristal Mağara (37–56) → Eski Kule (57–76), sonra baştan (20'şer). Sonsuz Kuyu'da her 500 m'de bir; sınır kuyunun içinde görünür. Değişen: duvar dokusu ve rengi, taş çıkıntı rengi, ortam ışığı, arka plan süsleri (madende fener, mağarada duvar dibinde kristal, kulede pencere ve ay ışığı). Halkalar, işaretler ve oyun renkleri her bölgede aynı. Bölümler ekranında grup adları bölge adı; yeni bölgeye ilk girişte oyunu durdurmayan kısa duyuru (Sonsuz'da metresiyle). Oynanış değişmedi.
+- [ ] Bölgelere özel müzik/ses dokusu (müzik kararına bağlı).
 - [ ] Görsel düzenleme: bu yapının üzerine; baştan tasarım yok.
 - [?] Müzik: Mustafa'dan istenecek mi?
 
@@ -93,6 +94,7 @@ Karar (2026-11-10): oyunda güçlendirme yok, **harcamalar yalnızca kozmetik**.
 - [ ] Hikâyenin meta ile bağı (bölgeler, kozmetikler).
 
 ## Yapılanlar
+- 2026-11-10 · v0.30 · Bölgeler: Taş Kuyu, Maden, Kristal Mağara, Eski Kule (bölümlerde numaraya, Sonsuz'da yüksekliğe göre).
 - 2026-11-10 · v0.29 · 4. bölüme üçüncü ateşböceği; kutu yerde artık kaymıyor (düğmeden çıkıp kapağı kapatıyordu).
 - 2026-11-10 · v0.28 · Yerel istatistik sayfası ve panoya kopyalama.
 - 2026-11-10 · v0.27 · Büyük yazı ayarı; sonuç kartında Dolap kısa yolu (v0.26).

@@ -668,7 +668,12 @@
   function suTakip(s, dt) {
     var T = s.def.suTakip, p = s.p, m = meters(s), k = Math.min(1, m / T.daralma);
     var asili = s.rope && s.rope.kind === 'anchor';
-    if (asili && (s.tutTop == null || p.y < s.tutTop - 1)) { s.tutTop = p.y; s.ilerlemeT = s.t; }
+    if (asili && (s.tutTop == null || p.y < s.tutTop - 1)) {
+      s.tutTop = p.y; s.ilerlemeT = s.t;
+      // devam hakkında buradan sürer (yay ve geçit halkası değil: tutununca fırlatır/taşır)
+      var gr = s.rope.ref;
+      if (!(gr && (gr.yay != null || gr.gecit || gr.cikis))) s.sonGuvenli = { x: s.rope.x, y: s.rope.y, ref: s.rope.ref, hedef: s.rope.target };
+    }
     if (s.ilerlemeT == null) s.ilerlemeT = s.t;
     var mesafe = (T.bas + (T.son - T.bas) * k) * 20;
     var hedef = (s.tutTop != null ? s.tutTop : s.startY) + mesafe;
@@ -738,6 +743,23 @@
   function ustalikPay(s) { return Math.min(CFG.USTALIK_MAX, Math.round((s.tam || 0) * CFG.USTALIK_TAM * 100) / 100); }
   function speedMult(s) { return Math.round((hizPay(s) + ustalikPay(s)) * 100) / 100; }
   function speedMs(v) { return v / 20; } // birim/sn → m/sn (20 birim = 1 m)
+  // Devam hakkı (Sonsuz, İstişare 2): yakalanınca en yüksek tutunulan halkaya asılı geri dön; su güvenli mesafeye çekilir.
+  function dirilt(s) {
+    var a = s.sonGuvenli;
+    if (!a || s.status !== 'dead') return false;
+    var g = a.ref && a.ref.x != null && a.hedef === 'ring' ? a.ref : null, ax = g ? g.x : a.x, ay = g ? g.y : a.y;
+    s.status = 'play';
+    s.p.x = s.p.px = ax; s.p.y = s.p.py = ay + CFG.MIN_LEN;
+    s.rope = { kind: 'anchor', x: ax, y: ay, len: CFG.MIN_LEN, target: a.hedef || 'ring', ref: a.ref };
+    s.hook = null; s.hang = 0; s.air = 0; s.combo = 0; s.chain = false; s.alevPuan = 0; s.alev = 0; s.tamSeri = 0;
+    s.kilitSon = 0; s.ilerlemeT = s.t; s.lastAnchor = null;
+    s.tutTop = ay + CFG.MIN_LEN; // su hedefi dirilme noktasına göre (güvenli halka en yüksek noktanın altında olabilir)
+    if (s.def.suTakip) s.water = Math.max(s.water, ay + CFG.MIN_LEN + s.def.suTakip.bas * 20);
+    else if (s.water != null) s.water = Math.max(s.water, ay + 400);
+    s.devam = (s.devam || 0) + 1;
+    s.events.push({ type: 'devam', x: ax, y: ay + CFG.MIN_LEN, n: s.devam });
+    return true;
+  }
   function die(s, why) { s.status = 'dead'; s.rope = null; s.hook = null; s.events.push({ type: 'dead', why: why }); }
   function dist(ax, ay, bx, by) { var x = ax - bx, y = ay - by; return Math.sqrt(x * x + y * y); }
   // Toplanan ateşböceği sayısı. Liste sayılmaz: Sonsuz kuyu suyun altında kalanları listeden siler.
@@ -749,7 +771,7 @@
 
   var api = {
     CFG: CFG, createSim: createSim, step: step, press: press, release: release,
-    fireflyCount: fireflyCount, akista: akista, hookRay: hookRay, meters: meters, score: score, segRect: segRect, aim: aim,
+    fireflyCount: fireflyCount, akista: akista, dirilt: dirilt, hookRay: hookRay, meters: meters, score: score, segRect: segRect, aim: aim,
     candidates: candidates, reachable: reachable, currentIgnore: currentIgnore, makeSwing: makeSwing,
     speedMult: speedMult, hizPay: hizPay, ustalikPay: ustalikPay, speedMs: speedMs, finalScore: finalScore
   };

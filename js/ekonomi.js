@@ -93,6 +93,16 @@
 
   // ---------- dolap ----------
   function sahip(save, id) { ensure(save); return save.dolap.sahip.indexOf(id) >= 0; }
+  // Devam hakkı (Sonsuz): bir koşuda en çok 3; bedel artar. Video yalnız ilk devamda (oyuncu seçerse).
+  var DEVAM_BEDEL = [25, 50, 100];
+  function devamBedel(n) { return n < DEVAM_BEDEL.length ? DEVAM_BEDEL[n] : null; }
+  function devamOde(save, n) {
+    ensure(save);
+    var b = devamBedel(n);
+    if (b == null || save.cuzdan.ates < b) return false;
+    save.cuzdan.ates -= b; save.cuzdan.harcanan += b;
+    return true;
+  }
   function satinAl(save, id) {
     ensure(save);
     var it = item(id);
@@ -120,6 +130,6 @@
 
   var api = { GIRIS: GIRIS, GOREV_ATES: GOREV_ATES, BASARIM_ATES: BASARIM_ATES, KATALOG: KATALOG, TURLER: TURLER, VARSAYILAN: VARSAYILAN,
     ensure: ensure, kazan: kazan, bolumOde: bolumOde, girisDurum: girisDurum, girisAl: girisAl,
-    item: item, sahip: sahip, satinAl: satinAl, kusan: kusan, gorunum: gorunum };
+    item: item, sahip: sahip, satinAl: satinAl, kusan: kusan, gorunum: gorunum, DEVAM_BEDEL: DEVAM_BEDEL, devamBedel: devamBedel, devamOde: devamOde };
   if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.KuyuEkonomi = api;
 })(this);

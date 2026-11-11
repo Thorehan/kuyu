@@ -338,6 +338,7 @@
     sonsuzBolge = 0;
     if (mode === 'endless') MZ.sahne('tas');
     MZ.kis(false);
+    devamKapat();
     parts = []; floaters = []; trail = []; winT = null; deadT = null; finalT = null; bekleyen = null; resultShown = false; lastHud = ''; introOgeSayisi = 0;
     $('katman').hidden = true;
     closePause(); closeIntro(true);
@@ -584,7 +585,8 @@
         floatText(e.x, e.y - 18, 'RÜZGÂR · AKIŞ x' + e.combo + (mode === 'endless' ? '  +' + kp : ''), COL.atesbocegi, 14);
       }
       else if (e.type === 'gateOpen') { SFX.gate(); buzz(35); shake = Math.max(shake, 5); }
-      else if (e.type === 'waterStart') { wantIntro('su'); floatText(sim.p.x, sim.p.y + 40, 'su yükseliyor', COL.suAcik, 14); }
+      else if (e.type === 'waterStart') { wantIntro('su'); if (!sim.def.suTakip) floatText(sim.p.x, sim.p.y + 40, 'su yükseliyor', COL.suAcik, 14); }
+      else if (e.type === 'devam') { tone(523, 0.12, 'triangle', 0.06, 784); burst(e.x, e.y, 18, '#ffd36a', 180, 0.5, -40); floatText(e.x, e.y - 34, 'devam!', '#ffd36a', 16); }
       else if (e.type === 'dead') {
         SFX.dead(); shake = 8; buzz(80);
         burst(sim.p.x, sim.p.y, 22, e.why === 'su' ? COL.suAcik : (look().govde || COL.kahraman), 260, 0.7);
@@ -1380,7 +1382,7 @@
     } else if (sim.status === 'dead' && deadT !== null) {
       deadT += dt;
       if (mode === 'level' && deadT > 0.75) { istatBitir('olum'); deaths++; reset(); }
-      else if (mode === 'endless' && deadT > 0.6 && !resultShown) showEndlessResult();
+      else if (mode === 'endless' && deadT > 0.6 && !resultShown && !devamDurum) { if (devamUygun()) devamTeklif(); else showEndlessResult(); }
     }
     handleEvents();
     if (window.KuyuMuzik) window.KuyuMuzik.yogunluk(sim.status === 'play' && sim.combo >= 2 ? (sim.combo - 1) / 6 : 0);
@@ -1528,6 +1530,46 @@
     $('bolumlerDonBtn').onclick = function () { goLevels(); };
     $('sonrakiBtn').focus({ preventScroll: true });
   }
+  // ---------- Devam hakkı (Sonsuz, İstişare 2) ----------
+  // Su yakalayınca 5 sn teklif: ilk devamda video (oyuncu seçerse), ya da ateşböceği (25 / 50 / 100), ya da geç.
+  // Bir koşuda en çok 3. Günlük Kuyu'da yok (herkes için eşit). Devam edince en yüksek güvenli halkadan sürer.
+  var devamDurum = null;
+  function devamUygun() { return mode === 'endless' && !dailyKey && sim.def.suTakip && sim.sonGuvenli && EKO.devamBedel(sim.devam || 0) != null; }
+  function devamKapat() { if (devamDurum) { clearInterval(devamDurum.iv); devamDurum = null; } }
+  function devamTeklif() {
+    var n = sim.devam || 0, bedel = EKO.devamBedel(n), bakiye = (save.cuzdan && save.cuzdan.ates) || 0, yeter = bakiye >= bedel;
+    devamDurum = { kalan: 5, iv: null };
+    $('kart').className = 'kart devam-kart';
+    $('kart').innerHTML =
+      '<h2>Devam?</h2><p class="devam-alt">' + E.meters(sim) + ' m · ' + (n + 1) + '. devam (bir koşuda en çok ' + EKO.DEVAM_BEDEL.length + ')</p>' +
+      '<div class="devam-sayac" aria-hidden="true"><svg viewBox="0 0 44 44"><circle cx="22" cy="22" r="19"></circle><circle class="dolu" cx="22" cy="22" r="19"></circle></svg><b id="devamSn">5</b></div>' +
+      (n === 0 ? '<button type="button" class="ana buyuk genis" id="devamVideo">▶ Video izle, devam et</button>' : '') +
+      '<button type="button" class="' + (n === 0 ? 'genis' : 'ana buyuk genis') + '" id="devamAtes"' + (yeter ? '' : ' disabled') + '><i class="ikon-ates" aria-hidden="true"></i> ' + bedel + ' ateşböceği ile devam' + (yeter ? '' : ' · ' + (bedel - bakiye) + ' eksik') + '</button>' +
+      '<button type="button" class="metin-btn" id="devamGec">Geç</button>';
+    $('katman').classList.remove('alt');
+    $('katman').hidden = false;
+    devamDurum.iv = setInterval(function () {
+      if (!devamDurum) return;
+      devamDurum.kalan--; var el = $('devamSn'); if (el) el.textContent = Math.max(0, devamDurum.kalan);
+      if (devamDurum.kalan <= 0) devamBitir(false);
+    }, 1000);
+    var v = $('devamVideo');
+    if (v) v.onclick = function () {
+      clearInterval(devamDurum.iv); // video sırasında sayaç durur
+      var kosu = sim;
+      if (window.KuyuScreens && window.KuyuScreens.video) window.KuyuScreens.video(function () { if (sim === kosu) devamBitir(true); });
+      else devamBitir(true);
+    };
+    $('devamAtes').onclick = function () { if (EKO.devamOde(save, sim.devam || 0)) { persist(); devamBitir(true); } };
+    $('devamGec').onclick = function () { devamBitir(false); };
+  }
+  function devamBitir(kabul) {
+    if (!devamDurum) return;
+    devamKapat();
+    if (kabul && E.dirilt(sim)) { $('katman').hidden = true; deadT = null; acc = 0; MZ.kis(false); return; }
+    showEndlessResult();
+  }
+
   function showEndlessResult() {
     resultShown = true;
     istatBitir('kosu');
@@ -1571,6 +1613,7 @@
       stat(IK.hiz, fmt(speed, 0) + ' m/sn', 'en yüksek hız', false) +
       (sim.tam ? stat(IK.tam, sim.tam + ' tam', sim.tam + ' kez tam zamanında bıraktın', false) : '') +
       (sim.zincir ? stat(IK.tam, sim.zincir + ' zincir', sim.zincir + ' ateşböceği zincirini akışla tamamladın', false) : '') +
+      (sim.devam ? stat(IK.akis, sim.devam + ' devam', sim.devam + ' kez devam ettin', false) : '') +
       '</div>' +
       '<p class="rekor-satir">' + recLine + '</p>' + kazanimHtml(kaz, odenen) +
       dolapKisaYol(cuzdanOnce) +
@@ -1725,6 +1768,7 @@
   // Sonuç kartı açıkken (bölüm bitti / yakalandın) duraklatmanın anlamı yok: menüye döner.
   // Bölüm sonu yürüyüşü ya da bölge finali sürerken menü düğmesi sonuç kartını açar (bölüm kaydedilmeden çıkılmasın).
   $('menuBtn').onclick = function () {
+    if (devamDurum) { devamBitir(false); return; } // teklif açıkken: geç (koşu kaydedilir)
     if (sim && sim.status === 'won' && !resultShown) { if (finalT !== null) finalBitir(); else showLevelResult(); return; }
     if (sim && sim.status === 'play' && !paused) pauseGame(); else goHome();
   };

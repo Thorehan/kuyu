@@ -829,7 +829,8 @@
     levels: function () { openLevels(); },
     showGame: function () { show('oyun'); },
     toast: toast,
-    hikaye: hikaye
+    hikaye: hikaye,
+    video: video
   };
 
   boot();

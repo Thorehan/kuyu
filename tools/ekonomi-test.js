@@ -38,5 +38,13 @@ ok(K.kusan(save, 'atki-turkuaz') && K.gorunum(save).atki === '#2fb3a6', 'eskisin
 ok(!K.kusan(save, 'ip-ates'), 'sahip olunmayan kuşanılmaz');
 ok(K.KATALOG.every(i => K.TURLER[i.tur]), 'her ürünün türü var');
 ok(Object.keys(K.VARSAYILAN).every(t => K.item(K.VARSAYILAN[t]).fiyat === 0), 'varsayılanlar bedava');
-console.log(bad ? bad + ' hata' : 'Tamam: cüzdan, günlük giriş, dolap');
+// devam hakkı (v0.49): 25 / 50 / 100, en çok 3, yetmezse ödenmez
+const dv = {}; K.ensure(dv); dv.cuzdan.ates = 100;
+ok(K.devamBedel(0) === 25 && K.devamBedel(1) === 50 && K.devamBedel(2) === 100 && K.devamBedel(3) == null, 'devam bedelleri');
+ok(K.devamOde(dv, 0) && dv.cuzdan.ates === 75, '1. devam 25');
+ok(K.devamOde(dv, 1) && dv.cuzdan.ates === 25, '2. devam 50');
+ok(!K.devamOde(dv, 2) && dv.cuzdan.ates === 25, '3. devam yetmezse ödenmez');
+ok(!K.devamOde(dv, 3), '4. devam yok');
+ok(dv.cuzdan.harcanan === 75, 'harcanan sayılır');
+console.log(bad ? bad + ' hata' : 'Tamam: cüzdan, günlük giriş, dolap, devam');
 process.exit(bad ? 1 : 0);

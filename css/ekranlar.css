@@ -457,3 +457,17 @@ button:active { filter: brightness(.94); }
 }
 /* iki düğmeli satırda biri gizliyse kalan tam genişlik (sıradan bağımsız) */
 .dur-iki:has(> button[hidden]) > button:not([hidden]) { grid-column: 1 / -1; }
+
+/* Devam teklifi (v0.49): ortada, 5 sn geri sayım halkası */
+.kart.devam-kart { max-width: 340px; gap: 10px; }
+.kart.devam-kart h2 { font-size: 34px; }
+.devam-alt { font-size: 14px; }
+.devam-sayac { position: relative; width: 64px; height: 64px; margin: 2px 0 4px; }
+.devam-sayac svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+.devam-sayac circle { fill: none; stroke: #2c3936; stroke-width: 4; }
+.devam-sayac circle.dolu { stroke: #ffd36a; stroke-linecap: round; stroke-dasharray: 119.4; stroke-dashoffset: 0; animation: devamSay 5s linear forwards; }
+.devam-sayac b { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-family: var(--font-oyun); font-weight: 800; font-size: 24px; color: #ffd36a; }
+@keyframes devamSay { to { stroke-dashoffset: 119.4; } }
+.kart.devam-kart button.genis { width: 100%; }
+.kart.devam-kart button[disabled] { opacity: .55; cursor: default; }
+@media (prefers-reduced-motion: reduce) { .devam-sayac circle.dolu { animation: none; } }

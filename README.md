@@ -1,6 +1,6 @@
 # Kuyu
 
-**Funday Morning Games** · 2D mobil oyun · prototip v0.43
+**Funday Morning Games** · 2D mobil oyun · prototip v0.44
 
 Derin bir kuyunun dibindesin. Telefonu tek elle tut: ekranın soluna ya da sağına dokun, kanca o taraftaki hedefe fırlasın; basılı tut, ipe sarıl; bırak, savrul. Halkadan halkaya, ahşaptan ahşaba tırmanıp kuyudan çık.
 
@@ -90,6 +90,13 @@ Yolun üstünde, bir halkadan sıradakine giden hatta duran yatay şerit (112 bi
 En iyi koşunun soluk bir kopyası seninle aynı zamanlamayla tırmanır: bölümde en kısa süreli geçişin, Sonsuz Kuyu'da rekor koşun, Günlük Kuyu'da günün en iyisi. Sonsuz her koşuda farklı olduğundan orada bir yükseklik yarışıdır. Hayalet ekranın dışındaysa üst ya da alt kenarda küçük bir işaret görünür. Yalnızca görüntüdür; nişan, puan ve fizik etkilenmez. Ayarlar → Hayalet ile kapatılır.
 
 Kayıt `js/hayalet.js`: kahramanın yeri sim zamanına göre saniyede 15 kez alınır, farklarla yazılır (~60 bayt/sn) ve ana kayıttan ayrı `kuyu.hayalet` anahtarında durur. Test: `node tools/hayalet-test.js`.
+
+## Fırlatma yolu (v0.44)
+Üretilen bölümlerin çoğunda (8+, 73'ün 54'ü) gerçek bir yol ayrımı: karar noktasında ana halkanın karşı tarafında **turuncu oklu halka**. Ondan sonraki halka (bir **ateşböceği** halkası) asılıyken menzil dışında; ancak ip halkaya varmak üzereyken bırakıp fırlayınca uçarken menzile girer. Karar: güvenli ana yol mu, zamanlama isteyen ve ateşböceği veren yol mu. Akışı olmayan turuncu halkadan ana yola döner, sıkışmaz.
+
+Üretici (`gen.js` → `dalBul`, `dalDogrula`) adayları motorla gerçek bölümde dener: asılıyken menzil dışı, akış penceresinde bırakınca ulaşılır; geçemeyen aday konmaz. Rastgele sayı kullanmaz, en son eklenir: mevcut halkalar değişmez. Yay ya da sarkaçtan sonra (oyuncu havada gelir), ana ve ateşböceği yollarının hatlarına 40 birimden yakın ve sarkaçlara 150 birimden yakın yerlere konmaz. Bekçinin notları bu ateşböceğine asılmaz. `tools/bot.js` her ayrımı iki yönden denetler (54/54).
+
+Ölçüm: hız ödülü işe yaramadı (akışla ana yol zaten daha hızlı), ödül ateşböceği. Bilerek seçen akış oyuncusu 54 ayrımın 42'sinde ateşböceğini alıyor, sol-sağ spam 29–35'inde (spam ipi hep erken bırakıp fırladığı için bazen denk geliyor). Sonsuz Kuyu'da ayrım henüz yok.
 
 ## Karar ve zamanlama (v0.43)
 Ölçüm (`node tools/spam.js`): v0.42'de hiç düşünmeden sırayla sol-sağ basmak bölümlerin 74/76'sını geçiyor, Sonsuz'da ~6 km çıkıyor, dokunuşların %98'i alevliydi. Üç neden: yanlış tarafa basmak bedavaydı, iki seçenek çoğu yerde eşitti, akış sabit bir ritimle kendiliğinden oluşuyordu. Düzeltmeler:

@@ -32,7 +32,9 @@
   // Notun iliştiği halka: bölümün en üstteki ateşböceği halkası ([x, y] ya da null)
   function halka(def) {
     var en = null;
-    (def.rings || []).forEach(function (r) { if (r[2] === 'ff' && (!en || r[1] < en[1])) en = r; });
+    // fırlatma yolunun ateşböceği (akış ister) not taşımaz: notlar ateşböceği yolunda, asılarak da alınır kalır
+    var b2 = def.dalB2;
+    (def.rings || []).forEach(function (r) { if (r[2] === 'ff' && !(b2 && r[0] === b2[0] && r[1] === b2[1]) && (!en || r[1] < en[1])) en = r; });
     return en ? [en[0], en[1]] : null;
   }
 

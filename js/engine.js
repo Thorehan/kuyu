@@ -87,7 +87,7 @@
       p: { x: sx, y: sy, px: sx, py: sy },
       pressed: false, hook: null, rope: null, lastAnchor: null,
       rings: (def.rings || []).map(function (r) {
-        var o = { x: r[0], y: r[1], ff: r[2] === 'ff', hiz: r[2] === 'hiz', kapi: r[2] === 'kapi' };
+        var o = { x: r[0], y: r[1], ff: r[2] === 'ff', hiz: r[2] === 'hiz', kapi: r[2] === 'kapi', firlat: r[2] === 'firlat' };
         if (r[2] === 'yay') o.yay = r[3] || 0; // okun dikeyden açısı (derece, eksi sol)
         if (r[2] === 'gecit') o.gecitId = r[3];  // geçit girişi; çıkışı aynı numaralı 'cikis'
         if (r[2] === 'cikis') o.cikisId = r[3];

@@ -177,6 +177,51 @@ if (!only) {
 `);
 }
 
+// 1c) Fırlatma yolları: B1'de asılıyken B2 hiç menzilde olmamalı; akışla bırakınca uçarken menzile girip tutunulmalı
+function dalDene(def) {
+  const R = def.dalRoute, i = R.findIndex((st, k) => st !== def.route[k]); // B1'in rotadaki yeri
+  const b1 = R[i], b2 = R[i + 1];
+  const ring = (s, st) => s.rings.find(g => g.x === st[1] && g.y === st[2]);
+  // a) asılı: rotayı B1'e kadar rahat izle, B1'e tutun, 2 sn salın; B2 menzilde mi?
+  let s = E.createSim(def);
+  for (let k = 0; k < i && s.status === 'play'; k++) { const st = R[k]; waitReach(s, st[1], st[2]); E.release(s); pressAt(s, st[1], st[2]); runFor(s, 0.6, () => s.rope || !s.hook); runFor(s, 1.6, () => (s.rope && s.rope.len <= C.MIN_LEN + 0.01 && speed(s.p) < 120) || springApex(s)); }
+  E.release(s); pressAt(s, b1[1], b1[2]); runFor(s, 0.6, () => s.rope || !s.hook);
+  const r2 = ring(s, b2), tutB1 = s.rope && s.rope.ref === ring(s, b1);
+  let asiliGorur = false;
+  const menzil = (s, g) => Math.hypot(g.x - s.p.x, g.y - s.p.y) <= C.HOOK_MAX - 6 && E.reachable(s, { x: g.x, y: g.y, kind: 'ring', ref: g }, E.currentIgnore(s));
+  if (tutB1) for (let t = 0; t < 240 && s.status === 'play'; t++) { E.step(s); if (s.rope && s.rope.len <= C.MIN_LEN + 0.5 && menzil(s, r2)) { asiliGorur = true; break; } }
+  // b) akış: aynı yerden B1'e tutun, halkaya varmak üzereyken bırak (akış penceresindeki birkaç an denenir), uçarken B2 menzile girince bas
+  let akisTutar = false;
+  for (const kala of [50, 30, 70, 100]) {
+    s = E.createSim(def);
+    for (let k = 0; k < i && s.status === 'play'; k++) { const st = R[k]; waitReach(s, st[1], st[2]); E.release(s); pressAt(s, st[1], st[2]); runFor(s, 0.6, () => s.rope || !s.hook); runFor(s, 1.6, () => (s.rope && s.rope.len <= C.MIN_LEN + 0.01 && speed(s.p) < 120) || springApex(s)); }
+    E.release(s); pressAt(s, b1[1], b1[2]); runFor(s, 0.6, () => s.rope || !s.hook);
+    runFor(s, 1.2, () => s.rope && s.rope.len <= C.MIN_LEN + kala); E.release(s);
+    const r2b = ring(s, b2);
+    for (let t = 0; t < 150 && s.status === 'play'; t++) {
+      E.step(s);
+      if (!s.hook && menzil(s, r2b)) { E.press(s, r2b.x, r2b.y); runFor(s, 0.5, () => s.rope || !s.hook); akisTutar = !!(s.rope && s.rope.ref === r2b); break; }
+    }
+    if (akisTutar) break;
+  }
+  return { tutB1, asiliGorur, akisTutar };
+}
+if (!only) {
+  let akisOk = 0, asiliYok = 0, toplam = 0; const sorun = [];
+  for (let n = 8; n <= genMax; n++) {
+    const def = G.createLevel(n);
+    if (!def.dalRoute) continue;
+    toplam++;
+    const d = dalDene(def);
+    if (!d.tutB1) { sorun.push(`${n}: B1'e tutunulamadı`); continue; }
+    if (d.akisTutar) akisOk++; else sorun.push(`${n}: akışla B2'ye ulaşılamadı`);
+    if (!d.asiliGorur) asiliYok++; else sorun.push(`${n}: asılıyken B2 menzilde`);
+  }
+  console.log(`== Fırlatma yolları: ${toplam} bölümde; akışla B2'ye ulaşılan ${akisOk}, asılıyken ulaşılamayan ${asiliYok} ==`);
+  sorun.forEach(l => console.log('  ' + l));
+  if (akisOk < toplam || asiliYok < toplam) allOk = false;
+}
+
 // 2) Üretilen bölümler
 if (!only) {
   console.log(`\n== Üretilen bölümler 7..${genMax} ==`);
@@ -191,8 +236,8 @@ if (!only) {
     if (!a.ok) { fail++; allOk = false; console.log(`${n} ${def.name}: rahat KALDI ${a.why}`); if (trace) a.log.forEach(l => console.log('   ' + l)); }
     if (!b.ok) { console.log(`${n} ${def.name}: akış KALDI ${b.why}`); }
     if (b.ok && b.s.maxCombo < def.flow) flowMiss++;
-    if (ff < c.s.fireflies.length) ffLow++;
-    if (n <= 9 || n % 20 === 0) console.log(`${n} ${def.name.padEnd(18)} H=${def.H} su=${def.water ? def.water.toFixed(0) : 0} rahat ${a.ok ? 'GEÇTİ' : 'KALDI'} ${a.s.t.toFixed(1)}s ateşböceği ${ff}/${c.s.fireflies.length} | akış ${b.ok ? 'GEÇTİ' : 'KALDI'} x${b.s.maxCombo} (hedef x${def.flow}, par ${def.par})`);
+    if (ff < c.s.fireflies.length - (def.dalB2 ? 1 : 0)) ffLow++; // fırlatma yolunun ateşböceği akış ister, asılarak alınmaz
+    if (n <= 9 || n % 20 === 0) console.log(`${n} ${def.name.padEnd(18)} H=${def.H} su=${def.water ? def.water.toFixed(0) : 0} rahat ${a.ok ? 'GEÇTİ' : 'KALDI'} ${a.s.t.toFixed(1)}s ateşböceği ${ff}/${c.s.fireflies.length}${def.dalB2 ? ' (+1 fırlatma yolunda)' : ''} | akış ${b.ok ? 'GEÇTİ' : 'KALDI'} x${b.s.maxCombo} (hedef x${def.flow}, par ${def.par})`);
   }
   console.log(`Sonuç: ${genMax - 6} bölüm, rahat koşuda kalan ${fail}, akış hedefi tutmayan ${flowMiss}, ateşböceği rotasında hepsini alamayan ${ffLow}`);
   if (ffLow) allOk = false;

@@ -35,7 +35,8 @@ Kalan işler geliştirme sırasına göre. Bekleyenler senden bir karar ya da te
 6. [x] Hızlanma (v0.42, karar 2026-11-11): akış x5/x10/x15'te alevlenme, alevliyken erken bırakış +150/+250/+350 yukarı itiş; TAM bırakış +200, art arda her 3. TAM'da +150 daha. Kanca uçuşu ve ip sarma hızı aynı. Ortalama/iyi oyuncunun temposu aynı (1:17); akışla oynayan %13 daha yükseğe çıkıyor.
 
 7. [x] Karar ve zamanlama (v0.43): ölçüm `tools/spam.js`. Boş atış akışı bitirir ve kanca dönene kadar yeni atış yok; ip halkadan uzaktayken bırakmak akış sayılmaz; alev akış içindeki TAM'larla dolar. Spam 6 km → ~1–2 km, düşünen oyuncu ve ortalama tempo aynı.
-8. [ ] Gerçek yol ayrımları (B): iki taraf birkaç halka ayrılsın (güvenli/yavaş ↔ hızlı/akış ister), sonra birleşsin.
+8. [x] Fırlatma yolu (v0.44, bölümler): turuncu oklu halkadan akışla fırlayınca ulaşılan ateşböceği; asılıyken ulaşılmaz. 54/73 üretilen bölümde, motorla doğrulanmış. Hız ödülü işe yaramadı (akış ana yolu zaten hızlı), ödül ateşböceği. Spam yine de %54–65 alıyor, bilerek seçen %78.
+9. [ ] Sonsuz Kuyu'ya fırlatma yolu.
 
 Bekleyenler: telefon denemesi düzeltmeleri, fiyatların gözden geçirilmesi, ana menü geri bildirimi, bekçinin adı, online için arka uç seçimi, Mustafa'nın parçaları.
 
@@ -118,6 +119,7 @@ Kullanıcı hikâyeye online'dan önce geçti; online (5) sonra.
 ## Yapılanlar
 - 2026-11-11 · v0.34 · Hikâye: Çıra (önsöz, bölge kartları, Çıra'nın yolu, metinler); oyun ekranı gizliyken döngü çizim yapmaz.
 - 2026-11-11 · v0.35 · Bekçinin notları: 12 not, ateşböceği yolunda; Çıra'nın yolu'nda okunur.
+- 2026-11-11 · v0.44 · Fırlatma yolu: bölümlerde gerçek yol ayrımı (turuncu oklu halka → akışla ulaşılan ateşböceği), üreticide motorla doğrulama, bot denetimi, tanıtım kartı.
 - 2026-11-11 · v0.43 · Karar ve zamanlama: boş atış bedeli, akış penceresi, alev TAM ile dolar; `tools/spam.js` ölçümü; rota botunda akış için nişanla yedek ölçüt.
 - 2026-11-11 · v0.42 · Alevlenme ve TAM itişi: akış basamaklarında Çıra alevlenir, erken bırakışlar ve TAM bırakışlar yukarı iter; ilk alevlenmede kısa açıklama.
 - 2026-11-11 · v0.41 · İkinci yolculuk: 77+ bölge kartları ve Çıra'nın yolu metinleri; bölüm listesinde yolculuk adı.

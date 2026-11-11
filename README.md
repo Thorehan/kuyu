@@ -1,6 +1,6 @@
 # Kuyu
 
-**Funday Morning Games** · 2D mobil oyun · prototip v0.49
+**Funday Morning Games** · 2D mobil oyun · prototip v0.50
 
 Derin bir kuyunun dibindesin. Telefonu tek elle tut: ekranın soluna ya da sağına dokun, kanca o taraftaki hedefe fırlasın; basılı tut, ipe sarıl; bırak, savrul. Halkadan halkaya, ahşaptan ahşaba tırmanıp kuyudan çık.
 
@@ -91,19 +91,29 @@ En iyi koşunun soluk bir kopyası seninle aynı zamanlamayla tırmanır: bölü
 
 Kayıt `js/hayalet.js`: kahramanın yeri sim zamanına göre saniyede 15 kez alınır, farklarla yazılır (~60 bayt/sn) ve ana kayıttan ayrı `kuyu.hayalet` anahtarında durur. Test: `node tools/hayalet-test.js`.
 
+## Güçlendirmeler (v0.50, İstişare 2)
+Sonsuz ve Günlük Kuyu'da (Günlük'te herkes için aynı yerde); yolun üstünde, bir halkadan sıradakine giden kanca hattında süzülen küreler (~her 22 halkada bir, sırayla kalkan → fener → kanat; 2 km'de ~9 tane). Az ve öngörülebilir; tanıtım kartı ilk alışta çıkar.
+- **Kalkan** (mavi): bir sonraki düşüşü affeder. Suya değince en yüksek güvenli halkaya sıçrarsın (devam hakkı gibi, ama ücretsiz ve kendiliğinden). Bir tane taşınır. İstişaredeki "su kapağı" ayrı bir güç olmadı, kalkanla birleşti (ikisi de aynı hatayı affediyordu).
+- **Fener** (sarı): 8 sn boyunca 150 birim içindeki ateşböceklerini çeker. Zincir ve fırlatma yolu ateşböcekleri hariç: onlar beceri ister.
+- **Kanat** (beyaz): 3 sn kancasız, sabit hızla yukarı süzülürsün; kuyunun ortasına doğru kayarsın, sonunda yukarı hızla serbest kalırsın. Uçarken dokunuşlar yok sayılır.
+- Etkin güçler oyun alanının sol üst köşesinde simge ve kalan süre halkasıyla görünür. Çıra'nın çevresinde kalkan baloncuğu ya da fener parıltısı olur.
+- Fırlatma yolu güçlendirmenin yanına, kanadın üstündeki 9 halkaya konmaz (kanat yolu atlatırdı); 1500 m'de fırlatma yolu ~18 → ~14.
+- Uçuş ve çekme hızı değişmez; kanat ayrı bir itiştir. Kod: `engine.js` → `gucAl`, `kalkanKullan`; `gen.js` → `sonsuzGuc`; `game.js` → `drawGucler`, `drawGucEtki`, `drawGucHud`.
+
 ## Devam hakkı (v0.49, İstişare 2)
 Yalnız Sonsuz Kuyu'da (Günlük Kuyu'da yok, herkes için eşit). Su yakalayınca ortada 5 saniyelik bir teklif çıkar: geri sayım halkası, **▶ Video izle** (yalnız ilk devamda, oyuncu seçerse), **ateşböceği ile devam** ve **Geç**. Bir koşuda en çok 3 devam; bedel 25 → 50 → 100 ateşböceği (`ekonomi.js` → `DEVAM_BEDEL`, `devamOde`). Bakiye yetmezse düğmede kaç eksik olduğu yazar. Süre dolarsa ya da menü düğmesine basılırsa "Geç" sayılır, koşu kaydedilir. Devam edince Çıra en yüksek güvenli halkaya (yay ve geçit değil) asılı döner, su güvenli mesafeye çekilir, akış sıfırlanır (`engine.js` → `dirilt`). Sonuç kartında devam sayısı görünür. Web sürümünde video 3 sn'lik yer tutucu; Unity'de ödüllü reklam bağlanacak.
 
 ## Takip eden su (v0.48, İstişare 2)
 Sonsuz Kuyu'da yanmak zamandan değil yanlış karardan gelir. Su artık zamanla yükselmez:
-- Tutunduğun en yüksek noktanın **15 m** altında bekler; tırmandıkça bu mesafe 1500 m'de **8 m**'ye daralır (`suTakip` → `bas`, `son`, `daralma`). Yalnız düşersen yakalar.
-- **4 sn** (1500 m'de 2 sn) yükselmezsen (asılı bekleme ya da bir yerde dönüp durma) su yavaşça sürünür; ekranda "su yükseliyor" çıkar.
+- Tutunduğun en yüksek noktanın **30 m** altında bekler; tırmandıkça bu mesafe 1500 m'de **18 m**'ye daralır (`suTakip` → `bas`, `son`, `daralma`). Yalnız düşersen yakalar.
+- Tutunma noktası halkanın asılma yeridir (sarkacın tepesi sayılmaz). Su hedefine uzaklığıyla orantılı hızla yetişir; hızlı tırmanışta geride kalmaz (v0.50 düzeltmesi: önceden 200–300 m geride kalıyor, düşüş 15 sn sürüyordu).
+- **4 sn** (1500 m'de 2 sn) yükselmezsen (asılı bekleme ya da bir yerde dönüp durma) su sürünür (7,5 m/sn; asılı bekleyen ~7 sn'de yakalanır); ekranda "su yükseliyor" çıkar.
 - El kayması yok (asılı kalınca ani düşüş olmaz); kurtarma kancası yok (düşüş gerçek).
 - Asılıyken yanlış tarafa (× gösteren yana) basmak ipi bırakır; bırakılan halka hemen yeniden yakalanabilir. Boş atıştan sonra kanca 0,4 sn kilitli (sürekli yanlış basan düşüşleri biriktirir).
 - Su ekranın altındaysa alt kenarda yakınlığa göre güçlenen mavi parıltı görünür.
 - Bölümlerde su eskisi gibi (zamanla yükselir), kurtarma kancası ve boş atışta ip kalır (öğretici).
 
-Ölçüm (`node tools/hata.js`, 6 dk): hatasız temkinli ve akış oyuncusu hiç yanmaz (temkinli ~4,6 km, akış ~15 km); %10 hata yapan temkinli oyuncu 6'da 4 koşuda ~2,5 dk'da yanar; akış oyuncusu havadaki hataları toparlar. Sıralı sol-sağ spam ~5,8 km'de yanar (düşünen 16 km), rastgele basan ~50 sn'de. Günlük kazanç aynı (~96). Eski `tools/tempo.js` zamanlı su içindir.
+Ölçüm (`node tools/hata.js`, 6 dk, v0.50): hatasız temkinli ve akış oyuncusu hiç yanmaz (temkinli ~4,8 km, akış ~15 km); %5 hata çoğunlukla affedilir (2/6 ve 3/6 yanar); %10 hata ~2 dk'da, %20 hata ~45 sn'de yakar. Sıralı sol-sağ spam ~1 dk'da ~1,4 km'de yanar (önce 6 dk'da 7,5 km), rastgele basan ~30 sn'de; düşünen 10 dk'da ~16 km. Günlük kazanç aynı (~96). Eski `tools/tempo.js` zamanlı su içindir.
 
 ## Görsellik ve yeni oynanış (v0.47)
 - **Çıra artık bir kor:** içi parlak, kenarı isli kabuk; ışıyan çatlaklar, nabız gibi atan sıcak noktalar, tepede titreyen alev ucu, çevresinde hale ve ara ara yükselen kıvılcımlar. Dolap'taki gövde rengi korun tonunu verir. Oyun, menü, Dolap ve bölge finalleri aynı çizimi kullanır (`game.js` → `korCiz`).

@@ -113,6 +113,13 @@ function play(def, style, route) {
 }
 
 let allOk = true;
+// Kanat (güçlendirme, v0.50) Çıra'yı birkaç halka yukarı taşır: bitene kadar bekle, sonra yolun hâlâ üstte kalan ilk halkasından sürdür
+function kanatAtla(s, def, i) {
+  if (!(s.guc && s.guc.kanat > 0)) return i;
+  runFor(s, 4, () => !(s.guc.kanat > 0));
+  while (def.path[i] && G.target(def.path[i]).y > s.p.y - 40) i++;
+  return i;
+}
 function report(def, r, needFF) {
   const ff = E.fireflyCount(r.s);
   const ffOk = ff >= needFF;
@@ -231,22 +238,25 @@ function sonsuzDalDene(seed, kural) {
     const karara = () => {
       const def = G.createEndless(seed, kural), s = E.createSim(def);
       for (let k = 0; k < d.i && s.status === 'play'; k++) {
+        k = kanatAtla(s, def, k); if (k >= d.i) return 'kanat';
         if (!def.path[k]) runFor(s, 0.2);
         const t = G.target(def.path[k]); waitReach(s, t.x, t.y); E.release(s); pressAt(s, t.x, t.y);
         runFor(s, 0.6, () => s.rope || !s.hook); runFor(s, 1.6, () => (s.rope && s.rope.len <= C.MIN_LEN + 0.01 && speed(s.p) < 120) || springApex(s));
       }
       if (s.status !== 'play') return null;
+      if (s.guc && s.guc.kanat > 0) return 'kanat';
       E.release(s); pressAt(s, d.b1[0], d.b1[1]); runFor(s, 0.6, () => s.rope || !s.hook);
       const g1 = s.rings.find(g => g.firlat && g.x === d.b1[0] && g.y === d.b1[1]);
       return s.rope && s.rope.ref === g1 ? s : null;
     };
     let s = karara();
+    if (s === 'kanat') { sonuc.push({ d, kanat: true }); continue; } // kanat fırlatma yolunun üstünden geçirdi: oyunda da kaçırılır, sayılmaz
     if (!s) { sonuc.push({ d, sorun: "B1'e tutunulamadı" }); continue; }
     let g2 = s.rings.find(g => g.dal && g.x === d.b2[0] && g.y === d.b2[1]), asili = false;
     for (let t = 0; t < 240 && s.status === 'play'; t++) { E.step(s); if (s.rope && s.rope.len <= C.MIN_LEN + 0.5 && menzil(s, g2)) { asili = true; break; } }
     let akis = false;
     for (const kala of [50, 30, 70, 100]) {
-      s = karara(); if (!s) break;
+      s = karara(); if (!s || s === 'kanat') break;
       runFor(s, 1.2, () => s.rope && s.rope.len <= C.MIN_LEN + kala); E.release(s);
       g2 = s.rings.find(g => g.dal && g.x === d.b2[0] && g.y === d.b2[1]);
       for (let t = 0; t < 150 && s.status === 'play'; t++) { E.step(s); if (!s.hook && menzil(s, g2)) { E.press(s, g2.x, g2.y); runFor(s, 0.5, () => s.rope || !s.hook); akis = !!(s.rope && s.rope.ref === g2); break; } }
@@ -257,16 +267,17 @@ function sonsuzDalDene(seed, kural) {
   return sonuc;
 }
 if (!only) {
-  let top = 0, akisOk = 0, asiliYok = 0; const sorun = [];
+  let top = 0, akisOk = 0, asiliYok = 0, kanatla = 0; const sorun = [];
   for (const [seed, kural] of [[1], [2], [3], [4], [5, G.KURALLAR[0]], [6, G.KURALLAR[3]]]) {
     for (const r of sonsuzDalDene(seed, kural)) {
+      if (r.kanat) { kanatla++; continue; }
       top++;
       if (r.sorun) { sorun.push(`tohum ${seed} düğüm ${r.d.i}: ${r.sorun}`); continue; }
       if (r.akis) akisOk++; else sorun.push(`tohum ${seed} düğüm ${r.d.i}: akışla B2'ye ulaşılamadı`);
       if (!r.asili) asiliYok++; else sorun.push(`tohum ${seed} düğüm ${r.d.i}: asılıyken B2 menzilde`);
     }
   }
-  console.log(`== Sonsuz fırlatma yolları (1500 m'ye kadar): ${top}; akışla ulaşılan ${akisOk}, asılıyken ulaşılamayan ${asiliYok} ==`);
+  console.log(`== Sonsuz fırlatma yolları (1500 m'ye kadar): ${top}; akışla ulaşılan ${akisOk}, asılıyken ulaşılamayan ${asiliYok}${kanatla ? ', kanatla üstünden geçilen ' + kanatla : ''} ==`);
   sorun.forEach(l => console.log('  ' + l));
   if (akisOk < top || asiliYok < top) allOk = false;
 }
@@ -305,6 +316,7 @@ if (!only) {
       const s = E.createSim(def);
       let i = 0, why = '';
       while (s.status === 'play' && s.t < 240) {
+        i = kanatAtla(s, def, i);
         const n = def.path[i];
         if (!n) { runFor(s, 0.1); continue; }
         const t = G.target(n);
@@ -312,12 +324,15 @@ if (!only) {
         if (style !== 'akis') E.release(s);
         pressAt(s, t.x, t.y);
         runFor(s, 0.6, () => s.rope || !s.hook);
+        if (s.guc && s.guc.kanat > 0) continue; // kanat ipi aldı: kanatAtla sürdürür
         if (!s.rope && s.status === 'play') { E.release(s); runFor(s, 0.35); pressAt(s, t.x, t.y); runFor(s, 0.6, () => s.rope || !s.hook); }
         if (!s.rope) { why = `tutunamadı #${i}`; break; }
         if (+process.env.IZ_TOHUM === seed && process.env.IZ_TARZ === style) console.log(`  #${i} t=${s.t.toFixed(2)} hedef (${t.x.toFixed(0)},${t.y.toFixed(0)}) ip (${s.rope.x.toFixed(0)},${s.rope.y.toFixed(0)})${s.rope.ref && s.rope.ref.sw ? ' SARKAÇ' : ''} oyuncu (${s.p.x.toFixed(0)},${s.p.y.toFixed(0)}) su ${s.water != null ? (s.water - s.p.y).toFixed(0) : '-'}`);
         if (style === 'akis') runFor(s, 1.2, () => s.rope && s.rope.len <= 70);
         else runFor(s, 1.6, () => (s.rope && s.rope.len <= C.MIN_LEN + 0.01 && speed(s.p) < 120) || springApex(s));
         i++;
+        // tutunulan halkaya göre sırayı yeniden bul (kanattan sonra yol dışı bir halka tutulabilir)
+        if (s.rope) for (let k = Math.max(0, i - 4); k < i + 8 && def.path[k]; k++) { const u = G.target(def.path[k]); if (Math.abs(u.x - s.rope.x) < 3 && Math.abs(u.y - s.rope.y) < 3) { i = k + 1; break; } }
         if (E.meters(s) > 1500) break;
       }
       if (s.status === 'dead') why = 'öldü: ' + s.events.filter(e => e.type === 'dead').map(e => e.why).join();

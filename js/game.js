@@ -482,8 +482,8 @@
     var akis = cip('akis' + (combo >= 2 ? ' aktif' : ''), IK.akis, 'x' + combo, 'akış x' + combo);
     if (mode === 'endless') {
       var sc = E.score(sim), key = 'e' + sc + '|' + m + '|' + combo + '|' + mult;
-      if (key === lastHud && !force) return; lastHud = key;
       $('puan').innerHTML = sc + '<small>puan</small>';
+      if (key === lastHud && !force) return; lastHud = key;
       $('cipler').innerHTML = cip('', IK.metre, m + ' m', m + ' metre') + akis +
         cip('hiz' + (mult > 1 ? ' aktif' : ''), IK.hiz, 'x' + mult.toFixed(2).replace('.', ','), 'çarpan x' + mult.toFixed(2) + ' (hız ve ustalık)');
     } else {
@@ -515,6 +515,15 @@
     for (var i = 0; i < ev.length; i++) {
       var e = ev[i];
       if (e.type === 'fire') SFX.fire();
+      else if (e.type === 'guc') {
+        var GG = GUC[e.tur];
+        tone(660, 0.1, 'triangle', 0.06); setTimeout(function () { tone(990, 0.18, 'triangle', 0.06); }, 70);
+        burst(e.x, e.y, 18, 'rgb(' + GG.renk + ')', 200, 0.5, -30); buzz([10, 30, 10]);
+        floatText(e.x, e.y - 28, GG.ad.toUpperCase() + '!', 'rgb(' + GG.renk + ')', 17);
+      }
+      else if (e.type === 'gucBitti') tone(440, 0.15, 'sine', 0.04, 330);
+      else if (e.type === 'kalkan') { tone(523, 0.15, 'triangle', 0.06, 1047); burst(e.x, e.y, 22, 'rgb(127,214,255)', 220, 0.6, -40); floatText(e.x, e.y - 34, 'kalkan kurtardı!', 'rgb(127,214,255)', 15); buzz([20, 40, 20]); }
+      else if (e.type === 'cekildi') burst(e.x, e.y, 4, COL.atesbocegi, 80, 0.25, 0);
       else if (e.type === 'zincirAdim') { tone(e.bozuk ? 440 : 523 + e.n * 110, 0.09, 'sine', 0.05); burst(e.x, e.y, 6, e.bozuk ? '#8fa09c' : '#ffd36a', 120, 0.35, -20); floatText(e.x + 14, e.y - 16, e.n + '/' + CFG.ZINCIR_N, e.bozuk ? '#8fa09c' : '#ffd36a', 12); }
       else if (e.type === 'zincir') {
         tone(659, 0.12, 'triangle', 0.06); setTimeout(function () { tone(880, 0.12, 'triangle', 0.06); }, 80); setTimeout(function () { tone(1175, 0.2, 'triangle', 0.06); }, 160);
@@ -992,6 +1001,91 @@
     ctx.globalAlpha = 1;
   }
 
+
+  // ---------- Güçlendirmeler (İstişare 2): yoldaki küreler, Çıra'nın çevresindeki etki, simgeler ----------
+  var GUC = {
+    kalkan: { ad: 'Kalkan', renk: '127,214,255' },
+    fener: { ad: 'Fener', renk: '255,211,106' },
+    kanat: { ad: 'Kanat', renk: '200,240,255' }
+  };
+  function gucSimge(c, tur, x, y, s) {
+    c.save(); c.translate(x, y); c.scale(s, s);
+    c.lineWidth = 1.6; c.lineJoin = 'round'; c.lineCap = 'round';
+    if (tur === 'kalkan') {
+      c.fillStyle = 'rgba(127,214,255,.35)'; c.strokeStyle = '#bfeaff';
+      c.beginPath(); c.moveTo(0, -6); c.lineTo(5, -4); c.lineTo(4.5, 1.5); c.quadraticCurveTo(3, 5, 0, 6.5); c.quadraticCurveTo(-3, 5, -4.5, 1.5); c.lineTo(-5, -4); c.closePath(); c.fill(); c.stroke();
+    } else if (tur === 'fener') {
+      c.fillStyle = '#2b2118'; c.fillRect(-4, -5, 8, 10); c.fillStyle = '#ffd36a'; c.fillRect(-2.5, -3, 5, 6);
+      c.fillStyle = '#2b2118'; c.fillRect(-5, -6.5, 10, 2); c.fillRect(-5, 4.5, 10, 2);
+    } else {
+      c.fillStyle = 'rgba(220,245,255,.9)';
+      c.beginPath(); c.moveTo(-1, 3); c.quadraticCurveTo(-7, 1, -7, -5); c.quadraticCurveTo(-4, -2, -1, -2); c.closePath(); c.fill();
+      c.beginPath(); c.moveTo(1, 3); c.quadraticCurveTo(7, 1, 7, -5); c.quadraticCurveTo(4, -2, 1, -2); c.closePath(); c.fill();
+    }
+    c.restore();
+  }
+  function drawGucler(t) {
+    if (!sim.gucler || !sim.gucler.length) return;
+    var vh = viewH / K;
+    for (var i = 0; i < sim.gucler.length; i++) {
+      var g = sim.gucler[i];
+      if (g.got || g.y < cam - 30 || g.y > cam + vh + 30) continue;
+      var y = g.y + Math.sin(t / 420 + g.x) * 3, R = GUC[g.tur].renk, a = 0.75 + 0.25 * Math.sin(t / 240 + g.y);
+      var gr = ctx.createRadialGradient(g.x, y, 0, g.x, y, 24);
+      gr.addColorStop(0, 'rgba(' + R + ',' + (0.45 * a) + ')'); gr.addColorStop(1, 'rgba(' + R + ',0)');
+      ctx.fillStyle = gr; ctx.fillRect(g.x - 24, y - 24, 48, 48);
+      ctx.fillStyle = 'rgba(14,20,22,.85)'; ctx.beginPath(); ctx.arc(g.x, y, 11, 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle = 'rgba(' + R + ',' + (0.9 * a) + ')'; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(g.x, y, 11, 0, Math.PI * 2); ctx.stroke();
+      gucSimge(ctx, g.tur, g.x, y, 1);
+    }
+  }
+  // Etkin güçlendirmeler: oyun alanının sol üst köşesinde simge + kalan süre halkası (kalkan: dolu halka, taşınır)
+  function drawGucHud() {
+    var gu = sim.guc; if (!gu || (!gu.kalkan && !(gu.fener > 0) && !(gu.kanat > 0))) return;
+    var liste = [];
+    if (gu.kanat > 0) liste.push(['kanat', gu.kanat / CFG.GUC_KANAT]);
+    if (gu.fener > 0) liste.push(['fener', gu.fener / CFG.GUC_FENER]);
+    if (gu.kalkan) liste.push(['kalkan', 1]);
+    ctx.save(); ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+    for (var i = 0; i < liste.length; i++) {
+      var x = 22 + i * 34, y = 22, R = GUC[liste[i][0]].renk;
+      ctx.fillStyle = 'rgba(14,20,22,.78)'; ctx.beginPath(); ctx.arc(x, y, 14, 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle = 'rgba(' + R + ',.25)'; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(x, y, 14, 0, Math.PI * 2); ctx.stroke();
+      ctx.strokeStyle = 'rgb(' + R + ')'; ctx.beginPath(); ctx.arc(x, y, 14, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * liste[i][1]); ctx.stroke();
+      gucSimge(ctx, liste[i][0], x, y, 1.15);
+    }
+    ctx.restore();
+  }
+  // Çıra'nın çevresinde etkin güçlendirmenin görüntüsü (gövdenin arkasında çizilir)
+  function drawGucEtki(p, t) {
+    var gu = sim.guc; if (!gu) return;
+    if (gu.fener > 0) {
+      var fa = Math.min(1, gu.fener / 1.5) * (0.12 + 0.05 * Math.sin(t / 200));
+      ctx.strokeStyle = 'rgba(255,211,106,' + fa.toFixed(3) + ')'; ctx.lineWidth = 2; ctx.setLineDash([4, 8]);
+      ctx.beginPath(); ctx.arc(p.x, p.y, CFG.GUC_FENER_R, 0, Math.PI * 2); ctx.stroke(); ctx.setLineDash([]);
+      var fg = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, 60);
+      fg.addColorStop(0, 'rgba(255,211,106,0.18)'); fg.addColorStop(1, 'rgba(255,211,106,0)');
+      ctx.fillStyle = fg; ctx.fillRect(p.x - 60, p.y - 60, 120, 120);
+    }
+    if (gu.kanat > 0) {
+      var ac = Math.sin(t / 70) * 0.5;
+      ctx.fillStyle = 'rgba(220,245,255,.85)';
+      for (var sgn = -1; sgn <= 1; sgn += 2) {
+        ctx.save(); ctx.translate(p.x + sgn * CFG.R * 0.8, p.y - 2); ctx.rotate(sgn * (0.4 + ac)); ctx.scale(sgn, 1);
+        ctx.beginPath(); ctx.moveTo(0, 0); ctx.quadraticCurveTo(14, -2, 20, -14); ctx.quadraticCurveTo(10, -8, 2, -6); ctx.closePath(); ctx.fill();
+        ctx.restore();
+      }
+    }
+    if (gu.kalkan) {
+      var ka = 0.35 + 0.1 * Math.sin(t / 300);
+      ctx.strokeStyle = 'rgba(127,214,255,' + ka.toFixed(2) + ')'; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.arc(p.x, p.y, CFG.R + 8, 0, Math.PI * 2); ctx.stroke();
+      var kg = ctx.createRadialGradient(p.x, p.y, CFG.R, p.x, p.y, CFG.R + 10);
+      kg.addColorStop(0, 'rgba(127,214,255,0)'); kg.addColorStop(1, 'rgba(127,214,255,' + (ka * 0.4).toFixed(2) + ')');
+      ctx.fillStyle = kg; ctx.beginPath(); ctx.arc(p.x, p.y, CFG.R + 10, 0, Math.PI * 2); ctx.fill();
+    }
+  }
+
   // ---------- Çıra: kor görünümü (oyun, menü, Dolap aynı çizimi kullanır) ----------
   // Gövde rengi (Dolap) korun tonunu verir: içi açık ve sıcak, kenarı koyu; kül çatlakları, nabız gibi atan
   // sıcak noktalar, tepede küçük bir alev ucu ve titreyen bir hale. c: tuval, (x, y) merkez, r yarıçap, t saniye.
@@ -1053,6 +1147,7 @@
     var sp = Math.sqrt(vx * vx + vy * vy);
     trail.unshift({ x: p.x, y: p.y }); if (trail.length > (sim.alev ? 10 : 7)) trail.pop();
     var hot = sim.combo >= 2, alev = sim.alev || 0;
+    drawGucEtki(p, t);
     if (alev) drawAlev(p, t, alev);
     if (trail.length > 2) {
       ctx.strokeStyle = alev ? ALEV_RENK[alev - 1] : hot ? COL.atesbocegi : trailCol(t); ctx.lineCap = 'round'; ctx.lineJoin = 'round';
@@ -1207,6 +1302,7 @@
     sim.fireflies.forEach(function (f) { if (f.y > cam - 20 && f.y < cam + vh + 20) drawFirefly(f, t); });
     sim.boxes.forEach(drawBox);
     drawHayalet(t);
+    drawGucler(t);
     drawAimMarkers(t);
     drawRope();
     if (sim.status !== 'dead') { drawHero(t); drawGrip(); }
@@ -1214,6 +1310,7 @@
     drawWater(t);
     drawFloaters(dt);
     drawTouchHint(dt);
+    drawGucHud();
     if (finalT !== null) drawFinal();
   }
 
@@ -1659,6 +1756,12 @@
       i: '<svg viewBox="0 0 64 64"><circle cx="32" cy="18" r="7" fill="#f26a3a"/><path d="M4 40c6-5 10-5 14 0s10 5 14 0 10-5 14 0 10 5 14 0V60H4z" fill="#1c6a72"/><path d="M4 40c6-5 10-5 14 0s10 5 14 0 10-5 14 0 10 5 14 0" fill="none" stroke="#5fc3c9" stroke-width="3"/><path d="M32 34v-6" stroke="#5fc3c9" stroke-width="3" stroke-linecap="round"/><path d="M28 31l4-4 4 4" fill="none" stroke="#5fc3c9" stroke-width="3" stroke-linecap="round"/></svg>' },
     akis: { t: 'Akış!', m: 'İpi halkaya varmak üzereyken bırakıp havadayken sıradakine tutundun. Zincir uzadıkça Akış madalyası ve puan gelir. Çok erken bırakmak, uzun asılı kalmak ve boş atış zinciri bitirir.',
       i: '<svg viewBox="0 0 64 64"><path d="M6 40C14 22 22 22 30 40S46 58 58 30" fill="none" stroke="#e8f27c" stroke-width="5" stroke-linecap="round"/><text x="40" y="22" fill="#e8f27c" font-family="Baloo 2, sans-serif" font-weight="800" font-size="16">x2</text></svg>' },
+    guc_kalkan: { t: 'Kalkan', m: 'Mavi kalkanı topla: bir sonraki düşüşünü affeder. Suya değince son güvenli halkaya sıçrarsın. Bir tane taşınır.',
+      i: '<svg viewBox="0 0 64 64"><circle cx="32" cy="32" r="22" fill="rgba(127,214,255,.15)" stroke="#7fd6ff" stroke-width="3"/><path d="M32 16l12 4-1 13c-2 7-6 11-11 13-5-2-9-6-11-13l-1-13z" fill="rgba(127,214,255,.4)" stroke="#bfeaff" stroke-width="2.5" stroke-linejoin="round"/></svg>' },
+    guc_fener: { t: 'Fener', m: '8 saniye boyunca çevrendeki ateşböcekleri sana gelir. Zincir ve fırlatma yolunun ateşböcekleri hariç: onlar beceri ister.',
+      i: '<svg viewBox="0 0 64 64"><circle cx="32" cy="32" r="24" fill="none" stroke="#ffd36a" stroke-width="2" stroke-dasharray="4 6"/><rect x="25" y="22" width="14" height="20" fill="#2b2118"/><rect x="28" y="26" width="8" height="12" fill="#ffd36a"/><rect x="23" y="19" width="18" height="4" fill="#2b2118"/><rect x="23" y="41" width="18" height="4" fill="#2b2118"/></svg>' },
+    guc_kanat: { t: 'Kanat', m: '3 saniye boyunca kendiliğinden yükselirsin; kanca atılmaz. Kanat bitince yukarı fırlarken sıradaki halkaya dokun.',
+      i: '<svg viewBox="0 0 64 64"><circle cx="32" cy="36" r="9" fill="#f26a3a"/><path d="M24 34c-10-2-14-10-14-18 5 5 10 7 15 8z" fill="#dcf5ff"/><path d="M40 34c10-2 14-10 14-18-5 5-10 7-15 8z" fill="#dcf5ff"/><path d="M32 20v-10M26 14l6-6 6 6" stroke="#c8f0ff" stroke-width="3" fill="none" stroke-linecap="round"/></svg>' },
     zincir: { t: 'Ateşböceği zinciri', m: 'Altın ateşböcekleri sıralıdır: 1, 2, 3. Hepsini akış kopmadan (ipi halkaya varmak üzereyken bırakıp havadayken tutunarak) alırsan +' + CFG.ZINCIR_BONUS + ' ateşböceği kazanırsın; akış koparsa zincir söner.',
       i: '<svg viewBox="0 0 64 64"><path d="M12 48L32 32L52 16" stroke="#ffd36a" stroke-width="2" stroke-dasharray="2 5" fill="none"/><circle cx="12" cy="48" r="6" fill="none" stroke="#ffd36a" stroke-width="2.5"/><circle cx="32" cy="32" r="6" fill="none" stroke="#ffd36a" stroke-width="2.5"/><circle cx="52" cy="16" r="6" fill="none" stroke="#ffd36a" stroke-width="2.5"/><circle cx="12" cy="48" r="2.5" fill="#fff3c4"/><circle cx="32" cy="32" r="2.5" fill="#fff3c4"/><circle cx="52" cy="16" r="2.5" fill="#fff3c4"/></svg>' },
     firlat: { t: 'Fırlatma yolu', m: 'Turuncu oklu halka yukarıdaki bir ateşböceğine çıkar: tutun, ip halkaya varmak üzereyken bırak ve fırla; ateşböceği halkası ancak uçarken menzile girer ve yalnız akışla (sönük değilken) alınır. Asılı kalırsan ulaşamazsın, ana yoldan devam edersin.',
@@ -1696,6 +1799,7 @@
     if (!save.seen.gecit && sim.rings.some(function (r) { return r.gecit && inView(r.y); })) wantIntro('gecit');
     if (!save.seen.sarkac && sim.rings.some(function (r) { return r.sw && inView(r.y); })) wantIntro('sarkac');
     if (!save.seen.firlat && sim.rings.some(function (r) { return r.firlat && inView(r.y); })) wantIntro('firlat');
+    if (sim.gucler) ['kalkan', 'fener', 'kanat'].forEach(function (tr) { if (!save.seen['guc_' + tr] && sim.gucler.some(function (g) { return g.tur === tr && !g.got && inView(g.y); })) wantIntro('guc_' + tr); });
     if (!save.seen.zincir && sim.fireflies.some(function (f) { return f.zincir != null && !f.got && inView(f.y); })) wantIntro('zincir');
     if (!save.seen.ahsap && sim.rects.some(function (r) { return r.type === 'w' && inView(r.y + r.h / 2); })) wantIntro('ahsap');
     if (!save.seen.kutu && sim.boxes.length && sim.boxes.some(function (b) { return inView(b.y); })) wantIntro('kutu');

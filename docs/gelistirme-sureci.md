@@ -45,7 +45,8 @@ Kalan işler geliştirme sırasına göre. Bekleyenler senden bir karar ya da te
 12. [x] Görsellik ve oynanış (v0.47): kor karakter, panel/popup kor teması, hayalet ve rekor koşullu ve sade, ateşböceği zinciri (Sonsuz), TAM kova (bölümler).
 14. [x] Takip eden su (v0.48, İstişare 2 adım 1): su en yüksek tutunma noktasının 15 → 8 m altında bekler, yalnız düşüş yakalatır; ilerlemezsen sürünür; Sonsuz'da el kayması ve kurtarma kancası yok, yanlış taraf ipi bırakır (yeniden yakalanabilir), boş atış kilidi 0,4 sn. Ölçüm `tools/hata.js`.
 16. [x] Devam hakkı (v0.49): 5 sn teklif, video yalnız 1., ateşböceği 25/50/100, en çok 3, Günlük'te yok; en yüksek güvenli halkadan diriliş.
-15. [ ] İstişare 2 sırası: güçlendirmeler (fener, kanat, kalkan) → dokun ve başla → görsel akıcılık → 24 uzun bölüm.
+17. [x] Güçlendirmeler (v0.50): kalkan (su kapağıyla birleşti), fener, kanat; Sonsuz ve Günlük, ~her 22 halkada bir sırayla. Botlar kanattan sonra yolu yeniden bulur.
+15. [ ] İstişare 2 sırası: dokun ve başla → görsel akıcılık → 24 uzun bölüm.
 13. [ ] Sırada: döner çark ve kor halka (istişare), Dolap'ta yeni türler (başlık, alev rengi), iki para birimi kararı.
 11. [ ] Telefonda denenecek ayarlar: akış penceresi, boş atış kilidi, nişan beklemesi. Karar bekleyenler: istişare belgesi.
 
@@ -130,6 +131,7 @@ Kullanıcı hikâyeye online'dan önce geçti; online (5) sonra.
 ## Yapılanlar
 - 2026-11-11 · v0.34 · Hikâye: Çıra (önsöz, bölge kartları, Çıra'nın yolu, metinler); oyun ekranı gizliyken döngü çizim yapmaz.
 - 2026-11-11 · v0.35 · Bekçinin notları: 12 not, ateşböceği yolunda; Çıra'nın yolu'nda okunur.
+- 2026-11-12 · v0.50 · Güçlendirmeler: kalkan, fener, kanat (Sonsuz); köşe göstergesi, tanıtım kartları. Su düzeltmesi: su hızlı tırmanışta 200–300 m geride kalıyordu (düşüş 15 sn); artık uzaklıkla orantılı yetişir, mesafe 30 → 18 m, sarkacın tepesi tutunma sayılmaz, sürünme 7,5 m/sn.
 - 2026-11-12 · v0.49 · Devam hakkı: Sonsuz'da yakalanınca 5 sn teklif (video / ateşböceği / geç), artan bedel, en çok 3.
 - 2026-11-12 · v0.48 · Takip eden su: Sonsuz'da yanmak yanlış karardan; geri dönüş noktası `geri-donus-v0.47`.
 - 2026-11-12 · v0.47 · Görsellik ve oynanış: kor karakter, panel teması, sade hayalet + rekor çizgisi, ateşböceği zinciri, TAM kova.

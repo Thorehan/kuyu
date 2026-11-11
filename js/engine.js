@@ -59,6 +59,10 @@
     USTALIK_MAX: 0.5,   // ...en çok bu kadar (hız payıyla birlikte en çok x2,00)
     ZINCIR_N: 3,        // ateşböceği zinciri: sıralı bu kadar ateşböceği...
     ZINCIR_BONUS: 3,    // ...hepsi akış sürerken alınırsa bu kadar ateşböceği (tek tek alınanlar sayılmaz)
+    GUC_FENER: 8,       // güçlendirme (Sonsuz/Günlük, İstişare 2): fener bu kadar saniye ateşböceklerini çeker...
+    GUC_FENER_R: 150,   // ...bu yarıçaptan (zincir ve fırlatma yolu ateşböcekleri hariç: onlar beceri ister)
+    GUC_KANAT: 3,       // kanat: bu kadar saniye otomatik yükseliş...
+    GUC_KANAT_V: 460,   // ...bu hızla (birim/sn); kanca atılmaz, sonunda yukarı hızla serbest kalırsın
     TAM_ITIS: 200,      // tam zamanında bırakış ek yukarı itiş verir (birim/sn)
     TAM_SERI_ITIS: 150, // art arda her 3. tam bırakışta bunun kadar daha
     ALEV_ESIK: [2, 4, 7],        // alevlenme: akış sürerken bu kadar TAM bırakış yapınca Çıra alevlenir (1, 2, 3); akış bitince söner
@@ -114,7 +118,8 @@
       grounded: false,
       // akış ve skor
       hang: 0, air: 0, chain: false, combo: 0, maxCombo: 0, hooks: 0, shots: 0, slips: 0,
-      startY: sy, topY: sy, bonus: 0, fireflyPts: 0, maxSpeed: 0, rescues: 0, misses: 0, boosts: 0, gates: 0, springs: 0, float: 0, portals: 0, swings: 0, ffGot: 0, tam: 0, tamSeri: 0, alev: 0, alevPuan: 0, itisler: 0
+      startY: sy, topY: sy, bonus: 0, fireflyPts: 0, maxSpeed: 0, rescues: 0, misses: 0, boosts: 0, gates: 0, springs: 0, float: 0, portals: 0, swings: 0, ffGot: 0, tam: 0, tamSeri: 0, alev: 0, alevPuan: 0, itisler: 0,
+      gucler: (def.gucler || []).map(function (g) { return { x: g[0], y: g[1], tur: g[2], got: false }; }), guc: { fener: 0, kanat: 0, kalkan: false }, gucSay: 0
     };
     // geçit çiftlerini bağla
     s.rings.forEach(function (g) {
@@ -454,6 +459,7 @@
   // ---------- girdi ----------
   function press(s, tx, ty, opts) {
     if (s.status !== 'play') return;
+    if (s.guc && s.guc.kanat > 0) return; // kanatla uçarken kanca atılmaz
     s.pressed = true;
     // Tutunduğun ya da az önce bıraktığın noktaya yeni atış takılmasın (zincirlerken ipin yolu üstünde kalır).
     var ignore = currentIgnore(s);
@@ -542,6 +548,15 @@
 
     // oyuncu
     integrate(p, dt);
+    // kanat: kancasız, sabit hızla yukarı; yatayda kuyunun ortasına doğru süzül
+    if (s.guc && s.guc.kanat > 0) {
+      s.guc.kanat -= dt;
+      s.rope = null; s.hook = null;
+      p.py = p.y + CFG.GUC_KANAT_V * dt;
+      p.x += (CFG.W / 2 - p.x) * 1.5 * dt; p.px = p.x; // yatay hız yok, ortaya doğru süzül
+      s.ilerlemeT = s.t;
+      if (s.guc.kanat <= 0) { s.guc.kanat = 0; s.events.push({ type: 'gucBitti', tur: 'kanat' }); }
+    }
     // Yay süzülmesi: fırlatmanın tepesinden sonra yavaşça alçalırsın (ipe ya da kancaya kadar)
     if (s.float > 0) {
       if (s.rope || s.hook) s.float = 0;
@@ -614,10 +629,21 @@
     s.gatesOpen = any;
     if (any !== wasOpen) s.events.push({ type: any ? 'gateOpen' : 'gateClose' });
 
+    // güçlendirmeler: yoldan toplanır; fener süresi işler (yakındaki ateşböcekleri çekilir)
+    for (i = 0; i < s.gucler.length; i++) {
+      var gc = s.gucler[i];
+      if (!gc.got && Math.abs(gc.y - p.y) < 40 && dist(p.x, p.y, gc.x, gc.y) < CFG.R + 18) gucAl(s, gc);
+    }
+    if (s.guc && s.guc.fener > 0) {
+      s.guc.fener -= dt;
+      if (s.guc.fener <= 0) { s.guc.fener = 0; s.events.push({ type: 'gucBitti', tur: 'fener' }); }
+    }
     // ateşböcekleri
     for (i = 0; i < s.fireflies.length; i++) {
       var f = s.fireflies[i];
-      if (!f.got && Math.abs(f.y - p.y) < 40 && dist(p.x, p.y, f.x, f.y) < CFG.R + (f.ring ? 20 : 12) && !(f.ring && f.ring.dal && !akista(s))) {
+      var cekR = s.guc && s.guc.fener > 0 && f.zincir == null && !(f.ring && f.ring.dal) ? CFG.GUC_FENER_R : 0;
+      if (!f.got && Math.abs(f.y - p.y) < Math.max(40, cekR) && dist(p.x, p.y, f.x, f.y) < Math.max(CFG.R + (f.ring ? 20 : 12), cekR) && !(f.ring && f.ring.dal && !akista(s))) {
+        if (cekR) s.events.push({ type: 'cekildi', x: f.x, y: f.y });
         f.got = true;
         // zincir ateşböceği tek başına sayılmaz (herkes ip sarılırken geçer): ödül yalnızca zincir akışla tamamlanınca
         if (f.zincir != null) { zincirAl(s, f); continue; }
@@ -658,7 +684,10 @@
         // sonsuz modda su çok geride kalmasın
         if (s.endless && s.water > p.y + 950) s.water = p.y + 950;
       }
-      if (p.y + CFG.R * 0.5 > s.water) return die(s, 'su');
+      if (p.y + CFG.R * 0.5 > s.water) {
+        if (s.guc && s.guc.kalkan && s.sonGuvenli) kalkanKullan(s); // kalkan bir düşüşü affeder
+        else return die(s, 'su');
+      }
     }
     if (!s.endless && p.y > s.H + 220) return die(s, 'düşüş');
   }
@@ -668,8 +697,11 @@
   function suTakip(s, dt) {
     var T = s.def.suTakip, p = s.p, m = meters(s), k = Math.min(1, m / T.daralma);
     var asili = s.rope && s.rope.kind === 'anchor';
-    if (asili && (s.tutTop == null || p.y < s.tutTop - 1)) {
-      s.tutTop = p.y; s.ilerlemeT = s.t;
+    // tutunma yüksekliği: oyuncunun yeri ama halkanın asılma noktasından (ip en kısa) yukarısı değil;
+    // sarkacın tepesi sayılırsa sallanırken dipte su yaklaşır
+    var tutY = asili ? Math.max(p.y, s.rope.y + CFG.MIN_LEN) : null;
+    if (asili && (s.tutTop == null || tutY < s.tutTop - 1)) {
+      s.tutTop = tutY; s.ilerlemeT = s.t;
       // devam hakkında buradan sürer (yay ve geçit halkası değil: tutununca fırlatır/taşır)
       var gr = s.rope.ref;
       if (!(gr && (gr.yay != null || gr.gecit || gr.cikis))) s.sonGuvenli = { x: s.rope.x, y: s.rope.y, ref: s.rope.ref, hedef: s.rope.target };
@@ -680,7 +712,8 @@
     var bekle = T.bekle + (T.bekleSon - T.bekle) * k;
     s.surunuyor = s.t - s.ilerlemeT > bekle; // bir süre yükselmezsen (asılı bekleme ya da döngü) su sürünür
     if (s.surunuyor) hedef = Math.min(hedef, s.water - T.surunme * dt);
-    if (s.water > hedef) s.water = Math.max(hedef, s.water - T.hiz * dt);
+    // hedefe uzaklıkla orantılı yetiş (en az T.hiz): hızlı tırmanışta su geride kalmasın, düşüş hep ~mesafe kadar sürsün
+    if (s.water > hedef) s.water = Math.max(hedef, s.water - Math.max(T.hiz, (s.water - hedef) * 6) * dt);
     s.suMesafe = s.water - p.y;
   }
 
@@ -743,6 +776,23 @@
   function ustalikPay(s) { return Math.min(CFG.USTALIK_MAX, Math.round((s.tam || 0) * CFG.USTALIK_TAM * 100) / 100); }
   function speedMult(s) { return Math.round((hizPay(s) + ustalikPay(s)) * 100) / 100; }
   function speedMs(v) { return v / 20; } // birim/sn → m/sn (20 birim = 1 m)
+  // Güçlendirme al: fener (süre), kanat (süre; ip bırakılır), kalkan (bir düşüşü affeder, bir tane tutulur)
+  function gucAl(s, gc) {
+    gc.got = true; s.gucSay++;
+    if (gc.tur === 'fener') s.guc.fener = CFG.GUC_FENER;
+    else if (gc.tur === 'kanat') { s.guc.kanat = CFG.GUC_KANAT; s.rope = null; s.hook = null; s.combo = Math.max(s.combo, 1); }
+    else if (gc.tur === 'kalkan') s.guc.kalkan = true;
+    s.events.push({ type: 'guc', tur: gc.tur, x: gc.x, y: gc.y });
+  }
+  // Kalkan: suya değince en yüksek güvenli halkaya sıçra (devam hakkı gibi, ama ücretsiz ve kendiliğinden)
+  function kalkanKullan(s) {
+    s.status = 'dead'; // dirilt ölü durumdan çalışır
+    var d = s.devam;
+    if (!dirilt(s)) { s.status = 'play'; return; }
+    s.devam = d; s.guc.kalkan = false;
+    s.events.pop(); // dirilt'in 'devam' olayı yerine kalkan olayı
+    s.events.push({ type: 'kalkan', x: s.p.x, y: s.p.y });
+  }
   // Devam hakkı (Sonsuz, İstişare 2): yakalanınca en yüksek tutunulan halkaya asılı geri dön; su güvenli mesafeye çekilir.
   function dirilt(s) {
     var a = s.sonGuvenli;

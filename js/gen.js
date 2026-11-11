@@ -533,7 +533,7 @@
       // 'bas' metre altında bekler; tırmandıkça mesafe 'daralma' metrede 'son'a iner. Yalnız düşersen yakalar.
       // Bir yerde 'bekle' saniyeden uzun asılı kalırsan su 'surunme' birim/sn ile yukarı sürünür ('bekle' de yükseklikle
       // 'bekleSon'a kısalır). El kayması yok, kurtarma kancası yok (düşüş gerçek). Eski zamanlı su: waterSpeed.
-      suTakip: { bas: 15, son: 8, daralma: 1500, bekle: 4, bekleSon: 2, surunme: 70, hiz: 220 },
+      suTakip: { bas: 30, son: 18, daralma: 1500, bekle: 4, bekleSon: 2, surunme: 150, hiz: 220 },
       // Su önce çok yavaş, tırmandıkça hızlanır: koşu erken bitmez, bekleyen oyuncuyu ancak yüksekte yakalar.
       // Su hızı = taban + metre × perM + (su başladıktan sonraki saniye) × perS, en çok cap (birim/sn).
       // Değerler v0.7 ile aynı (karar 2026-11-09: tempo şimdilik değişmeyecek). Denemek için: node tools/tempo.js taban perM perS cap
@@ -554,6 +554,22 @@
     // Ateşböceği zinciri (Sonsuz): her ZINCIR_ARALIK düğümde bir, art arda üç adımın kanca hattının ortasına sıralı
     // üç ateşböceği. Hat ip sarılırken izlenen yol; akışla zincirlemek hepsini alır. Rastgele sayı kullanmaz.
     var ZINCIR_ARALIK = 13;
+    // Güçlendirmeler (İstişare 2): her GUC_ARALIK düğümde bir, ana yolun kanca hattı üstünde (ip sarılırken geçilir);
+    // sırayla kalkan, fener, kanat. Rastgele sayı kullanmaz.
+    var GUC_ARALIK = 22, GUC_SIRA = ['kalkan', 'fener', 'kanat'];
+    function sonsuzGuc(s) {
+      var nd = st.nodes, c = nd.length - 2;
+      if (c < 10 || c - (st.lastGuc == null ? -99 : st.lastGuc) < GUC_ARALIK) return;
+      if (Math.abs(c - st.lastDal) < 3 || (st.lastZincir != null && c >= st.lastZincir - 1 && c <= st.lastZincir + 3)) return;
+      var a = hangOf(nd[c - 1]), b = target(nd[c]);
+      var p = { x: Math.round(lerp(a.x, b.x, 0.55)), y: Math.round(lerp(a.y, b.y, 0.55)) };
+      if (s.rings.some(function (g) { return Math.hypot(g.x - p.x, g.y - p.y) < 50; })) return;
+      st.gucN = (st.gucN || 0) + 1;
+      var tur = GUC_SIRA[(st.gucN - 1) % GUC_SIRA.length];
+      s.gucler.push({ x: p.x, y: p.y, tur: tur, got: false });
+      (st.gucIdx || (st.gucIdx = [])).push({ c: c, tur: tur });
+      st.lastGuc = c;
+    }
     function sonsuzZincir(s) {
       var nd = st.nodes, c = nd.length - 4;
       if (c < 6 || c - (st.lastZincir == null ? -99 : st.lastZincir) < ZINCIR_ARALIK || Math.abs(c - st.lastDal) < 4) return;
@@ -571,6 +587,8 @@
     function sonsuzDal(s) {
       var nd = st.nodes, dk = nd.length - 5;
       if (dk < 8 || dk - st.lastDal < DAL_ARALIK) return;
+      // güçlendirmenin yanına konmaz; kanat ~7 halka yukarı taşıdığından kanadın üstündeki 9 halkaya da (yol kaçırılırdı)
+      if ((st.gucIdx || []).some(function (g) { return dk >= g.c - 2 && dk <= g.c + (g.tur === 'kanat' ? 9 : 2); })) return;
       if (kural && kural.id === 'gecit') { /* geçit gününde de olur */ }
       var once = halkaOf(s, nd[dk - 1]);
       if (once && (once.yay != null || once.sarkac || once.sw)) return;   // karar noktasına asılı gelinmeli
@@ -671,6 +689,7 @@
         st.frontier = t.y;
         sonsuzDal(s);
         sonsuzZincir(s);
+        if (s.gucler) sonsuzGuc(s);
       }
       // çok aşağıda kalanları temizle
       if (s.water != null && s.t % 1 < 0.01) {

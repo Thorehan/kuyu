@@ -471,3 +471,7 @@ button:active { filter: brightness(.94); }
 .kart.devam-kart button.genis { width: 100%; }
 .kart.devam-kart button[disabled] { opacity: .55; cursor: default; }
 @media (prefers-reduced-motion: reduce) { .devam-sayac circle.dolu { animation: none; } }
+
+/* güçlendirme çipleri (v0.50) */
+.cip.guc-cip { color: #ffd36a; border-color: rgba(255,211,106,.45); font-weight: 700; }
+.cip.guc-cip.kalkan { color: #7fd6ff; border-color: rgba(127,214,255,.45); }

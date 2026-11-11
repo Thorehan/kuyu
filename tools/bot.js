@@ -120,6 +120,25 @@ function report(def, r, needFF) {
   return { ff, ffOk };
 }
 
+// Nişan yardımıyla akış kuran oyuncu (rota bilmez): ezbere akış rotası itişlerle (alev, TAM) kayarsa yedek ölçüt.
+function akisNisanla(def) {
+  let en = 0, won = false;
+  for (const bek of [50, 70, 90]) {
+    const s = E.createSim(def); let box = !(def.boxes && def.boxes.length);
+    while (s.status === 'play' && s.t < 60) {
+      if (!box && s.rope && s.rope.kind === 'anchor') { const b = s.boxes[0]; E.release(s); E.press(s, b.x, b.y); runFor(s, 0.6, () => s.rope || !s.hook); runFor(s, 1.2); E.release(s); runFor(s, 1.0); box = true; continue; }
+      const L = E.aim(s, 0.25), R = E.aim(s, 0.75), ok = a => a.kind !== 'none';
+      const p = (L.rescue || R.rescue) ? (L.rescue ? L : R) : ok(L) && ok(R) ? (L.y <= R.y ? L : R) : ok(L) ? L : ok(R) ? R : null;
+      if (!p) { runFor(s, 0.2); continue; }
+      E.release(s); E.press(s, p.x, p.y, { rescue: !!p.rescue, keep: !!p.miss });
+      runFor(s, 0.8, () => (s.rope && !s.hook) || !s.hook); if (p.miss) { runFor(s, 0.3); continue; }
+      runFor(s, 1.2, () => s.rope && s.rope.len <= bek);
+    }
+    if (s.status === 'won') { won = true; en = Math.max(en, s.maxCombo); }
+  }
+  return { won, max: en };
+}
+
 // 1) El yapımı bölümler
 if (!args.includes('--gen') || only) {
   console.log('== El yapımı bölümler ==');
@@ -131,10 +150,11 @@ if (!args.includes('--gen') || only) {
     const ff = E.fireflyCount(c.s);
     if (!a.ok || !c.ok || ff < ffTotal) allOk = false;
     const b = play(def, 'akis');
-    if (!b.ok) allOk = false;
+    let bYedek = '';
+    if (!b.ok) { const y = akisNisanla(def); if (y.won && y.max >= def.flow) bYedek = ` (nişanla akış: GEÇTİ x${y.max})`; else allOk = false; }
     console.log(`${def.id}. ${def.name.padEnd(15)} rahat: ${a.ok ? 'GEÇTİ' : 'KALDI'} ${a.s.t.toFixed(1)}s atış ${a.s.shots} (es geçince ateşböceği ${E.fireflyCount(a.s)}) | ateşböceği rotası: ${c.ok ? 'GEÇTİ' : 'KALDI'} ${ff}/${ffTotal} ${c.why || a.why || ''}` +
       ` | akış: ${b.ok ? 'GEÇTİ' : 'KALDI'} ${b.s.t.toFixed(1)}s atış ${b.s.shots} en iyi akış x${b.s.maxCombo} ${b.why || ''}` +
-      ` | hedef: par ${def.par} akış x${def.flow}`);
+      `${bYedek} | hedef: par ${def.par} akış x${def.flow}`);
     if (trace || !a.ok) a.log.forEach(l => console.log('   ' + l));
     if (trace || !b.ok) b.log.forEach(l => console.log('   ~ ' + l));
     if (b.ok && b.s.maxCombo < def.flow) { allOk = false; console.log(`   ! akış hedefi x${def.flow} bot ile ulaşılamıyor (x${b.s.maxCombo})`); }

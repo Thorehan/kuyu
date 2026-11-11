@@ -51,9 +51,10 @@
     TAM_PENCERE: 70,    // tam zamanında bırakma: ip halkaya bu kadar kala (≈0,09 sn) bırakılırsa
     TAM_SARIM: 80,      // ...ve o tutunuşta ip en az bu kadar sarıldıysa (yakın halkada kendiliğinden olmasın)
     TAM_PTS: 10,        // sonsuz mod: tam zamanında bırakma puanı (bölüm ödülünü değiştirmez)
+    AKIS_PENCERE: 130,  // akış zamanlama ister: ip halkaya bundan uzaktayken (sarılırken) bırakmak akış sayılmaz
     TAM_ITIS: 200,      // tam zamanında bırakış ek yukarı itiş verir (birim/sn)
     TAM_SERI_ITIS: 150, // art arda her 3. tam bırakışta bunun kadar daha
-    ALEV_ESIK: [5, 10, 15],      // alevlenme: akış bu basamaklara ulaşınca Çıra alevlenir (1, 2, 3)
+    ALEV_ESIK: [2, 4, 7],        // alevlenme: akış sürerken bu kadar TAM bırakış yapınca Çıra alevlenir (1, 2, 3); akış bitince söner
     ALEV_ITIS: [150, 250, 350],  // alevliyken erken bırakış (fırlama) bu kadar ek yukarı itiş verir
     // (kanca uçuşu ve ip sarma hızı aynı kalır; hız halkası gibi yalnızca bırakış anında itiş: karar 2026-11-11)
     COMBO_PTS: 3,       // sonsuz mod: akışlı her tutunma min(akış, COMBO_CAP) × bu kadar puan
@@ -105,7 +106,7 @@
       grounded: false,
       // akış ve skor
       hang: 0, air: 0, chain: false, combo: 0, maxCombo: 0, hooks: 0, shots: 0, slips: 0,
-      startY: sy, topY: sy, bonus: 0, fireflyPts: 0, maxSpeed: 0, rescues: 0, misses: 0, boosts: 0, gates: 0, springs: 0, float: 0, portals: 0, swings: 0, ffGot: 0, tam: 0, tamSeri: 0, alev: 0, itisler: 0
+      startY: sy, topY: sy, bonus: 0, fireflyPts: 0, maxSpeed: 0, rescues: 0, misses: 0, boosts: 0, gates: 0, springs: 0, float: 0, portals: 0, swings: 0, ffGot: 0, tam: 0, tamSeri: 0, alev: 0, alevPuan: 0, itisler: 0
     };
     // geçit çiftlerini bağla
     s.rings.forEach(function (g) {
@@ -212,13 +213,13 @@
   // ---------- akış ----------
   function breakCombo(s, why) {
     if (s.combo >= 2) s.events.push({ type: 'comboBreak', combo: s.combo, why: why });
-    s.combo = 0; s.chain = false;
+    s.combo = 0; s.chain = false; s.alevPuan = 0;
     alevGuncelle(s);
   }
-  // Alevlenme basamağı akıştan gelir; değişince olay yazılır (görüntü ve ses için)
+  // Alevlenme basamağı akış içindeki TAM bırakış sayısından gelir (kör ritim değil zamanlama); değişince olay yazılır
   function alevGuncelle(s) {
     var a = 0, E = CFG.ALEV_ESIK;
-    for (var i = 0; i < E.length; i++) if (s.combo >= E[i]) a = i + 1;
+    for (var i = 0; i < E.length; i++) if (s.alevPuan >= E[i]) a = i + 1;
     if (a !== s.alev) { s.events.push({ type: 'alev', seviye: a, onceki: s.alev }); s.alev = a; }
   }
 
@@ -230,13 +231,18 @@
       // Tam zamanında bırakma: ip halkaya varmadan hemen önce bırakılırsa küçük ödül (yalnızca geri bildirim + puan; fizik aynı)
       var tamOldu = false, itis = 0;
       if ((why === 'release' || why === 'repress') && rp.len0 != null && rp.len > CFG.MIN_LEN + 0.5 && rp.len <= CFG.MIN_LEN + CFG.TAM_PENCERE && rp.len0 - rp.len >= CFG.TAM_SARIM) {
-        tamOldu = true; s.tam++; s.tamSeri++; s.bonus += CFG.TAM_PTS;
+        tamOldu = true; s.tam++; s.tamSeri++; s.bonus += CFG.TAM_PTS; s.alevPuan++;
         itis += CFG.TAM_ITIS;
         if (s.tamSeri % 3 === 0) itis += CFG.TAM_SERI_ITIS;
         s.events.push({ type: 'tam', x: s.p.x, y: s.p.y, seri: s.tamSeri });
       } else if (why !== 'repress') s.tamSeri = 0;
       s.lastAnchor = rp; s.lastAnchorT = s.t;
       s.chain = s.hang < CFG.EARLY && why !== 'slip';
+      // Çok erken bırakış: ip daha halkaya varmadan, uzaktayken bırakmak akış sayılmaz (kör ritim akış kuramasın)
+      if (s.chain && (why === 'release' || why === 'repress') && rp.len0 != null && rp.len > CFG.MIN_LEN + CFG.AKIS_PENCERE) {
+        s.chain = false;
+        s.events.push({ type: 'erken', x: s.p.x, y: s.p.y });
+      }
       // Alevliyken erken bırakış (fırlama) ek yukarı itiş verir; asılı kalıp bırakan almaz
       if (s.chain && s.alev > 0) itis += CFG.ALEV_ITIS[s.alev - 1];
       if (itis > 0) {
@@ -259,6 +265,7 @@
   function onAttach(s, x, y, what) {
     s.hooks++;
     if (s.waterFrom == null) { s.waterFrom = s.t; if (s.water != null) s.events.push({ type: 'waterStart' }); }
+    if (!(s.chain && s.combo > 0)) s.alevPuan = 0; // zincir koptuysa alev sayacı da sıfırlanır
     s.combo = s.chain && s.combo > 0 ? s.combo + 1 : 1;
     s.chain = false;
     s.hang = 0;
@@ -386,6 +393,9 @@
     var dx = tx - s.p.x, dy = ty - s.p.y, d = Math.sqrt(dx * dx + dy * dy);
     if (d < 4) { dx = 0; dy = -1; d = 1; }
     var rescue = !!(opts && opts.rescue);
+    // Boş atışın bedeli: kanca geri dönene kadar yeni atış yok, akış biter (yanlış tarafa basmak bedava olmasın)
+    if (s.hook && s.hook.keep) { s.events.push({ type: 'kilit' }); return; }
+    if (keep && !rescue) { s.tamSeri = 0; breakCombo(s, 'boş atış'); }
     s.hook = { x: s.p.x, y: s.p.y, ox: s.p.x, oy: s.p.y, dx: dx / d, dy: dy / d, state: 'fly', ignore: ignore,
       max: rescue ? CFG.RESCUE_MAX : CFG.HOOK_MAX, rescue: rescue, keep: keep };
     s.shots++;

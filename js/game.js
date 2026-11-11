@@ -492,6 +492,8 @@
     for (var i = 0; i < ev.length; i++) {
       var e = ev[i];
       if (e.type === 'fire') SFX.fire();
+      else if (e.type === 'erken') { if (sim.combo >= 2) floatText(e.x, e.y - 24, 'erken!', '#8fa09c', 13); }
+      else if (e.type === 'kilit') tone(180, 0.05, 'square', 0.025);
       else if (e.type === 'missShot') { wantIntro('bos'); tone(300, 0.08, 'triangle', 0.04, 200); floatText(sim.p.x + (aim.x < 0 ? -30 : 30), sim.p.y - 26, 'bu tarafta yok', '#8fa09c', 12); }
       else if (e.type === 'boost') { SFX.combo(8); buzz(15); burst(e.x, e.y + 8, 12, '#6fd3ff', 180, 0.45, 200); floatText(e.x, e.y - 30, 'HIZ!', '#6fd3ff', 18); }
       else if (e.type === 'rescue') { SFX.fire(); buzz(25); floatText(sim.p.x, sim.p.y - 26, 'kurtarma kancası', COL.gok, 14); }
@@ -527,7 +529,7 @@
           // ilk alevlenmede bir kez, oyunu durdurmayan kısa açıklama
           if (!save.seen.alev && window.KuyuScreens && window.KuyuScreens.hikaye) {
             save.seen.alev = 1; persist();
-            window.KuyuScreens.hikaye('Alevlendin!', 'Akış x5: Çıra alev aldı. Akış sürdükçe her erken bırakış seni daha yükseğe fırlatır; x10 ve x15\'te alev büyür. TAM bırakış da iter.', 6000);
+            window.KuyuScreens.hikaye('Alevlendin!', 'Akış sürerken TAM bırakışlar Çıra\'yı alevlendirir (2, 4 ve 7 TAM). Alevliyken her akış bırakışı seni daha yükseğe fırlatır; akış bitince alev söner.', 6000);
           }
         } else if (e.seviye === 0) tone(330, 0.25, 'sine', 0.04, 165); // alev söndü
       }
@@ -883,7 +885,7 @@
   }
 
   // Alevlenme (akış x5 / x10 / x15): Çıra'nın etrafında titreyen alev; basamak büyüdükçe büyür ve sararır
-  var ALEV_RENK = ['#ff9a3c', '#ffb84a', '#ffe08a'], ALEV_AD = ['ALEV!', 'ALEV x2!', 'TAM ALEV!'];
+  var ALEV_RENK = ['#ff9a3c', '#ffb84a', '#ffe08a'], ALEV_AD = ['ALEV!', 'ALEV x2!', 'TAM ALEV!']; // basamaklar: akış içinde 2, 4, 7 TAM
   function drawAlev(p, t, a) {
     var r = CFG.R * (1.7 + 0.45 * a), fl = 0.85 + 0.15 * Math.sin(t / 60);
     var g = ctx.createRadialGradient(p.x, p.y, CFG.R * 0.6, p.x, p.y, r * fl);
@@ -1462,7 +1464,7 @@
       i: '<svg viewBox="0 0 64 64"><rect x="20" y="14" width="24" height="24" rx="2" fill="#a2693a" stroke="#6e4223" stroke-width="2.5"/><path d="M22 16l20 20M42 16L22 36" stroke="#6e4223" stroke-width="2.5"/><rect x="14" y="48" width="36" height="5" rx="2" fill="#d08a45"/><rect x="10" y="53" width="44" height="5" fill="#7a4b22"/></svg>' },
     su: { t: 'Su yükseliyor', m: 'İlk halkaya tutununca su aşağıdan yükselmeye başlar. Asılı beklemek yerine tırmanmaya devam et.',
       i: '<svg viewBox="0 0 64 64"><circle cx="32" cy="18" r="7" fill="#f26a3a"/><path d="M4 40c6-5 10-5 14 0s10 5 14 0 10-5 14 0 10 5 14 0V60H4z" fill="#1c6a72"/><path d="M4 40c6-5 10-5 14 0s10 5 14 0 10-5 14 0 10 5 14 0" fill="none" stroke="#5fc3c9" stroke-width="3"/><path d="M32 34v-6" stroke="#5fc3c9" stroke-width="3" stroke-linecap="round"/><path d="M28 31l4-4 4 4" fill="none" stroke="#5fc3c9" stroke-width="3" stroke-linecap="round"/></svg>' },
-    akis: { t: 'Akış!', m: 'İpi tam sarılmadan bırakıp havadayken sıradakine tutundun. Zincir uzadıkça Akış madalyası ve puan gelir; uzun asılı kalmak zinciri bitirir.',
+    akis: { t: 'Akış!', m: 'İpi halkaya varmak üzereyken bırakıp havadayken sıradakine tutundun. Zincir uzadıkça Akış madalyası ve puan gelir. Çok erken bırakmak, uzun asılı kalmak ve boş atış zinciri bitirir.',
       i: '<svg viewBox="0 0 64 64"><path d="M6 40C14 22 22 22 30 40S46 58 58 30" fill="none" stroke="#e8f27c" stroke-width="5" stroke-linecap="round"/><text x="40" y="22" fill="#e8f27c" font-family="Baloo 2, sans-serif" font-weight="800" font-size="16">x2</text></svg>' },
     sarkac: { t: 'Sarkaç halka', m: 'Zincirde sağa sola sallanır. Hangi taraftaysa o tarafa dokun; işaret onu gösterir. Uzaksa biraz bekle. Tutununca seni de sallar, doğru anda bırakırsan savrulursun.',
       i: '<svg viewBox="0 0 64 64"><circle cx="32" cy="8" r="4" fill="#3a4743"/><path d="M32 10L44 40" stroke="#c9d1cf" stroke-width="2.5" stroke-dasharray="3 3"/><circle cx="46" cy="46" r="9" fill="none" stroke="#d08a45" stroke-width="4"/><path d="M14 50c4 6 10 8 16 8" fill="none" stroke="#c9d1cf" stroke-width="2" stroke-linecap="round" opacity=".5"/></svg>' },
@@ -1472,7 +1474,7 @@
       i: '<svg viewBox="0 0 64 64"><circle cx="32" cy="38" r="12" fill="none" stroke="#9be37a" stroke-width="4"/><path d="M26 54l12-3-12-3 12-3" fill="none" stroke="#9be37a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M24 18l8-8 8 8" fill="none" stroke="#9be37a" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></svg>' },
     kapi: { t: 'Rüzgâr şeridi', m: 'Akışın sürerken (x2 ve üstü) şeridin içinden yukarı geç: akış bir artar, puan gelir. Akış yoksa şerit söner; geçmek zorunda değilsin.',
       i: '<svg viewBox="0 0 64 64"><path d="M8 40h48" stroke="#e8f27c" stroke-width="4" stroke-linecap="round"/><circle cx="8" cy="40" r="4" fill="#e8f27c"/><circle cx="56" cy="40" r="4" fill="#e8f27c"/><path d="M20 32v-10M32 30v-14M44 32v-10" stroke="#e8f27c" stroke-width="2.5" stroke-linecap="round" opacity=".75"/><circle cx="32" cy="52" r="6" fill="#f26a3a"/></svg>' },
-    bos: { t: 'Bu tarafta hedef yok', m: 'Kanca boşa gitti ama ipin bırakılmadı. Turkuaz (sol) ya da sarı (sağ) işaretin olduğu yana dokun.',
+    bos: { t: 'Bu tarafta hedef yok', m: 'Kanca boşa gitti ama ipin bırakılmadı. Boş atış akışı bitirir ve kanca dönene kadar yeniden atamazsın. Turkuaz (sol) ya da sarı (sağ) işaretin olduğu yana dokun.',
       i: '<svg viewBox="0 0 64 64"><circle cx="20" cy="40" r="11" fill="none" stroke="#2fb3a6" stroke-width="3.5" stroke-dasharray="5 4"/><path d="M44 30l10 10M54 30L44 40" stroke="#f2b23a" stroke-width="4" stroke-linecap="round" opacity=".7"/></svg>' },
     kurtarma: { t: 'Kurtarma kancası', m: 'Menzilde hiç hedef kalmadı. Ekrana dokun: kanca en yakın yukarı halkaya kadar uzanır.',
       i: '<svg viewBox="0 0 64 64"><circle cx="46" cy="12" r="8" fill="none" stroke="#d08a45" stroke-width="3.5"/><path d="M18 54L44 18" stroke="#bfe6ee" stroke-width="3" stroke-dasharray="4 5" stroke-linecap="round"/><circle cx="16" cy="56" r="6" fill="#f26a3a"/></svg>' },

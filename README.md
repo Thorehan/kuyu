@@ -1,6 +1,6 @@
 # Kuyu
 
-**Funday Morning Games** · 2D mobil oyun · prototip v0.42
+**Funday Morning Games** · 2D mobil oyun · prototip v0.43
 
 Derin bir kuyunun dibindesin. Telefonu tek elle tut: ekranın soluna ya da sağına dokun, kanca o taraftaki hedefe fırlasın; basılı tut, ipe sarıl; bırak, savrul. Halkadan halkaya, ahşaptan ahşaba tırmanıp kuyudan çık.
 
@@ -91,8 +91,16 @@ En iyi koşunun soluk bir kopyası seninle aynı zamanlamayla tırmanır: bölü
 
 Kayıt `js/hayalet.js`: kahramanın yeri sim zamanına göre saniyede 15 kez alınır, farklarla yazılır (~60 bayt/sn) ve ana kayıttan ayrı `kuyu.hayalet` anahtarında durur. Test: `node tools/hayalet-test.js`.
 
+## Karar ve zamanlama (v0.43)
+Ölçüm (`node tools/spam.js`): v0.42'de hiç düşünmeden sırayla sol-sağ basmak bölümlerin 74/76'sını geçiyor, Sonsuz'da ~6 km çıkıyor, dokunuşların %98'i alevliydi. Üç neden: yanlış tarafa basmak bedavaydı, iki seçenek çoğu yerde eşitti, akış sabit bir ritimle kendiliğinden oluşuyordu. Düzeltmeler:
+- **Boş atışın bedeli:** yanlış tarafa basmak akışı bitirir (alev söner) ve kanca geri dönene kadar (~0,2 sn) yeni atış yapılamaz. İp yine bırakılmaz.
+- **Akış zamanlama ister:** ip halkaya 130 birimden (`AKIS_PENCERE`) uzaktayken bırakmak akış sayılmaz ("erken!"). Halkaya varmak üzereyken ya da vardıktan hemen sonra bırakmak sayılır.
+- **Alev TAM ile dolar:** akış sayısı değil, akış içindeki TAM bırakışlar alevi yakar.
+
+Sonuç: insan benzeri (ritmi oynayan) spam Sonsuz'da 1,1–7,8 km'den 1,0–2,4 km'ye, en iyi akış x121–943'ten x13–26'ya, alevli dokunuş ~%97'den %6–36'ya indi. Düşünerek oynayan aynı (16 km, 76/76 bölüm); ortalama ve iyi oyuncunun temposu aynı (1:17); her bölümde akış madalyası nişanla alınabiliyor. Seçeneklerin gerçekten farklı olması (yol ayrımları) sıradaki iş.
+
 ## Alevlenme ve TAM itişi (v0.42)
-Bas-bırak'tan daha etkili hızlanma, ustalıkla gelir. Akış x5'te Çıra **alevlenir**, x10'da alev büyür, x15'te tam alev olur. Alevliyken erken bırakış (fırlama) ek yukarı itiş verir: +150 / +250 / +350 birim/sn (`ALEV_ESIK`, `ALEV_ITIS`). Akış bozulunca alev söner. **TAM** bırakış da +200 iter; art arda her 3. TAM'da +150 daha (`TAM_ITIS`, `TAM_SERI_ITIS`). Asılı kalıp bırakan itiş almaz. Kanca uçuşu ve ip sarma hızı (REEL 760) aynı kalır; hız halkası gibi yalnızca bırakış anında itiş.
+Bas-bırak'tan daha etkili hızlanma, ustalıkla gelir. Akış sürerken yapılan **TAM** bırakışlar alev sayacını doldurur: 2 TAM'da Çıra **alevlenir**, 4'te alev büyür, 7'de tam alev olur (v0.43; v0.42'de akış x5/x10/x15 idi). Alevliyken akış bırakışı ek yukarı itiş verir: +150 / +250 / +350 birim/sn (`ALEV_ESIK`, `ALEV_ITIS`). Akış bozulunca alev söner, sayaç sıfırlanır. **TAM** bırakış da +200 iter; art arda her 3. TAM'da +150 daha (`TAM_ITIS`, `TAM_SERI_ITIS`). Asılı kalıp bırakan itiş almaz. Kanca uçuşu ve ip sarma hızı (REEL 760) aynı kalır; hız halkası gibi yalnızca bırakış anında itiş.
 
 Ölçüm (`tools/tempo.js`, `tools/oyuncu.js`): ortalama ve iyi oyuncunun yakalanma süresi aynı (1:17); akışla oynayan bot Sonsuz'da %13 daha yükseğe çıkıyor; bütün bölümler geçiliyor, tek tarafla geçiş yok.
 

@@ -16,8 +16,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&family=Figtree:wght@400;600&display=swap">
-<link rel="stylesheet" href="css/kuyu.css?v=0.53">
-<link rel="stylesheet" href="css/ekranlar.css?v=0.53">
+<link rel="stylesheet" href="css/kuyu.css?v=0.54">
+<link rel="stylesheet" href="css/ekranlar.css?v=0.54">
 </head>
 <body>
 <div class="app" id="oyunEkrani" hidden>
@@ -72,7 +72,7 @@
   <img id="acilisLogo" class="marka-logo" src="assets/funday-morning-logo.webp" alt="Funday Morning Games">
   <div class="yukleme" aria-hidden="true"><div id="yuklemeDolgu"></div></div>
   <div class="yukleme-not" id="yuklemeNot">Yükleniyor…</div>
-  <div class="ek-surum">Kuyu v0.53</div>
+  <div class="ek-surum">Kuyu v0.54</div>
 </section>
 
 <!-- Giriş: yalnızca ilk açılışta -->
@@ -121,6 +121,11 @@
       <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="3.5" width="14" height="17" rx="2.4" fill="none" stroke="currentColor" stroke-width="2"/><path d="M8.5 9l1.6 1.6 3-3M8.5 15.5h7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
       <span class="ag-yazi"><b id="anaGorevBaslik">Görevler 0/3</b><span id="anaGorevAlt">Bugünün görevleri</span></span>
       <span class="ag-cubuk" id="anaGorevCubuk" aria-hidden="true"></span>
+    </button>
+    <button type="button" class="ana-haftalik" id="haftalikBtn" aria-label="Haftalık Kuyu: bu hafta herkes aynı kuyuda yarışır">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4h10v4a5 5 0 0 1-10 0V4zM7 6H4v1a3 3 0 0 0 3 3M17 6h3v1a3 3 0 0 1-3 3M12 13v4M8.5 20h7M10 17h4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span class="ah-yazi"><b>Haftalık Kuyu</b><span id="haftalikBilgi">Herkes aynı kuyuda</span></span>
+      <span class="lig-rozet" id="haftalikLig">Lig yok</span>
     </button>
     <div class="ana-kartlar">
       <button type="button" class="ana-kart hikaye" id="oynaBtn"><b>Hikâye</b><span><span id="oynaNo">1</span>. bölüm · <span id="oynaAd">İlk Halka</span></span><span class="hedefler" id="oynaHedef" aria-label="Bu bölümün hedefleri"></span></button>
@@ -271,7 +276,7 @@
     <button type="button" id="istatBtn">Oyun istatistikleri</button>
     <button type="button" id="tanitimBtn">Tanıtımı yeniden izle</button>
     <button type="button" id="ipucuSifirBtn">Tanıtım kartlarını yeniden göster</button>
-    <p class="surum">Kuyu v0.53 · prototip · Funday Morning Games</p>
+    <p class="surum">Kuyu v0.54 · prototip · Funday Morning Games</p>
   </div>
 </section>
 
@@ -307,16 +312,16 @@
 <div class="hikaye-kart" id="hikayeKart" role="status" hidden><b id="hkBaslik"></b><span id="hkMetin"></span></div>
 <div class="bildirim" id="bildirim" role="status" hidden></div>
 
-<script src="js/engine.js?v=0.53"></script>
-<script src="js/levels.js?v=0.53"></script>
-<script src="js/gen.js?v=0.53"></script>
-<script src="js/gorevler.js?v=0.53"></script>
-<script src="js/ekonomi.js?v=0.53"></script>
-<script src="js/istatistik.js?v=0.53"></script>
-<script src="js/muzik.js?v=0.53"></script>
-<script src="js/notlar.js?v=0.53"></script>
-<script src="js/hayalet.js?v=0.53"></script>
-<script src="js/game.js?v=0.53"></script>
-<script src="js/screens.js?v=0.53"></script>
+<script src="js/engine.js?v=0.54"></script>
+<script src="js/levels.js?v=0.54"></script>
+<script src="js/gen.js?v=0.54"></script>
+<script src="js/gorevler.js?v=0.54"></script>
+<script src="js/ekonomi.js?v=0.54"></script>
+<script src="js/istatistik.js?v=0.54"></script>
+<script src="js/muzik.js?v=0.54"></script>
+<script src="js/notlar.js?v=0.54"></script>
+<script src="js/hayalet.js?v=0.54"></script>
+<script src="js/game.js?v=0.54"></script>
+<script src="js/screens.js?v=0.54"></script>
 </body>
 </html>

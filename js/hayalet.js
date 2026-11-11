@@ -47,15 +47,16 @@
   var KEY = 'kuyu.hayalet';
   function oku() {
     try { var d = JSON.parse(localStorage.getItem(KEY) || 'null'); if (d && d.v === SURUM) return d; } catch (e) {}
-    return { v: SURUM, bolum: {}, sonsuz: null, gunluk: null };
+    return { v: SURUM, bolum: {}, sonsuz: null, gunluk: null, haftalik: null };
   }
   function yaz(d) { try { localStorage.setItem(KEY, JSON.stringify(d)); } catch (e) {} }
-  // yer: { tur: 'bolum', n } | { tur: 'sonsuz' } | { tur: 'gunluk', gun }
+  // yer: { tur: 'bolum', n } | { tur: 'sonsuz' } | { tur: 'gunluk', gun } | { tur: 'haftalik', hafta }
   function al(yerTanim) {
     var d = oku(), r = null;
     if (yerTanim.tur === 'bolum') r = d.bolum[yerTanim.n];
     else if (yerTanim.tur === 'sonsuz') r = d.sonsuz;
     else if (yerTanim.tur === 'gunluk') r = d.gunluk && d.gunluk.gun === yerTanim.gun ? d.gunluk : null;
+    else if (yerTanim.tur === 'haftalik') r = d.haftalik && d.haftalik.hafta === yerTanim.hafta ? d.haftalik : null;
     return r ? coz(r.d) : null;
   }
   function sakla(yerTanim, k, deger) {
@@ -64,6 +65,7 @@
     if (yerTanim.tur === 'bolum') d.bolum[yerTanim.n] = r;
     else if (yerTanim.tur === 'sonsuz') d.sonsuz = r;
     else if (yerTanim.tur === 'gunluk') { r.gun = yerTanim.gun; d.gunluk = r; }
+    else if (yerTanim.tur === 'haftalik') { r.hafta = yerTanim.hafta; d.haftalik = r; }
     yaz(d);
   }
 

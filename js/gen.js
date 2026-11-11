@@ -721,7 +721,23 @@
     return def;
   }
 
-  var api = { ENDLESS_WATER: { base: 38, perM: 0.3, perS: 0, cap: 300 }, createLevel: createLevel, bolumSuyu: bolumSuyu, createEndless: createEndless, KURALLAR: KURALLAR, gunKurali: gunKurali, target: target, hangOf: hangOf, ffAlternative: ffAlternative, rng: rng };
+  // ---------- Haftalık Kuyu (v0.54, rekabet modu) ----------
+  // Bir hafta boyunca herkes aynı kuyuyu oynar (tohum haftadan gelir); skor tablosunun ve lig kademelerinin zemini.
+  // Sonsuz Kuyu'nun yolu ve kuralları; farkları: tohum sabit, devam hakkı yok (herkes eşit) ve su daha erken sıkışır:
+  // mesafe 26 m'den başlar, 800 m'de 18 m'ye iner (Sonsuz'da 30 → 18 m, 1500 m'de). Koşular kısa ve yoğundur
+  // (ölçüm tools/denge.js: %10 hata yapan ~1:20, akışla %5 hata ~2:40). Taban 18 m'nin altına inmez: 16 m ve altında
+  // hatasız oynayan bot da yanıyordu (10 tohumda 1–3), yani yanmak karardan değil şanstan gelirdi.
+  // Sonsuz Kuyu'nun kendi ayarı (kalıcı karar) değişmez.
+  var HAFTALIK_SU = { bas: 26, son: 18, daralma: 800, bekle: 4, bekleSon: 2, surunme: 150, hiz: 220 };
+  function createHaftalik(seed) {
+    var def = createEndless(seed, null);
+    def.id = 'haftalik'; def.name = 'Haftalık Kuyu'; def.haftalik = true;
+    def.suTakip = { bas: HAFTALIK_SU.bas, son: HAFTALIK_SU.son, daralma: HAFTALIK_SU.daralma, bekle: HAFTALIK_SU.bekle, bekleSon: HAFTALIK_SU.bekleSon, surunme: HAFTALIK_SU.surunme, hiz: HAFTALIK_SU.hiz };
+    def.hint = 'Haftalık Kuyu: bu hafta herkes aynı kuyuda. Su Sonsuz Kuyu\'dan erken sıkışır, devam hakkı yok. Haftanın en iyi puanın ligini belirler.';
+    return def;
+  }
+
+  var api = { HAFTALIK_SU: HAFTALIK_SU, createHaftalik: createHaftalik, ENDLESS_WATER: { base: 38, perM: 0.3, perS: 0, cap: 300 }, createLevel: createLevel, bolumSuyu: bolumSuyu, createEndless: createEndless, KURALLAR: KURALLAR, gunKurali: gunKurali, target: target, hangOf: hangOf, ffAlternative: ffAlternative, rng: rng };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.KuyuGen = api;
 })(typeof window !== 'undefined' ? window : this);

@@ -51,6 +51,21 @@ ok(K.isikSiradaki(is).id === 'atki-fener', 'sıradaki ödül');
 ok(K.KATALOG.filter(i => i.isik).every(i => i.fiyat == null && i.isik < K.ISIK.length), 'ışık ödüllerinin fiyatı yok, seviyesi geçerli');
 ok(new Set(K.KATALOG.map(i => i.id)).size === K.KATALOG.length, 'ürün kimlikleri tekil');
 ok(K.gorunum(is).alev === '#ff9a3c' && K.gorunum(is).alev2 === '#ffe08a', 'varsayılan alev');
+// Haftalık Kuyu ligi (v0.54): en iyi puan ligi belirler, ödül hafta bitince bir kez ödenir
+const hf = K.ensure({ best: {} });
+ok(K.ligOf(0) === -1 && K.ligOf(500) === 0 && K.ligOf(5999) === 1 && K.ligOf(1e6) === K.LIG.length - 1, 'lig eşikleri');
+ok(K.LIG.every((l, i) => !i || (l.puan > K.LIG[i - 1].puan && l.odul > K.LIG[i - 1].odul)), 'ligler artan');
+let hk = K.haftalikKaydet(hf, '2026-11-09', 2400, 900);
+ok(hk.rekor && hk.lig === 1 && hk.ligAtladi && hf.cuzdan.ates === 0, 'ilk koşu: Gümüş, ödül hemen ödenmez');
+hk = K.haftalikKaydet(hf, '2026-11-09', 1200, 500);
+ok(!hk.rekor && !hk.ligAtladi && K.haftalikDurum(hf, '2026-11-09').best === 2400 && K.haftalikDurum(hf, '2026-11-09').tries === 2, 'kötü koşu en iyiyi düşürmez');
+ok(K.haftalikKapat(hf, '2026-11-09') === null, 'hafta sürerken ödeme yok');
+const od = K.haftalikKapat(hf, '2026-11-16');
+ok(od && od.ligAd === 'Gümüş' && od.odul === 30 && hf.cuzdan.ates === 30, 'yeni haftada geçen haftanın ödülü');
+ok(K.haftalikKapat(hf, '2026-11-16') === null && hf.cuzdan.ates === 30, 'ödül bir kez');
+ok(K.haftalikDurum(hf, '2026-11-16').best === 0 && K.haftalikDurum(hf, '2026-11-16').lig === -1, 'yeni hafta sıfırdan');
+K.haftalikKaydet(hf, '2026-11-16', 100, 40);
+ok(K.haftalikKapat(hf, '2026-11-23') === null && hf.cuzdan.ates === 30, 'ligsiz hafta ödül vermez');
 // devam hakkı (v0.49): 25 / 50 / 100, en çok 3, yetmezse ödenmez
 const dv = {}; K.ensure(dv); dv.cuzdan.ates = 100;
 ok(K.devamBedel(0) === 25 && K.devamBedel(1) === 50 && K.devamBedel(2) === 100 && K.devamBedel(3) == null, 'devam bedelleri');

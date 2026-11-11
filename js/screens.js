@@ -8,7 +8,7 @@
   var EKRANLAR = ['ekAcilis', 'ekGiris', 'ekTanitim', 'ekAna', 'ekBolumler', 'ekAyarlar', 'ekProfil', 'ekGorevler', 'ekDolap', 'ekIstat'];
   var current = 'ekAcilis';
   var q = new URLSearchParams(location.search);
-  var deepLink = q.get('mod') === 'gunluk' ? { mode: 'daily' } : q.get('mod') === 'sonsuz' ? { mode: 'endless' } : q.get('bolum') ? { mode: 'level', n: parseInt(q.get('bolum'), 10) || 1 } : null;
+  var deepLink = q.get('mod') === 'gunluk' ? { mode: 'daily' } : q.get('mod') === 'haftalik' ? { mode: 'weekly' } : q.get('mod') === 'sonsuz' ? { mode: 'endless' } : q.get('bolum') ? { mode: 'level', n: parseInt(q.get('bolum'), 10) || 1 } : null;
   var save = function () { return G.save(); };
 
   var SEKMELER = ['ekAna', 'ekBolumler', 'ekGorevler', 'ekDolap', 'ekProfil', 'ekAyarlar', 'ekIstat'];
@@ -71,7 +71,7 @@
   function openDeepLink() {
     var d = deepLink; deepLink = null;
     try { history.replaceState(null, '', location.pathname); } catch (e) {}
-    if (d.mode === 'daily') G.startDaily(); else if (d.mode === 'endless') G.startEndless(); else G.startLevel(d.n);
+    if (d.mode === 'daily') G.startDaily(); else if (d.mode === 'weekly') G.startWeekly(); else if (d.mode === 'endless') G.startEndless(); else G.startLevel(d.n);
   }
 
   // ---------- giriş ----------
@@ -153,6 +153,13 @@
     renderAnaGorev();
     var di = G.dailyInfo();
     $('gunlukBilgi').textContent = di.tries ? di.kural.ad + ' · en iyi ' + di.best : 'Bugün: ' + di.kural.ad;
+    // Haftalık Kuyu: geçen haftanın lig ödülü (varsa) ve bu haftanın durumu
+    var gecen = G.haftalikKapat();
+    if (gecen) { $('toplamAtes').textContent = G.cuzdan().ates; setTimeout(function () { toast('Geçen hafta ' + gecen.ligAd + ' ligindeydin · +' + gecen.odul + ' ateşböceği', 3600); }, 1600); }
+    var hf = G.haftalikInfo();
+    $('haftalikBilgi').textContent = hf.tries ? 'En iyi ' + hf.best + ' puan' + (hf.sonraki ? ' · ' + hf.sonraki.ad + ' için ' + (hf.sonraki.puan - hf.best) + ' daha' : '') : 'Herkes aynı kuyuda · ' + hf.kalan + ' kaldı';
+    $('haftalikLig').textContent = hf.ligAd || 'Lig yok';
+    $('haftalikLig').className = 'lig-rozet lig' + hf.lig;
     isikGuncelle();
     var ik = G.isik ? G.isik() : null;
     if (ik && ik.seviye > ik.gorulen) { G.isikGordu(ik.seviye); setTimeout(function () { toast('Kuyu biraz daha aydınlandı · Işık ' + ik.seviye + '/' + ik.en + (ik.odul ? ' · Dolap\'ta yeni: ' + ik.odul.ad + ' ' + window.KuyuEkonomi.TURLER[ik.odul.tur].toLocaleLowerCase('tr-TR') : ''), ik.odul ? 3600 : 2400); }, 700); }
@@ -194,6 +201,7 @@
   function ilkKez() { var b = (save().best || {})[1]; return !(b && b.done); }
   $('dokunBtn').addEventListener('click', function () { if (ilkKez()) G.startLevel(1); else G.startEndless(); });
   $('gunlukBtn').addEventListener('click', function () { G.startDaily(); });
+  $('haftalikBtn').addEventListener('click', function () { G.startWeekly(); });
   $('profilBtn').addEventListener('click', function () { openProfile(); });
 
   // ---------- profil kartı ----------

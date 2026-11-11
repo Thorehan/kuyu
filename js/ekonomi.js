@@ -138,6 +138,42 @@
     return n;
   }
 
+  // ---------- Haftalık Kuyu ligi (v0.54) ----------
+  // Lig, haftanın en iyi puanına göre belirlenir (sahte rakip yok; online skor tablosu gelince aynı puan gönderilir).
+  // Eşikler tools/denge.js ölçümünden: %20 hata yapan ~1000, %10 hata ~1600, akışla %10 hata ~11000, akışla %5 ~52000.
+  // Ödül hafta bitince, bir sonraki açılışta ödenir (kayıt: save.haftalik = { key, best, meters, tries }).
+  var LIG = [
+    { ad: 'Bronz', puan: 500, odul: 15 }, { ad: 'Gümüş', puan: 2000, odul: 30 }, { ad: 'Altın', puan: 6000, odul: 50 },
+    { ad: 'Elmas', puan: 20000, odul: 80 }, { ad: 'Fener', puan: 50000, odul: 120 }
+  ];
+  function ligOf(puan) { var k = -1; for (var i = 0; i < LIG.length; i++) if (puan >= LIG[i].puan) k = i; return k; }
+  function ligOdul(puan) { var k = ligOf(puan); return k < 0 ? 0 : LIG[k].odul; }
+  function haftalikDurum(save, key) {
+    var h = save.haftalik && save.haftalik.key === key ? save.haftalik : { key: key, best: 0, meters: 0, tries: 0 };
+    var k = ligOf(h.best);
+    return { key: key, best: h.best, meters: h.meters, tries: h.tries, lig: k, ligAd: k < 0 ? null : LIG[k].ad,
+      sonraki: k + 1 < LIG.length ? LIG[k + 1] : null, odul: k < 0 ? 0 : LIG[k].odul };
+  }
+  // Koşu bitti: haftanın en iyisini güncelle. Döner: { rekor, lig, ligAtladi }
+  function haftalikKaydet(save, key, puan, metre) {
+    ensure(save);
+    haftalikKapat(save, key); // önceki haftadan kalan varsa önce onu öde
+    var h = save.haftalik && save.haftalik.key === key ? save.haftalik : { key: key, best: 0, meters: 0, tries: 0 };
+    var once = ligOf(h.best), rekor = puan > h.best;
+    h.tries++; h.best = Math.max(h.best, puan); h.meters = Math.max(h.meters, metre || 0);
+    save.haftalik = h;
+    return { rekor: rekor, lig: ligOf(h.best), ligAtladi: ligOf(h.best) > once };
+  }
+  // Yeni hafta başladıysa geçen haftanın lig ödülünü öde ve kaydı kapat. Ödenecek bir şey yoksa null.
+  function haftalikKapat(save, key) {
+    ensure(save);
+    var h = save.haftalik;
+    if (!h || h.key === key) return null;
+    var k = ligOf(h.best), sonuc = k < 0 ? null : { lig: k, ligAd: LIG[k].ad, puan: h.best, odul: kazan(save, LIG[k].odul) };
+    save.haftalik = null;
+    return sonuc;
+  }
+
   // ---------- dolap ----------
   function sahip(save, id) { ensure(save); return save.dolap.sahip.indexOf(id) >= 0; }
   // Devam hakkı (Sonsuz): bir koşuda en çok 3; bedel artar. Video yalnız ilk devamda (oyuncu seçerse).
@@ -178,6 +214,7 @@
 
   var api = { GIRIS: GIRIS, GOREV_ATES: GOREV_ATES, BASARIM_ATES: BASARIM_ATES, KATALOG: KATALOG, TURLER: TURLER, VARSAYILAN: VARSAYILAN,
     ensure: ensure, kazan: kazan, bolumOde: bolumOde, girisDurum: girisDurum, girisAl: girisAl,
+    LIG: LIG, ligOf: ligOf, ligOdul: ligOdul, haftalikDurum: haftalikDurum, haftalikKaydet: haftalikKaydet, haftalikKapat: haftalikKapat,
     ISIK: ISIK, isikSeviye: isikSeviye, isikOdul: isikOdul, isikSiradaki: isikSiradaki,
     item: item, sahip: sahip, satinAl: satinAl, kusan: kusan, gorunum: gorunum, DEVAM_BEDEL: DEVAM_BEDEL, devamBedel: devamBedel, devamOde: devamOde };
   if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.KuyuEkonomi = api;

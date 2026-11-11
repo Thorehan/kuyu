@@ -1,6 +1,6 @@
 # Kuyu
 
-**Funday Morning Games** · 2D mobil oyun · prototip v0.53
+**Funday Morning Games** · 2D mobil oyun · prototip v0.54
 
 Derin bir kuyunun dibindesin. Telefonu tek elle tut: ekranın soluna ya da sağına dokun, kanca o taraftaki hedefe fırlasın; basılı tut, ipe sarıl; bırak, savrul. Halkadan halkaya, ahşaptan ahşaba tırmanıp kuyudan çık.
 
@@ -343,6 +343,14 @@ Ana menüde "Merhaba, {ad}" düğmesi açar: en yüksek hız; en yüksek ve geç
 - **Puan** = tırmanılan metre + akış bonusu + ateşböcekleri (25'er).
 - Akışlı her tutunma `min(akış, 12) × 3` puan verir. Asılıp bekleyerek de çıkılabilir, ama su bir noktadan sonra bekleyen oyuncuyu yakalar. Az tutunup zincir kuran oyuncu hem daha uzun yaşar hem çok daha fazla puan toplar.
 - Doğrudan bağlantı: `?mod=sonsuz`
+
+### Haftalık Kuyu ve lig (v0.54)
+Rekabet modu. Pazartesiden pazara (İstanbul saati) herkes **aynı kuyuyu** oynar; ana menüdeki mor şeritten ya da `?mod=haftalik` bağlantısıyla açılır.
+- **Kurallar:** Sonsuz Kuyu'nun yolu ve kuralları; farkları: tohum sabit, **devam hakkı yok** (herkes eşit) ve su daha erken sıkışır (26 m'den başlar, 800 m'de 18 m; Sonsuz'da 30 → 18 m, 1500 m'de). Koşular kısa ve yoğun: %10 hata yapan ~1:20, akışla %5 hata ~2:40 (`node tools/denge.js 10 haftalik`).
+- **Neden 18 m'nin altına inmedi:** 16 m ve altında hatasız oynayan bot da yanıyordu (10 tohumda 1–3). Yanmak karardan değil şanstan gelirdi; kural gereği vazgeçildi.
+- **Lig:** Haftanın en iyi puanı ligi belirler: Bronz 500, Gümüş 2000, Altın 6000, Elmas 20000, Fener 50000. Sahte rakip yok; lig kendi puanına göredir. Online skor tablosu gelince aynı puan gönderilir.
+- **Ödül:** Hafta bitince, bir sonraki açılışta ödenir: 15 / 30 / 50 / 80 / 120 ateşböceği (geri dönme nedeni). Mantık `js/ekonomi.js` → `LIG`, `haftalikKaydet`, `haftalikKapat`.
+- Sonuç kartı: haftanın en iyisi, lig, bir üst lige kalan puan, yeni kuyuya kalan süre. Kendi hayaletin haftalık kuyuda da seninle tırmanır.
 
 ### Günlük Kuyu (v0.15)
 **Günün kuralı (v0.39):** her gün herkes için aynı tek değişiklik; altı kural gün sırasıyla döner, art arda iki gün aynı gelmez: Yay günü (yay halkaları bol), Rüzgâr günü (şeritler daha sık), Ateşböceği gecesi (karar noktalarında ateşböceği daha sık), Sarkaç günü (sarkaçlar bol), Geçit günü (geçit çiftleri sık), Hız günü (hız halkaları sık). Kural yalnızca halkaların türünü değiştirir: üretici aynı rastgele sayıları aynı sırayla çeker, yerler, su ve zorluk aynı kalır (`gen.js` → `KURALLAR`, `gunKurali`). Menüdeki Günlük kartında ve koşu başında kısa bir kartla gösterilir. `tools/bot.js` her kuralı 4 tohumla dener; tempo: `KURAL=sarkac node tools/tempo.js`.

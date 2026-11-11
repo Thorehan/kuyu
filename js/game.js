@@ -537,7 +537,7 @@
       }
       else if (e.type === 'erken') { if (sim.combo >= 2) floatText(e.x, e.y - 24, 'erken!', '#8fa09c', 13); }
       else if (e.type === 'kilit') tone(180, 0.05, 'square', 0.025);
-      else if (e.type === 'missShot') { wantIntro('bos'); tone(300, 0.08, 'triangle', 0.04, 200); floatText(sim.p.x + (aim.x < 0 ? -30 : 30), sim.p.y - 26, 'bu tarafta yok', '#8fa09c', 12); }
+      else if (e.type === 'missShot') { if (!sim.def.bosBirak) wantIntro('bos'); tone(300, 0.08, 'triangle', 0.04, 200); floatText(sim.p.x + (aim.x < 0 ? -30 : 30), sim.p.y - 26, 'bu tarafta yok', '#8fa09c', 12); }
       else if (e.type === 'boost') { SFX.combo(8); buzz(15); burst(e.x, e.y + 8, 12, '#6fd3ff', 180, 0.45, 200); floatText(e.x, e.y - 30, 'HIZ!', '#6fd3ff', 18); }
       else if (e.type === 'rescue') { SFX.fire(); buzz(25); floatText(sim.p.x, sim.p.y - 26, 'kurtarma kancası', COL.gok, 14); }
       else if (e.type === 'attach') {
@@ -1754,6 +1754,8 @@
       i: '<svg viewBox="0 0 64 64"><rect x="20" y="14" width="24" height="24" rx="2" fill="#a2693a" stroke="#6e4223" stroke-width="2.5"/><path d="M22 16l20 20M42 16L22 36" stroke="#6e4223" stroke-width="2.5"/><rect x="14" y="48" width="36" height="5" rx="2" fill="#d08a45"/><rect x="10" y="53" width="44" height="5" fill="#7a4b22"/></svg>' },
     su: { t: 'Su', m: 'Sonsuz Kuyu\'da su altında bekler; yalnız düşersen yakalar, uzun asılı kalırsan yavaşça yükselir. Bölümlerde su sürekli yükselir: asılı bekleme, tırman.',
       i: '<svg viewBox="0 0 64 64"><circle cx="32" cy="18" r="7" fill="#f26a3a"/><path d="M4 40c6-5 10-5 14 0s10 5 14 0 10-5 14 0 10 5 14 0V60H4z" fill="#1c6a72"/><path d="M4 40c6-5 10-5 14 0s10 5 14 0 10-5 14 0 10 5 14 0" fill="none" stroke="#5fc3c9" stroke-width="3"/><path d="M32 34v-6" stroke="#5fc3c9" stroke-width="3" stroke-linecap="round"/><path d="M28 31l4-4 4 4" fill="none" stroke="#5fc3c9" stroke-width="3" stroke-linecap="round"/></svg>' },
+    bolgeSu: { t: 'Su artık seni izliyor', m: 'Maden\'den sonra kuyu ciddileşir. Su, tutunduğun en yüksek halkanın altında bekler: acele etmene gerek yok, ama düşersen yakalar. Yanlış tarafa basarsan ip bırakılır. Önce işarete bak, sonra dokun.',
+      i: '<svg viewBox="0 0 64 64"><circle cx="32" cy="14" r="7" fill="none" stroke="#d08a45" stroke-width="3.5"/><path d="M32 21v9" stroke="#eadfc4" stroke-width="2.5"/><circle cx="32" cy="34" r="6" fill="#f26a3a"/><path d="M32 42v6M28 45l4 4 4-4" stroke="#5fc3c9" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 54c6-5 10-5 14 0s10 5 14 0 10-5 14 0 10 5 14 0V64H4z" fill="#1c6a72"/><path d="M4 54c6-5 10-5 14 0s10 5 14 0 10-5 14 0 10 5 14 0" fill="none" stroke="#5fc3c9" stroke-width="3"/></svg>' },
     akis: { t: 'Akış!', m: 'İpi halkaya varmak üzereyken bırakıp havadayken sıradakine tutundun. Zincir uzadıkça Akış madalyası ve puan gelir. Çok erken bırakmak, uzun asılı kalmak ve boş atış zinciri bitirir.',
       i: '<svg viewBox="0 0 64 64"><path d="M6 40C14 22 22 22 30 40S46 58 58 30" fill="none" stroke="#e8f27c" stroke-width="5" stroke-linecap="round"/><text x="40" y="22" fill="#e8f27c" font-family="Baloo 2, sans-serif" font-weight="800" font-size="16">x2</text></svg>' },
     guc_kalkan: { t: 'Kalkan', m: 'Mavi kalkanı topla: bir sonraki düşüşünü affeder. Suya değince son güvenli halkaya sıçrarsın. Bir tane taşınır.',
@@ -1805,6 +1807,7 @@
     if (!save.seen.kutu && sim.boxes.length && sim.boxes.some(function (b) { return inView(b.y); })) wantIntro('kutu');
     if (!save.seen.kurtarma && !sim.rope && !sim.hook && E.aim(sim, 0.25).rescue) wantIntro('kurtarma');
     if (!save.seen.kayma && mode === 'endless' && isFinite(sim.grip) && sim.hang > 0.3) wantIntro('kayma');
+    if (!save.seen.bolgeSu && mode === 'level' && sim.def.suTakip) wantIntro('bolgeSu');
     if (ogeSiniri()) introWant = introWant.filter(function (k) { return OGE_KARTLARI.indexOf(k) < 0; });
     var key = introWant.shift();
     if (key && !save.seen[key]) { if (OGE_KARTLARI.indexOf(key) >= 0) introOgeSayisi++; openIntro(key); }

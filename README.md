@@ -1,6 +1,6 @@
 # Kuyu
 
-**Funday Morning Games** · 2D mobil oyun · prototip v0.51
+**Funday Morning Games** · 2D mobil oyun · prototip v0.52
 
 Derin bir kuyunun dibindesin. Telefonu tek elle tut: ekranın soluna ya da sağına dokun, kanca o taraftaki hedefe fırlasın; basılı tut, ipe sarıl; bırak, savrul. Halkadan halkaya, ahşaptan ahşaba tırmanıp kuyudan çık.
 
@@ -104,6 +104,24 @@ Sonsuz ve Günlük Kuyu'da (Günlük'te herkes için aynı yerde); yolun üstün
 
 ## Devam hakkı (v0.49, İstişare 2)
 Yalnız Sonsuz Kuyu'da (Günlük Kuyu'da yok, herkes için eşit). Su yakalayınca ortada 5 saniyelik bir teklif çıkar: geri sayım halkası, **▶ Video izle** (yalnız ilk devamda, oyuncu seçerse), **ateşböceği ile devam** ve **Geç**. Bir koşuda en çok 3 devam; bedel 25 → 50 → 100 ateşböceği (`ekonomi.js` → `DEVAM_BEDEL`, `devamOde`). Bakiye yetmezse düğmede kaç eksik olduğu yazar. Süre dolarsa ya da menü düğmesine basılırsa "Geç" sayılır, koşu kaydedilir. Devam edince Çıra en yüksek güvenli halkaya (yay ve geçit değil) asılı döner, su güvenli mesafeye çekilir, akış sıfırlanır (`engine.js` → `dirilt`). Sonuç kartında devam sayısı görünür. Web sürümünde video 3 sn'lik yer tutucu; Unity'de ödüllü reklam bağlanacak.
+
+## Bölge suyu: Hikâye'de zorluk eğrisi (v0.52)
+Ölçüm (`node tools/denge.js`): v0.51'de her bölüm, dört dokunuştan birinde hata yapan oyuncuyla bile ilk denemede geçiliyordu ve sıralı sol-sağ basan 74/76 bölümü geçiyordu. Bölümlerde zorluk eğrisi yoktu.
+
+Artık Hikâye, Sonsuz Kuyu'nun kurallarını bölge bölge öğretir (`js/gen.js` → `bolumSuyu`):
+
+| Bölge | Bölümler | Kural | %10 hata yapan oyuncu ilk denemede |
+|---|---|---|---|
+| Taş Kuyu | 1–16 | Eskisi gibi: bağışlayıcı, yanlış taraf ipi bırakmaz | %100 |
+| Maden | 17–36 | Su 26 m altında izler, yanlış taraf ipi bırakır | %93–100 |
+| Kristal Mağara | 37–56 | 22 m | %88–92 |
+| Eski Kule | 57–76 | 18 m | %73–80 |
+| İkinci yolculuk | 77+ | 15 m, sonra dört bölgede bir 1 m (en az 12 m) | – |
+
+- Yanmak yine zamandan değil yanlış karardan gelir: su yalnız düşüşü yakalar, asılı bekleyene sürünmez.
+- Hatasız oynayan her bölümü geçer (bot 74/74); sıralı sol-sağ spam 74 → 37/76; tek tarafa basan 0/74.
+- Halkaların yeri ve rastgele sayı sırası aynı: eski kayıtlar, par ve akış hedefleri geçerli. 17+ bölümlerdeki zamanlı "yükselen su" kalktı (yerine izleyen su).
+- 17. bölümde bir kez "Su artık seni izliyor" kartı çıkar.
 
 ## Takip eden su (v0.48, İstişare 2)
 Sonsuz Kuyu'da yanmak zamandan değil yanlış karardan gelir. Su artık zamanla yükselmez:

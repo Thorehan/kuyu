@@ -291,6 +291,21 @@
     return null;
   }
 
+  // ---------- bölge suyu (v0.52) ----------
+  // Ölçüm (tools/denge.js): v0.51'de her bölüm, dört dokunuştan birinde hata yapan oyuncuyla bile ilk denemede
+  // geçiliyordu; sıralı sol-sağ basan 74/76 bölüm geçiyordu. Bölümlerde zorluk eğrisi yoktu.
+  // Artık Hikâye, Sonsuz Kuyu'nun kurallarını bölge bölge öğretir: Taş Kuyu (1–16) eskisi gibi bağışlayıcı;
+  // Maden'den (17) başlayarak su tutunulan en yüksek noktanın altında izler (yalnız düşüş yakalatır, zaman değil)
+  // ve yanlış tarafa basmak ipi bırakır. Mesafe bölgeyle daralır: Maden 26 m, Kristal Mağara 22 m, Eski Kule 18 m,
+  // ikinci yolculuk 15 m, sonra dört bölgede bir 1 m (en az 12 m). Asılı beklemek serbest: su sürünmez.
+  // Yerleşim ve rastgele sayı sırası değişmez; eski bölümlerin halkaları aynı yerde.
+  function bolumSuyu(num) {
+    if (num < 17) return null;
+    var kat = Math.floor((num - 17) / 20);
+    var m = kat < 3 ? 26 - 4 * kat : Math.max(12, 15 - Math.floor((kat - 3) / 4));
+    return { bas: m, son: m, daralma: 1, bekle: 1e9, bekleSon: 1e9, surunme: 0, hiz: 220 };
+  }
+
   // ---------- sonlu bölüm ----------
   function createLevel(num) {
     var r = rng(num * 7919 + 13);
@@ -411,7 +426,8 @@
     var rects = [[WL, H - 40, W - 2 * WL, 40, 's']].concat(out.rects.map(function (rc) {
       return [Math.round(rc.x), Math.round(rc.y + off), rc.w, rc.h, rc.type, rc.dir];
     }));
-    var waterLevel = num % 3 === 2;
+    var takip = bolumSuyu(num);
+    var waterLevel = !takip && num % 3 === 2;
     var route = nodes.map(function (nn) { var t = target(nn); return ['hook', Math.round(t.x), Math.round(t.y + off)]; });
     route.push(['hook', Math.round(goal.x), Math.round(goal.y + off)]);
     // ateşböceklerini alan rota: karar noktalarında ateşböceği halkasına gider
@@ -420,9 +436,11 @@
     var hizRoute = route.map(function (st, k) { var a = hizAt[k] || ffAt[k]; return a ? ['hook', a.x, Math.round(a.y + off)] : st; });
     var def = {
       id: num, name: levelName(num, r), H: H, generated: true,
-      hint: waterLevel ? 'Su yükseliyor. Asılı kalma, fırlayıp tutun.' : 'Az tutunarak çık: ipi erken bırak, havadayken sıradakine at.',
+      hint: takip ? 'Su ' + takip.bas + ' m altında izliyor: düşersen yakalar. Yanlış tarafa basarsan ip bırakılır; işarete bak, sonra dokun.'
+        : waterLevel ? 'Su yükseliyor. Asılı kalma, fırlayıp tutun.' : 'Az tutunarak çık: ipi erken bırak, havadayken sıradakine at.',
       start: [180, Math.round(off - 20)], goal: sh(goal),
       water: waterLevel ? Math.min(90, 45 + num * 0.5) : 0,
+      suTakip: takip, bosBirak: !!takip, bosKilit: takip ? 0.4 : 0,
       rects: rects,
       rings: out.rings.map(function (p) { var a = sh(p); if (p.yay != null) a.push('yay', p.yay); else if (p.sarkac) a.push('sarkac'); return a; }).concat(ffRings.map(function (a) { return [a.x, Math.round(a.y + off), 'ff']; }))
         .concat(hizRings.map(function (a) { return [a.x, Math.round(a.y + off), 'hiz']; }))
@@ -703,7 +721,7 @@
     return def;
   }
 
-  var api = { ENDLESS_WATER: { base: 38, perM: 0.3, perS: 0, cap: 300 }, createLevel: createLevel, createEndless: createEndless, KURALLAR: KURALLAR, gunKurali: gunKurali, target: target, hangOf: hangOf, ffAlternative: ffAlternative, rng: rng };
+  var api = { ENDLESS_WATER: { base: 38, perM: 0.3, perS: 0, cap: 300 }, createLevel: createLevel, bolumSuyu: bolumSuyu, createEndless: createEndless, KURALLAR: KURALLAR, gunKurali: gunKurali, target: target, hangOf: hangOf, ffAlternative: ffAlternative, rng: rng };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.KuyuGen = api;
 })(typeof window !== 'undefined' ? window : this);

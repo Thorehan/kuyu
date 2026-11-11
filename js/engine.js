@@ -111,7 +111,7 @@
       buttons: (def.buttons || []).map(function (b) { return { x: b[0], y: b[1], w: b[2], h: 8, pressed: false }; }),
       fireflies: [],
       gatesOpen: false,
-      water: def.water || def.waterSpeed ? (def.endless ? sy + (def.waterStart || 300) : H + 80) : null,
+      water: def.water || def.waterSpeed || def.suTakip ? (def.endless ? sy + (def.waterStart || 300) : H + 80) : null,
       // El kayması yalnızca Sonsuz Kuyu'da: bölümlerde asılı kalınabilir (akış yine bozulur).
       grip: def.endless ? (def.grip || CFG.GRIP) : Infinity,
       events: [],

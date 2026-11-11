@@ -48,7 +48,8 @@ Kod: `js/engine.js` (deterministik fizik ve kurallar, DT 1/120), `js/gen.js` (b�
   - `node tools/oyuncu.js`
   - `node tools/spam.js`
   - `node tools/hata.js 6`
-  - ekonomi ölçümü: `node tools/ekonomi-olcum.js` (günde ~98 ateşböceği)
+  - ekonomi ölçümü: `node tools/ekonomi-olcum.js` (ortalama oyuncu günde ~115 ateşböceği; v0.53'ten beri hata yapan oyuncularla ölçülür)
+  - zorluk eğrisi: `node tools/denge.js` (bölümlerde geçme oranı bölgeyle düşmeli, hatasız oyuncu geçmeli)
   - birim testleri: `node tools/ekonomi-test.js`, `node tools/gorev-test.js`, `node tools/hayalet-test.js`, `node tools/istatistik-test.js`
 - **Yerelde deneme:** Proje klasöründe `python3 -m http.server 8766` (Windows'ta `python`), sonra http://localhost:8766. Tarayıcıda servis çalışanı önbellekler; değişiklik görünmüyorsa kayıtlı servis çalışanını sil ve sayfayı yenile.
 - **Sürüm:** Her yayında `index.html` içindeki `?v=0.xx` ve "Kuyu v0.xx" etiketleri birlikte artırılır (`kontrol.js` denetler). README'nin başındaki sürüm ve `docs/gelistirme-sureci.md` "Yapılanlar" bölümü güncellenir.

@@ -7,15 +7,17 @@
   'use strict';
 
   // ---------- günlük görevler ----------
-  // Her gün 3 görev: kolay, orta, zor (farklı türlerden). Hedefler botların ölçtüğü oynanışa göre:
-  // ortalama oyuncu Sonsuz Kuyu'da ~450 m, bir hız halkası ~33 m/sn, akış zinciri x1,50 çarpanda ~57 m/sn.
+  // Her gün 3 görev: kolay, orta, zor (farklı türlerden). Hedefler hata yapan oyuncu modellerinin ölçtüğü oynanışa
+  // göre (v0.53, takip eden sudan sonra; tools/ekonomi-olcum.js): yeni oyuncu koşu başına ~550 m ve 4 ateşböceği,
+  // ortalama ~1600 m, 10 ateşböceği ve 11 hız halkası; asılarak oynayan ~41 m/sn, akışla oynayan ~57 m/sn.
+  // Kolay tek koşuda, orta 2–3 koşuda, zor 4–6 koşuda (ya da beceriyle) biter.
   var MISSIONS = {
-    ff:       { ad: function (n) { return n + ' ateşböceği topla'; }, how: 'sum', key: 'ff', t: [5, 10, 18] },
-    hiz:      { ad: function (n) { return n + ' hız halkasından geç'; }, how: 'sum', key: 'boosts', t: [2, 5, 9] },
+    ff:       { ad: function (n) { return n + ' ateşböceği topla'; }, how: 'sum', key: 'ff', t: [8, 20, 40] },
+    hiz:      { ad: function (n) { return n + ' hız halkasından geç'; }, how: 'sum', key: 'boosts', t: [5, 15, 30] },
     akis:     { ad: function (n) { return 'Bir koşuda x' + n + ' akışa ulaş'; }, how: 'max', key: 'maxCombo', t: [6, 10, 16] },
     bolum:    { ad: function (n) { return n + ' bölüm geç'; }, how: 'sum', key: 'won', only: 'level', t: [2, 4, 7] },
     kusursuz: { ad: function (n) { return n === 1 ? 'Bir bölümü Kusursuz geç' : n + ' bölümü Kusursuz geç'; }, how: 'sum', key: 'perfect', only: 'level', t: [1, 2, 4] },
-    metre:    { ad: function (n) { return 'Tek koşuda ' + n + ' m tırman (Sonsuz ya da Günlük)'; }, how: 'max', key: 'meters', only: 'endless', t: [150, 300, 550] },
+    metre:    { ad: function (n) { return 'Tek koşuda ' + n + ' m tırman (Sonsuz ya da Günlük)'; }, how: 'max', key: 'meters', only: 'endless', t: [400, 1000, 2000] },
     gunluk:   { ad: function (n) { return n === 1 ? 'Günlük Kuyu\'yu oyna' : 'Günlük Kuyu\'da ' + n + ' deneme yap'; }, how: 'sum', key: 'one', only: 'daily', t: [1, 2, 3] },
     serit:    { ad: function (n) { return n + ' rüzgâr şeridinden geç'; }, how: 'sum', key: 'gates', t: [2, 5, 9] },
     hizMs:    { ad: function (n) { return 'Bir koşuda ' + n + ' m/sn hıza çık'; }, how: 'max', key: 'speed', t: [25, 40, 52] }
@@ -62,13 +64,13 @@
   // ---------- başarımlar ----------
   // Üç kademe: Bronz, Gümüş, Altın. Değerler kayıttan okunur, ayrıca sayılmaz (eski ilerleme de geçerli).
   var ACH = [
-    { id: 'ates', ad: 'Ateşböceği avcısı', acik: 'Toplam ateşböceği', t: [25, 100, 400], val: function (s) { return s.totals.ff; } },
-    { id: 'ruzgar', ad: 'Rüzgâr', acik: 'Toplam hız halkası', t: [10, 50, 200], val: function (s) { return s.totals.boosts; } },
-    { id: 'akis', ad: 'Akış ustası', acik: 'Bir koşuda en uzun akış', t: [10, 20, 40], val: function (s) { return s.totals.maxCombo; }, fmt: function (n) { return 'x' + n; } },
+    { id: 'ates', ad: 'Ateşböceği avcısı', acik: 'Toplam ateşböceği', t: [50, 500, 2500], val: function (s) { return s.totals.ff; } },
+    { id: 'ruzgar', ad: 'Rüzgâr', acik: 'Toplam hız halkası', t: [25, 200, 1000], val: function (s) { return s.totals.boosts; } },
+    { id: 'akis', ad: 'Akış ustası', acik: 'Bir koşuda en uzun akış', t: [10, 30, 80], val: function (s) { return s.totals.maxCombo; }, fmt: function (n) { return 'x' + n; } },
     { id: 'hizli', ad: 'Işık hızı', acik: 'En yüksek hız', t: [30, 45, 55], val: function (s) { return Math.floor((s.stats && s.stats.maxSpeed) || 0); }, fmt: function (n) { return n + ' m/sn'; } },
     { id: 'kasif', ad: 'Kâşif', acik: 'Geçilen bölüm', t: [10, 30, 100], val: function (s) { return count(s, 'done'); } },
     { id: 'kusursuz', ad: 'Kusursuz', acik: 'Kusursuz geçilen bölüm', t: [5, 20, 60], val: function (s) { return count(s, 'perfect'); } },
-    { id: 'derin', ad: 'Derin kuyu', acik: 'Bir koşuda en yüksek metre', t: [300, 1000, 3000], val: function (s) { return Math.max(s.totals.maxMeters, (s.endless && s.endless.meters) || 0); }, fmt: function (n) { return n + ' m'; } },
+    { id: 'derin', ad: 'Derin kuyu', acik: 'Bir koşuda en yüksek metre', t: [500, 2000, 5000], val: function (s) { return Math.max(s.totals.maxMeters, (s.endless && s.endless.meters) || 0); }, fmt: function (n) { return n + ' m'; } },
     { id: 'sadik', ad: 'Sadık', acik: 'En uzun Günlük Kuyu serisi', t: [3, 7, 30], val: function (s) { return (s.streak && s.streak.max) || 0; }, fmt: function (n) { return n + ' gün'; } },
     { id: 'gorevci', ad: 'Görevci', acik: 'Tamamlanan görev', t: [5, 25, 100], val: function (s) { return s.totals.missions; } }
   ];
@@ -91,7 +93,8 @@
   function achList(save) {
     ensure(save);
     return ACH.map(function (a) {
-      var v = a.val(save), t = tierOf(a, v), f = a.fmt || String;
+      // kazanılmış kademe geri alınmaz (v0.53'te eşikler yükseldi; eski kayıttaki kademe kalır)
+      var v = a.val(save), t = Math.max(tierOf(a, v), Math.min(3, save.ach[a.id] || 0)), f = a.fmt || String;
       return { id: a.id, ad: a.ad, acik: a.acik, val: v, tier: t, next: t < 3 ? a.t[t] : null, prev: t > 0 ? a.t[t - 1] : 0,
         valText: f(v), nextText: t < 3 ? f(a.t[t]) : null, kademe: t ? KADEME[t - 1] : null };
     });

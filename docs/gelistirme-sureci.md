@@ -133,6 +133,7 @@ Kullanıcı hikâyeye online'dan önce geçti; online (5) sonra.
 - [?] Bekçinin adı.
 
 ## Yapılanlar
+- 2026-11-11 · v0.53 · Ekonomi dengesi (Mustafa): ölçüm hata yapan oyuncularla (ortalama gün ~115); Dolap 2080 → 6860 (40 ürün, yeni tür Alev rengi, Hilal ve Elmas kanca); ışık yolu 20 seviye ve 7 ışık ödülü; görev hedefleri ve başarım eşikleri yeni koşu uzunluklarına göre.
 - 2026-11-11 · v0.52 · Bölge suyu (Mustafa): Hikâye'de zorluk eğrisi. Maden'den (17) başlayarak su tutunulan en yüksek noktayı izler (26 → 22 → 18 → 15 m) ve yanlış taraf ipi bırakır; Taş Kuyu aynı. Ölçüm aracı `tools/denge.js`. Spam ile geçilen bölüm 74 → 37/76.
 - 2026-11-11 · v0.34 · Hikâye: Çıra (önsöz, bölge kartları, Çıra'nın yolu, metinler); oyun ekranı gizliyken döngü çizim yapmaz.
 - 2026-11-11 · v0.35 · Bekçinin notları: 12 not, ateşböceği yolunda; Çıra'nın yolu'nda okunur.

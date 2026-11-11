@@ -1,6 +1,6 @@
 # Kuyu
 
-**Funday Morning Games** · 2D mobil oyun · prototip v0.52
+**Funday Morning Games** · 2D mobil oyun · prototip v0.53
 
 Derin bir kuyunun dibindesin. Telefonu tek elle tut: ekranın soluna ya da sağına dokun, kanca o taraftaki hedefe fırlasın; basılı tut, ipe sarıl; bırak, savrul. Halkadan halkaya, ahşaptan ahşaba tırmanıp kuyudan çık.
 
@@ -231,6 +231,25 @@ Ayarlar → **Oyun istatistikleri**. Denge kararları için yerel kayıt; hiçbi
 - Sonsuz ve Günlük Kuyu: koşu sayısı, süre, son 30 koşunun metresi (ortanca ve en iyi), en uzun akış.
 - Ortak: halka kullanımı (hız, rüzgâr şeridi, yay, geçit, sarkaç), boş atış, kurtarma, el kayması, atış, toplam oynama süresi.
 - Sayfa: genel sayılar, en çok zorlanılan 8 bölüm (ölüm + 2×atlama + yarıda bırakma), koşu özetleri, halka kullanımı. **Panoya kopyala** özeti JSON olarak kopyalar (pano izni yoksa metni seçili bir kutuda gösterir). **Sıfırla** iki dokunuşla.
+
+## Ekonomi dengesi (v0.53)
+Ölçüm `node tools/ekonomi-olcum.js` artık **hata yapan** oyuncularla yapılır (yeni %20, ortalama %10 hata; ateşböceği avcısı; akışla oynayan). Eski ölçüm hatasız ve yavaş bir botla Sonsuz Kuyu'yu saatte 121 ateşböceği sayıyordu; gerçekte koşular 1–3 dakikada biter ve kazanç bunun iki katıdır.
+
+| Oyuncu | Sonsuz (saatte) | Bölüm (saatte) | Tipik gün | Dolap biter | Işık 20 |
+|---|---|---|---|---|---|
+| Yeni | 217 | 178 | ~112 | 55 gün | 125 gün |
+| Ortalama | 243 | 172 | ~115 | 53 gün | 122 gün |
+| Ateşböceği avcısı | 359 | 274 | ~151 | 41 gün | 93 gün |
+| Akışla oynayan | 1040 | 383 | ~283 | 22 gün | 50 gün |
+
+Bulunan sorunlar ve yapılanlar:
+- **Dolap 2 haftada bitiyordu** (2080 ateşböceği; akışla oynayan için 5 gün), sonra ateşböceğinin harcanacak yeri kalmıyordu. Dolap 23 → 40 satılık ürüne, 2080 → 6860 ateşböceğine çıktı; üst kademe ürünler 400–700. Ortalama oyuncu için ~8 hafta.
+- **Yeni tür: Alev rengi.** Akışta alevlenince Çıra'nın alevi: Kor (bedava), Mavi 200, Yeşil 280, Mor 360, Ak 600. İz, kıvılcım ve "ALEV!" yazısı da aynı renge döner.
+- **Yeni ürünler:** Kahraman Nar 220, Buz 300, Gölge 450, Ay ışığı 700; Kanca Hilal 160, Elmas 260; Atkı Kar 130, Zümrüt 160; İp Gümüş 130, Mor 160, Gökkuşağı 400; Uçuş izi Ateş 120, Buz 150.
+- **Işık yolu:** "Kuyunun ışığı" 10 → 20 seviye (2000 → 14000 kazanılan ateşböceği). Yedi seviye satın alınamayan bir görünüm açar: Işık 3 Kıvılcım izi, 6 Fener atkı, 9 Fitil ip, 11 Altın alev, 14 Köz kahraman, 17 Samanyolu izi, 20 Güneş kahraman. Harcamak ışığı düşürmez; menü sahnesi ilk 10 seviyeyle aydınlanır.
+- **Görev hedefleri eskimişti** (v0.48 öncesi kısa koşulara göreydi; "tek koşuda 550 m" zor görevdi ama yeni oyuncu bile ilk koşuda geçiyordu). Yeni hedefler: ateşböceği 8/20/40, hız halkası 5/15/30, metre 400/1000/2000. Kolay tek koşuda, orta 2–3 koşuda, zor 4–6 koşuda biter.
+- **Başarım eşikleri:** Ateşböceği avcısı 50/500/2500, Rüzgâr 25/200/1000, Akış ustası x10/x30/x80, Derin kuyu 500/2000/5000 m. Kazanılmış kademe geri alınmaz.
+- Değişmeyenler (kalıcı karar): tek para birimi, devam hakkı 25/50/100, güçlendirme satılmaz, video yalnız oyuncu seçerse.
 
 ## Ekonomi, günlük giriş ve Dolap (v0.22)
 Oyunda güçlendirme yok; harcamalar yalnızca kozmetik. Para birimi **ateşböceği**; ana menünün üstündeki ateşböceği sayısı harcanabilir bakiyedir. Mantık `js/ekonomi.js`, testi `node tools/ekonomi-test.js`, kazanç ölçümü `node tools/ekonomi-olcum.js`.

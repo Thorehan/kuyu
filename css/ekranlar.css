@@ -500,3 +500,6 @@ button:active { filter: brightness(.94); }
 .ana-kart.hikaye .hedefler i.var { background: #ffd36a; box-shadow: none; }
 @media (max-height: 680px) { .dokun-alan { min-height: 90px; } .dokun-yazi b { font-size: 22px; } }
 @media (prefers-reduced-motion: reduce) { .dokun-yazi b { animation: none; opacity: 1; } }
+
+/* Işık yolu ödülü (v0.53): satın alınmaz, ışık seviyesiyle açılır */
+.d-durum.isik-kilit { color: var(--atesbocegi, #e8f27c); opacity: .85; }

@@ -155,7 +155,7 @@
     $('gunlukBilgi').textContent = di.tries ? di.kural.ad + ' · en iyi ' + di.best : 'Bugün: ' + di.kural.ad;
     isikGuncelle();
     var ik = G.isik ? G.isik() : null;
-    if (ik && ik.seviye > ik.gorulen) { G.isikGordu(ik.seviye); setTimeout(function () { toast('Kuyu biraz daha aydınlandı · Işık ' + ik.seviye + '/' + ik.en); }, 700); }
+    if (ik && ik.seviye > ik.gorulen) { G.isikGordu(ik.seviye); setTimeout(function () { toast('Kuyu biraz daha aydınlandı · Işık ' + ik.seviye + '/' + ik.en + (ik.odul ? ' · Dolap\'ta yeni: ' + ik.odul.ad + ' ' + window.KuyuEkonomi.TURLER[ik.odul.tur].toLocaleLowerCase('tr-TR') : ''), ik.odul ? 3600 : 2400); }, 700); }
     $('gunlukSeri').hidden = !di.streak;
     $('gunlukSeri').textContent = di.streak + ' gün seri' + (di.playedToday ? '' : ' · bugün oyna, seri sürsün');
     show('ekAna');
@@ -209,7 +209,8 @@
     $('pHiz').textContent = fmt(st.maxSpeed, 1) + ' m/sn';
     var ik = G.isik();
     $('isikSeviye').textContent = 'Işık ' + ik.seviye + '/' + ik.en;
-    $('isikYazi').textContent = ik.toplam + ' ateşböceği' + (ik.ust ? ' · sonraki ışığa ' + (ik.ust - ik.toplam) : ' · kuyu tümüyle aydınlık');
+    $('isikYazi').textContent = ik.toplam + ' ateşböceği' + (ik.ust ? ' · sonraki ışığa ' + (ik.ust - ik.toplam) : ' · kuyu tümüyle aydınlık') +
+      (ik.siradaki ? ' · Işık ' + ik.siradaki.isik + '\'te ' + ik.siradaki.ad + ' ' + window.KuyuEkonomi.TURLER[ik.siradaki.tur].toLocaleLowerCase('tr-TR') + ' açılır' : '');
     $('isikDolu').style.width = (ik.ust ? Math.round((ik.toplam - ik.alt) / (ik.ust - ik.alt) * 100) : 100) + '%';
     $('hikayeListe').innerHTML = G.hikaye().map(function (hb) {
       return '<div class="hk-sayfa' + (hb.acik ? '' : ' kilitli') + '" style="--isik:' + hb.isik + '"><b>' + hb.ad + '</b>' +
@@ -348,6 +349,7 @@
       c.translate(17, 17); c.scale(2, 2); G.kancaCiz(c, it.renk, '#e6eeec', -Math.PI / 2);
       return '<span class="renk kanca-renk" style="background:url(' + cv.toDataURL() + ') center/cover" aria-hidden="true"></span>';
     }
+    if (it.tur === 'alev') return '<span class="renk" style="background:radial-gradient(circle at 50% 78%, ' + it.renk2 + ' 12%, ' + it.renk + ' 52%, #24302d 78%)" aria-hidden="true"></span>';
     if (it.tur === 'govde') return '<span class="renk" style="background:radial-gradient(circle at 35% 30%, ' + it.renk + ' 55%, ' + it.renk2 + ')" aria-hidden="true"></span>';
     var c = it.renk === 'gokkusagi' ? 'conic-gradient(#ff5d5d, #ffd35d, #7ce36a, #5dd6ff, #9b6bff, #ff5d5d)' : it.renk === 'atki' ? 'linear-gradient(135deg, #2fb3a6 50%, #e2445c 50%)' : it.renk;
     return '<span class="renk" style="background:' + c + '" aria-hidden="true"></span>';
@@ -361,8 +363,9 @@
       if (bak2) durum = '<span class="d-durum onizleme">Önizleme</span>';
       else if (on) durum = '<span class="d-durum kusanili">Kuşanıldı</span>';
       else if (has) durum = '<span class="d-durum">Kuşan</span>';
+      else if (it.isik) durum = '<span class="d-durum isik-kilit">Işık ' + it.isik + '</span>';
       else durum = '<span class="d-durum fiyat' + (bak < it.fiyat ? ' yetmez' : '') + '"><i class="ikon-ates" aria-hidden="true"></i>' + it.fiyat + '</span>';
-      return '<button type="button" class="d-urun' + (bak2 ? ' onizlenen' : on && !onizlemeTur(it.tur) ? ' secili' : '') + '" data-urun="' + it.id + '" aria-label="' + it.ad + (bak2 ? ', önizleniyor' : on ? ', kuşanıldı' : has ? ', kuşan' : ', ' + it.fiyat + ' ateşböceği, önizlemek için dokun') + '">' +
+      return '<button type="button" class="d-urun' + (bak2 ? ' onizlenen' : on && !onizlemeTur(it.tur) ? ' secili' : '') + '" data-urun="' + it.id + '" aria-label="' + it.ad + (bak2 ? ', önizleniyor' : on ? ', kuşanıldı' : has ? ', kuşan' : it.isik ? ', kuyunun ışığı ' + it.isik + '. seviyede açılır' : ', ' + it.fiyat + ' ateşböceği, önizlemek için dokun') + '">' +
         swatch(it) + '<b>' + it.ad + '</b>' + durum + '</button>';
     }).join('');
     renderSatinCubuk(bak);
@@ -373,6 +376,11 @@
     $('satinCubuk').hidden = !it;
     if (!it) return;
     $('scUrun').innerHTML = swatch(it) + '<span><b>' + it.ad + '</b><small>' + window.KuyuEkonomi.TURLER[it.tur] + '</small></span>';
+    if (it.isik) { // ışık yolu ödülü: satın alınmaz
+      $('scAl').disabled = true; $('scAl').textContent = 'Işık ' + it.isik + '\'te açılır';
+      $('scAl').setAttribute('aria-label', it.ad + ', kuyunun ışığı ' + it.isik + '. seviyeye gelince açılır');
+      return;
+    }
     var yeter = bak >= it.fiyat;
     $('scAl').disabled = !yeter;
     $('scAl').innerHTML = yeter ? 'Al · <i class="ikon-ates" aria-hidden="true"></i>' + it.fiyat : (it.fiyat - bak) + ' eksik';
@@ -421,6 +429,8 @@
       c.lineWidth = 3; c.strokeStyle = '#d08a45'; c.beginPath(); c.arc(cx, ringY, 9, 0, 6.29); c.stroke();
       c.strokeStyle = G.renk(L.ip, now); c.lineWidth = 2.5; c.beginPath(); c.moveTo(cx, ringY); c.lineTo(hx, hy - r * 0.2); c.stroke();
       c.save(); c.translate(cx, ringY - 13); c.scale(1.7, 1.7); G.kancaCiz(c, L.kanca, null, -Math.PI / 2); c.restore();
+      // alev sekmesinde (ya da alev önizlenirken) Çıra alevli görünür; basamaklar sırayla döner
+      if (dolapTur === 'alev' || (oz && oz.tur === 'alev')) G.alevCiz(c, hx, hy, r, now, 1 + Math.floor(t / 1.6) % 3, L.alev, L.alev2);
       hero(c, hx, hy, r, { x: Math.sin(t * 0.8) * 0.6, y: -0.5 }, G.renk(L.atki, now));
       previewRaf = requestAnimationFrame(tick);
     })(performance.now());
@@ -604,7 +614,7 @@
   // Kuyunun ışığı (ana menü): seviye arttıkça daha çok ateşböceği, sıcak bir parıltı ve duvarda yanan fenerler.
   // Tanıtım sahnesi her zaman aynı kalır (önsöz).
   var isikSv = 0;
-  function isikGuncelle() { isikSv = G.isik ? G.isik().seviye : 0; }
+  function isikGuncelle() { isikSv = Math.min(10, G.isik ? G.isik().seviye : 0); } // sahne ilk 10 seviyeyle aydınlanır; 11–20 ışık yolu
   var DUVAR_FENER = [[0.07, 0.78], [0.93, 0.66], [0.07, 0.54], [0.93, 0.42], [0.07, 0.3], [0.93, 0.18], [0.07, 0.1], [0.93, 0.88]];
 
   function startScene() {

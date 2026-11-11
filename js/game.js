@@ -46,6 +46,10 @@
       // dik kalp, ucu aşağıda
       c.moveTo(0, 5.5); c.bezierCurveTo(-2, 2, -7, -0.5, -5.5, -3.8); c.bezierCurveTo(-4, -6.5, -1, -6, 0, -3.2);
       c.bezierCurveTo(1, -6, 4, -6.5, 5.5, -3.8); c.bezierCurveTo(7, -0.5, 2, 2, 0, 5.5); c.closePath(); c.fill();
+    } else if (bicim === 'hilal') {
+      c.lineWidth = 2.6; c.arc(-1, 0, 5, 1.05, 5.23); c.stroke();
+    } else if (bicim === 'elmas') {
+      c.moveTo(6.5, 0); c.lineTo(0, -4.2); c.lineTo(-6.5, 0); c.lineTo(0, 4.2); c.closePath(); c.fill();
     } else { // ok (varsayılan)
       c.moveTo(-4, 0); c.lineTo(4, 0); c.moveTo(4, 0); c.lineTo(0, -5); c.moveTo(4, 0); c.lineTo(0, 5); c.stroke();
     }
@@ -560,14 +564,14 @@
       else if (e.type === 'itis') {
         // bırakış itişi (TAM ya da alev): aşağı saçılan kıvılcımlar ve kısa bir hışırtı
         tone(260 + e.guc * 0.4, 0.16, 'triangle', 0.04, 520 + e.guc * 0.8);
-        burst(e.x, e.y + CFG.R, 6 + Math.round(e.guc / 50), e.alev ? ALEV_RENK[e.alev - 1] : '#ffd36a', 160, 0.4, 220);
+        burst(e.x, e.y + CFG.R, 6 + Math.round(e.guc / 50), e.alev ? alevRenk(e.alev) : '#ffd36a', 160, 0.4, 220);
         if (e.guc >= 300) buzz(10);
       }
       else if (e.type === 'alev') {
         if (e.seviye > e.onceki) {
           tone([392, 523, 659][e.seviye - 1], 0.3, 'sawtooth', 0.035, [523, 659, 880][e.seviye - 1]);
-          burst(sim.p.x, sim.p.y, 14 + 4 * e.seviye, ALEV_RENK[e.seviye - 1], 200, 0.5, -60);
-          floatText(sim.p.x, sim.p.y - 34, ALEV_AD[e.seviye - 1], ALEV_RENK[e.seviye - 1], 16 + 2 * e.seviye);
+          burst(sim.p.x, sim.p.y, 14 + 4 * e.seviye, alevRenk(e.seviye), 200, 0.5, -60);
+          floatText(sim.p.x, sim.p.y - 34, ALEV_AD[e.seviye - 1], alevRenk(e.seviye), 16 + 2 * e.seviye);
           buzz([12, 30, 12]);
           // ilk alevlenmede bir kez, oyunu durdurmayan kısa açıklama
           if (!save.seen.alev && window.KuyuScreens && window.KuyuScreens.hikaye) {
@@ -984,21 +988,26 @@
   }
 
   // Alevlenme (akış x5 / x10 / x15): Çıra'nın etrafında titreyen alev; basamak büyüdükçe büyür ve sararır
-  var ALEV_RENK = ['#ff9a3c', '#ffb84a', '#ffe08a'], ALEV_AD = ['ALEV!', 'ALEV x2!', 'TAM ALEV!']; // basamaklar: akış içinde 2, 4, 7 TAM
-  function drawAlev(p, t, a) {
-    var r = CFG.R * (1.7 + 0.45 * a), fl = 0.85 + 0.15 * Math.sin(t / 60);
-    var g = ctx.createRadialGradient(p.x, p.y, CFG.R * 0.6, p.x, p.y, r * fl);
-    g.addColorStop(0, 'rgba(255,170,70,' + (0.35 + 0.12 * a) + ')'); g.addColorStop(1, 'rgba(255,120,40,0)');
-    ctx.fillStyle = g; ctx.fillRect(p.x - r, p.y - r, r * 2, r * 2);
+  var ALEV_AD = ['ALEV!', 'ALEV x2!', 'TAM ALEV!']; // basamaklar: akış içinde 2, 4, 7 TAM
+  // Alev rengi Dolap'tan (v0.53): taban renk 1. basamak, uç renk 3. basamak (TAM ALEV), 2. basamak ikisinin ortası
+  function alevTon(a, r1, r2) { return rgbS(karis(hexRgb(r1) || [255, 154, 60], hexRgb(r2) || [255, 224, 138], (a - 1) / 2)); }
+  function alevRenk(a) { return alevTon(a, look().alev, look().alev2); }
+  function drawAlev(p, t, a) { alevCiz(ctx, p.x, p.y, CFG.R, t, a, look().alev, look().alev2); }
+  function alevCiz(c, x, y, R, t, a, r1, r2) {
+    var taban = hexRgb(r1) || [255, 154, 60], k1 = R / CFG.R;
+    var r = R * (1.7 + 0.45 * a), fl = 0.85 + 0.15 * Math.sin(t / 60);
+    var g = c.createRadialGradient(x, y, R * 0.6, x, y, r * fl);
+    g.addColorStop(0, rgbS(taban, 0.35 + 0.12 * a)); g.addColorStop(1, rgbS(taban, 0));
+    c.fillStyle = g; c.fillRect(x - r, y - r, r * 2, r * 2);
     // yukarı kıvrılan alev dilleri
-    ctx.fillStyle = ALEV_RENK[a - 1];
+    c.fillStyle = alevTon(a, r1, r2);
     for (var k = 0; k < 3 + a; k++) {
-      var ph = t / 90 + k * 2.1, ox = Math.sin(ph) * CFG.R * 0.7, h = CFG.R * (0.9 + 0.35 * a) * (0.7 + 0.3 * Math.sin(ph * 1.7));
-      ctx.globalAlpha = 0.55;
-      ctx.beginPath(); ctx.moveTo(p.x + ox - 4, p.y - CFG.R * 0.5); ctx.quadraticCurveTo(p.x + ox + Math.sin(ph * 2) * 4, p.y - CFG.R * 0.5 - h * 0.6, p.x + ox, p.y - CFG.R * 0.5 - h);
-      ctx.quadraticCurveTo(p.x + ox + 2, p.y - CFG.R * 0.5 - h * 0.4, p.x + ox + 4, p.y - CFG.R * 0.5); ctx.closePath(); ctx.fill();
+      var ph = t / 90 + k * 2.1, ox = Math.sin(ph) * R * 0.7, h = R * (0.9 + 0.35 * a) * (0.7 + 0.3 * Math.sin(ph * 1.7));
+      c.globalAlpha = 0.55;
+      c.beginPath(); c.moveTo(x + ox - 4 * k1, y - R * 0.5); c.quadraticCurveTo(x + ox + Math.sin(ph * 2) * 4 * k1, y - R * 0.5 - h * 0.6, x + ox, y - R * 0.5 - h);
+      c.quadraticCurveTo(x + ox + 2 * k1, y - R * 0.5 - h * 0.4, x + ox + 4 * k1, y - R * 0.5); c.closePath(); c.fill();
     }
-    ctx.globalAlpha = 1;
+    c.globalAlpha = 1;
   }
 
 
@@ -1150,7 +1159,7 @@
     drawGucEtki(p, t);
     if (alev) drawAlev(p, t, alev);
     if (trail.length > 2) {
-      ctx.strokeStyle = alev ? ALEV_RENK[alev - 1] : hot ? COL.atesbocegi : trailCol(t); ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+      ctx.strokeStyle = alev ? alevRenk(alev) : hot ? COL.atesbocegi : trailCol(t); ctx.lineCap = 'round'; ctx.lineJoin = 'round';
       for (var i = 1; i < trail.length; i++) {
         ctx.lineWidth = (alev ? 6 + alev : hot ? 6 : 5) - i * 0.55;
         if (ctx.lineWidth <= 0) break;
@@ -1975,6 +1984,7 @@
     korCiz: function (c, x, y, r, t, r1, r2, sade) { korCiz(c, x, y, r, t, r1, r2, sade); },
     renk: renk,
     kancaCiz: kancaCiz,
+    alevCiz: alevCiz,
     gorevBekleyen: function () { return GOREV.unclaimed(save, todayKey()); },
     basarimlar: function () { return GOREV.achList(save); },
     yeniGune: msToNextDay,
@@ -2004,11 +2014,11 @@
     toggleBuyukYazi: function () { save.buyukYazi = !save.buyukYazi; persist(); return save.buyukYazi; },
     // Kuyunun ışığı: ömür boyu kazanılan ateşböceği (harcamak söndürmez) menüdeki kuyuyu kalıcı aydınlatır
     isik: function () {
-      var ESIK = [0, 25, 60, 120, 200, 320, 480, 700, 1000, 1400, 2000];
-      var n = (save.cuzdan && save.cuzdan.kazanilan) || 0, sv = 0;
-      while (sv + 1 < ESIK.length && n >= ESIK[sv + 1]) sv++;
-      var son = sv + 1 >= ESIK.length;
-      return { seviye: sv, en: ESIK.length - 1, toplam: n, alt: ESIK[sv], ust: son ? null : ESIK[sv + 1], gorulen: save.isikGorulen || 0 };
+      var ESIK = EKO.ISIK, n = (save.cuzdan && save.cuzdan.kazanilan) || 0, sv = EKO.isikSeviye(save);
+      var son = sv + 1 >= ESIK.length, sira = EKO.isikSiradaki(save);
+      // odul: bu seviyede açılan görünüm; siradaki: bir sonraki ışık ödülü (v0.53 ışık yolu)
+      return { seviye: sv, en: ESIK.length - 1, toplam: n, alt: ESIK[sv], ust: son ? null : ESIK[sv + 1], gorulen: save.isikGorulen || 0,
+        odul: EKO.KATALOG.filter(function (it) { return it.isik === sv; })[0] || null, siradaki: sira };
     },
     isikGordu: function (sv) { save.isikGorulen = sv; persist(); },
     toggleHayalet: function () { save.hayalet = !hayaletAcik(); persist(); return hayaletAcik(); },

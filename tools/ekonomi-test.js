@@ -38,6 +38,19 @@ ok(K.kusan(save, 'atki-turkuaz') && K.gorunum(save).atki === '#2fb3a6', 'eskisin
 ok(!K.kusan(save, 'ip-ates'), 'sahip olunmayan kuşanılmaz');
 ok(K.KATALOG.every(i => K.TURLER[i.tur]), 'her ürünün türü var');
 ok(Object.keys(K.VARSAYILAN).every(t => K.item(K.VARSAYILAN[t]).fiyat === 0), 'varsayılanlar bedava');
+// ışık yolu (v0.53): kazanılan ateşböceği seviyeyi yükseltir, seviye görünüm açar; harcamak düşürmez; satın alınmaz
+const is = K.ensure({ best: {} });
+ok(K.isikSeviye(is) === 0 && !K.sahip(is, 'iz-kivilcim'), 'ışık 0, ödül kapalı');
+ok(K.satinAl(is, 'iz-kivilcim').neden === 'isik', 'ışık ödülü satın alınmaz');
+K.kazan(is, 120);
+ok(K.isikSeviye(is) === 3 && K.sahip(is, 'iz-kivilcim') && !K.sahip(is, 'atki-fener'), 'ışık 3: Kıvılcım izi açılır');
+ok(is.dolap.kusan.iz === 'iz-atki' && K.kusan(is, 'iz-kivilcim'), 'ödül kuşanılmaz, oyuncu kuşanır');
+K.satinAl(is, 'ip-gok');
+ok(K.isikSeviye(is) === 3, 'harcamak ışığı düşürmez');
+ok(K.isikSiradaki(is).id === 'atki-fener', 'sıradaki ödül');
+ok(K.KATALOG.filter(i => i.isik).every(i => i.fiyat == null && i.isik < K.ISIK.length), 'ışık ödüllerinin fiyatı yok, seviyesi geçerli');
+ok(new Set(K.KATALOG.map(i => i.id)).size === K.KATALOG.length, 'ürün kimlikleri tekil');
+ok(K.gorunum(is).alev === '#ff9a3c' && K.gorunum(is).alev2 === '#ffe08a', 'varsayılan alev');
 // devam hakkı (v0.49): 25 / 50 / 100, en çok 3, yetmezse ödenmez
 const dv = {}; K.ensure(dv); dv.cuzdan.ates = 100;
 ok(K.devamBedel(0) === 25 && K.devamBedel(1) === 50 && K.devamBedel(2) === 100 && K.devamBedel(3) == null, 'devam bedelleri');

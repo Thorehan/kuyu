@@ -2,6 +2,8 @@
 
 Bu belge geliştirme sırasını, kararları ve yapılanları tutar. Claude her turda buradan devam eder.
 
+> **Devir (11/11/2026):** Proje sırayla geliştirilir; şu an kimde olduğu `docs/DURUM.md`'de. Kurallar `CLAUDE.md`, giriş belgesi `docs/DEVIR-MUSTAFA.md`. Güncel kalıcı kararlar `CLAUDE.md` §3'te; aşağıdaki "Kalıcı kararlar"dan bazıları İstişare 2 ile değişti (Sonsuz temposu, el kayması, güçlendirme yok).
+
 ## Geliştirme sırası (karar: 2026-11-10, 2026-11-09'daki dörtlü sıranın yerine)
 1. **Mekanik oynanış**: kontrol, nişan, fizik, halka türleri, denge.
 2. **Oyun içi akış / alış-satış**: kazanma ve harcama döngüsü (ödül puanı, ateşböceği), görevler, ödüller, mağaza mantığı ve fiyatlar.
@@ -16,6 +18,7 @@ Bir aşamadaki işler bitmeden sonrakine geçilmez; yeni bulunan oynanış sorun
 - `geri-donus-v0.17` (2026-11-10): oyun başarılı, halka türleri ve mağaza öncesi. En eski nokta.
 - `geri-donus-v0.45` (2026-11-11): hikâye, alevlenme, karar ve zamanlama, fırlatma yolu, nişan kuralı; istişare iyileştirmeleri öncesi.
 - `geri-donus-v0.47` (2026-11-12): kor karakter, panel teması, zincir, TAM kova; İstişare 2 (takip eden su vb.) öncesi.
+- `geri-donus-v0.51` (2026-11-11): Mustafa'ya devir noktası; güçlendirmeler, su düzeltmesi, dokun ve başla dahil.
 
 İkisi de GitHub'da etiket olarak duruyor; dönmek gerekirse istenen noktadan yeni bir dal açılır (main'e zorla push yok).
 
@@ -132,6 +135,7 @@ Kullanıcı hikâyeye online'dan önce geçti; online (5) sonra.
 ## Yapılanlar
 - 2026-11-11 · v0.34 · Hikâye: Çıra (önsöz, bölge kartları, Çıra'nın yolu, metinler); oyun ekranı gizliyken döngü çizim yapmaz.
 - 2026-11-11 · v0.35 · Bekçinin notları: 12 not, ateşböceği yolunda; Çıra'nın yolu'nda okunur.
+- 2026-11-11 · Devir Törehan → Mustafa: `CLAUDE.md`, `docs/DURUM.md`, `docs/DEVIR-MUSTAFA.md`; etiket `geri-donus-v0.51`.
 - 2026-11-12 · v0.51 · Dokun ve başla: ana menü sadeleşti, dokununca Sonsuz Kuyu; Bölümler → Hikâye.
 - 2026-11-12 · v0.50 · Güçlendirmeler: kalkan, fener, kanat (Sonsuz); köşe göstergesi, tanıtım kartları. Su düzeltmesi: su hızlı tırmanışta 200–300 m geride kalıyordu (düşüş 15 sn); artık uzaklıkla orantılı yetişir, mesafe 30 → 18 m, sarkacın tepesi tutunma sayılmaz, sürünme 7,5 m/sn.
 - 2026-11-12 · v0.49 · Devam hakkı: Sonsuz'da yakalanınca 5 sn teklif (video / ateşböceği / geç), artan bedel, en çok 3.

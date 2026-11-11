@@ -462,7 +462,7 @@
       if (key === lastHud && !force) return; lastHud = key;
       $('puan').innerHTML = sc + '<small>puan</small>';
       $('cipler').innerHTML = cip('', IK.metre, m + ' m', m + ' metre') + akis +
-        cip('hiz' + (mult > 1 ? ' aktif' : ''), IK.hiz, 'x' + mult.toFixed(2).replace('.', ','), 'hız çarpanı x' + mult.toFixed(2));
+        cip('hiz' + (mult > 1 ? ' aktif' : ''), IK.hiz, 'x' + mult.toFixed(2).replace('.', ','), 'çarpan x' + mult.toFixed(2) + ' (hız ve ustalık)');
     } else {
       var n = E.fireflyCount(sim), shots = sim.shots - sim.misses;
       var key2 = 'l' + n + '|' + combo + '|' + shots;
@@ -826,6 +826,12 @@
   }
   // Ateşböceği halkası: halkanın içinde parlayan ateşböceği. Tutun ya da içinden geç, alınır.
   function drawFireflyRing(r, t) {
+    // fırlatma yolunun ateşböceği akış yokken sönük: ancak akışla (erken bırakıp havadayken tutununca) alınır
+    var sonuk = r.dal && !E.akista(sim);
+    if (sonuk) { ctx.save(); ctx.globalAlpha = 0.35; drawFireflyRingIc(r, t); ctx.restore(); return; }
+    drawFireflyRingIc(r, t);
+  }
+  function drawFireflyRingIc(r, t) {
     var a = 0.75 + 0.25 * Math.sin(t / 260 + r.x);
     var g = ctx.createRadialGradient(r.x, r.y, 0, r.x, r.y, 30);
     g.addColorStop(0, 'rgba(232,242,124,' + (0.55 * a) + ')'); g.addColorStop(1, 'rgba(232,242,124,0)');
@@ -1354,7 +1360,7 @@
     var shots = sim.shots - sim.misses;
     var perfect = shots <= def.par, flow = sim.maxCombo >= def.flow;
     var b = save.best[levelNo] || {};
-    // Ödül: temel (bölüm + ateşböceği + madalyalar) × hız çarpanı
+    // Ödül: temel (bölüm + ateşböceği + madalyalar) × çarpan (hız + ustalık)
     var base = 100 + 25 * ff + (perfect ? 50 : 0) + (flow ? 50 : 0);
     var mult = E.speedMult(sim), reward = Math.round(base * mult);
     var speed = E.speedMs(sim.maxSpeed);
@@ -1377,7 +1383,7 @@
     $('kart').innerHTML =
       '<div class="sonuc-bas"><h2>Gün ışığı!</h2><span>' + levelNo + '. ' + def.name + (first ? ' · ilk kez geçildi' : deaths ? ' · ' + (deaths + 1) + '. deneme' : '') + '</span></div>' +
       '<div class="odul-satir"><i class="ikon-odul" aria-hidden="true"></i><b id="odulSayi">0</b>' + (recReward ? '<em class="rekor-etiket">REKOR</em>' : '') + '</div>' +
-      '<p class="odul-hesap">' + (mult > 1 ? base + ' × x' + fmt(mult, 2) + ' hız çarpanı' : 'Bölüm ödülü · hızlanırsan çarpan artar') + '</p>' +
+      '<p class="odul-hesap">' + (mult > 1 ? base + ' × x' + fmt(mult, 2) + ' çarpan' + (E.ustalikPay(sim) > 0 ? ' (hız x' + fmt(E.hizPay(sim), 2) + ' + ustalık ' + fmt(E.ustalikPay(sim), 2) + ')' : '') : 'Bölüm ödülü · hızlanırsan ve TAM bırakırsan çarpan artar') + '</p>' +
       '<div class="madalyalar">' +
       medal(ffT > 0 && ff >= ffT, ICON.ff, 'Ateşböceği', ff + '/' + ffT, newFF, 0) +
       medal(perfect, ICON.perfect, 'Kusursuz', shots + '/' + def.par + ' atış', newPerfect, 1) +
@@ -1486,7 +1492,7 @@
       i: '<svg viewBox="0 0 64 64"><circle cx="32" cy="18" r="7" fill="#f26a3a"/><path d="M4 40c6-5 10-5 14 0s10 5 14 0 10-5 14 0 10 5 14 0V60H4z" fill="#1c6a72"/><path d="M4 40c6-5 10-5 14 0s10 5 14 0 10-5 14 0 10 5 14 0" fill="none" stroke="#5fc3c9" stroke-width="3"/><path d="M32 34v-6" stroke="#5fc3c9" stroke-width="3" stroke-linecap="round"/><path d="M28 31l4-4 4 4" fill="none" stroke="#5fc3c9" stroke-width="3" stroke-linecap="round"/></svg>' },
     akis: { t: 'Akış!', m: 'İpi halkaya varmak üzereyken bırakıp havadayken sıradakine tutundun. Zincir uzadıkça Akış madalyası ve puan gelir. Çok erken bırakmak, uzun asılı kalmak ve boş atış zinciri bitirir.',
       i: '<svg viewBox="0 0 64 64"><path d="M6 40C14 22 22 22 30 40S46 58 58 30" fill="none" stroke="#e8f27c" stroke-width="5" stroke-linecap="round"/><text x="40" y="22" fill="#e8f27c" font-family="Baloo 2, sans-serif" font-weight="800" font-size="16">x2</text></svg>' },
-    firlat: { t: 'Fırlatma yolu', m: 'Turuncu oklu halka yukarıdaki bir ateşböceğine çıkar: tutun, ip halkaya varmak üzereyken bırak ve fırla; ateşböceği halkası ancak uçarken menzile girer. Asılı kalırsan ulaşamazsın, ana yoldan devam edersin.',
+    firlat: { t: 'Fırlatma yolu', m: 'Turuncu oklu halka yukarıdaki bir ateşböceğine çıkar: tutun, ip halkaya varmak üzereyken bırak ve fırla; ateşböceği halkası ancak uçarken menzile girer ve yalnız akışla (sönük değilken) alınır. Asılı kalırsan ulaşamazsın, ana yoldan devam edersin.',
       i: '<svg viewBox="0 0 64 64"><circle cx="22" cy="50" r="8" fill="none" stroke="#ff9a3c" stroke-width="4"/><path d="M15 36l7-6 7 6M15 28l7-6 7 6" fill="none" stroke="#ffaa50" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/><path d="M24 40C28 22 36 14 46 12" fill="none" stroke="#ffaa50" stroke-width="2" stroke-dasharray="3 4"/><circle cx="48" cy="12" r="7" fill="none" stroke="#d08a45" stroke-width="3.5"/></svg>' },
     sarkac: { t: 'Sarkaç halka', m: 'Zincirde sağa sola sallanır. Hangi taraftaysa o tarafa dokun; işaret onu gösterir. Uzaksa biraz bekle. Tutununca seni de sallar, doğru anda bırakırsan savrulursun.',
       i: '<svg viewBox="0 0 64 64"><circle cx="32" cy="8" r="4" fill="#3a4743"/><path d="M32 10L44 40" stroke="#c9d1cf" stroke-width="2.5" stroke-dasharray="3 3"/><circle cx="46" cy="46" r="9" fill="none" stroke="#d08a45" stroke-width="4"/><path d="M14 50c4 6 10 8 16 8" fill="none" stroke="#c9d1cf" stroke-width="2" stroke-linecap="round" opacity=".5"/></svg>' },

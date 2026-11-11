@@ -222,6 +222,55 @@ if (!only) {
   if (akisOk < toplam || asiliYok < toplam) allOk = false;
 }
 
+// 1d) Sonsuz Kuyu fırlatma yolları: ana yol asılarak izlenir; ayrımda B1'de asılıyken B2 menzil dışı, akışla ulaşılır
+function sonsuzDalDene(seed, kural) {
+  const sonuc = [];
+  const def0 = G.createEndless(seed, kural); const s0 = E.createSim(def0); s0.p.y = -1500 * 20; def0.extend(s0);
+  for (const d of def0.dallar.filter(x => x.i <= 60)) {
+    const menzil = (s, g) => Math.hypot(g.x - s.p.x, g.y - s.p.y) <= C.HOOK_MAX - 6 && E.reachable(s, { x: g.x, y: g.y, kind: 'ring', ref: g }, E.currentIgnore(s));
+    const karara = () => {
+      const def = G.createEndless(seed, kural), s = E.createSim(def);
+      for (let k = 0; k < d.i && s.status === 'play'; k++) {
+        if (!def.path[k]) runFor(s, 0.2);
+        const t = G.target(def.path[k]); waitReach(s, t.x, t.y); E.release(s); pressAt(s, t.x, t.y);
+        runFor(s, 0.6, () => s.rope || !s.hook); runFor(s, 1.6, () => (s.rope && s.rope.len <= C.MIN_LEN + 0.01 && speed(s.p) < 120) || springApex(s));
+      }
+      if (s.status !== 'play') return null;
+      E.release(s); pressAt(s, d.b1[0], d.b1[1]); runFor(s, 0.6, () => s.rope || !s.hook);
+      const g1 = s.rings.find(g => g.firlat && g.x === d.b1[0] && g.y === d.b1[1]);
+      return s.rope && s.rope.ref === g1 ? s : null;
+    };
+    let s = karara();
+    if (!s) { sonuc.push({ d, sorun: "B1'e tutunulamadı" }); continue; }
+    let g2 = s.rings.find(g => g.dal && g.x === d.b2[0] && g.y === d.b2[1]), asili = false;
+    for (let t = 0; t < 240 && s.status === 'play'; t++) { E.step(s); if (s.rope && s.rope.len <= C.MIN_LEN + 0.5 && menzil(s, g2)) { asili = true; break; } }
+    let akis = false;
+    for (const kala of [50, 30, 70, 100]) {
+      s = karara(); if (!s) break;
+      runFor(s, 1.2, () => s.rope && s.rope.len <= C.MIN_LEN + kala); E.release(s);
+      g2 = s.rings.find(g => g.dal && g.x === d.b2[0] && g.y === d.b2[1]);
+      for (let t = 0; t < 150 && s.status === 'play'; t++) { E.step(s); if (!s.hook && menzil(s, g2)) { E.press(s, g2.x, g2.y); runFor(s, 0.5, () => s.rope || !s.hook); akis = !!(s.rope && s.rope.ref === g2); break; } }
+      if (akis) break;
+    }
+    sonuc.push({ d, asili, akis });
+  }
+  return sonuc;
+}
+if (!only) {
+  let top = 0, akisOk = 0, asiliYok = 0; const sorun = [];
+  for (const [seed, kural] of [[1], [2], [3], [4], [5, G.KURALLAR[0]], [6, G.KURALLAR[3]]]) {
+    for (const r of sonsuzDalDene(seed, kural)) {
+      top++;
+      if (r.sorun) { sorun.push(`tohum ${seed} düğüm ${r.d.i}: ${r.sorun}`); continue; }
+      if (r.akis) akisOk++; else sorun.push(`tohum ${seed} düğüm ${r.d.i}: akışla B2'ye ulaşılamadı`);
+      if (!r.asili) asiliYok++; else sorun.push(`tohum ${seed} düğüm ${r.d.i}: asılıyken B2 menzilde`);
+    }
+  }
+  console.log(`== Sonsuz fırlatma yolları (1500 m'ye kadar): ${top}; akışla ulaşılan ${akisOk}, asılıyken ulaşılamayan ${asiliYok} ==`);
+  sorun.forEach(l => console.log('  ' + l));
+  if (akisOk < top || asiliYok < top) allOk = false;
+}
+
 // 2) Üretilen bölümler
 if (!only) {
   console.log(`\n== Üretilen bölümler 7..${genMax} ==`);

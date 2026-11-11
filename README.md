@@ -1,6 +1,6 @@
 # Kuyu
 
-**Funday Morning Games** · 2D mobil oyun · prototip v0.45
+**Funday Morning Games** · 2D mobil oyun · prototip v0.46
 
 Derin bir kuyunun dibindesin. Telefonu tek elle tut: ekranın soluna ya da sağına dokun, kanca o taraftaki hedefe fırlasın; basılı tut, ipe sarıl; bırak, savrul. Halkadan halkaya, ahşaptan ahşaba tırmanıp kuyudan çık.
 
@@ -102,6 +102,8 @@ v0.42'deki itişler ve v0.44'teki fırlatma yolu uçuşları uzattı; havadayken
 Sonuç: havada basan oyuncuda aşağı atış %0,4–0,6, bölümler 60/60; nişan testinde kurala aykırı 0, bütün tarzlarda 80/80. Ortalama tempo aynı (1:17). Spam de aşağıya atılmadığı için Sonsuz'da ~1,1'den ~2,2 km'ye çıktı (düşünen 16 km).
 
 ## Fırlatma yolu (v0.44)
+**v0.46:** ateşböceği yalnız akışla alınır (zincir x2+ ya da pencere içinde erken bırakıp havadayken); akış yokken halka sönük görünür. Sonsuz Kuyu'da da var: her ~10 düğümde bir denenir, çevredeki halkalarla küçük bir motor sahnesinde doğrulanır (`gen.js` → `dalMini`); 8 tohumda 2 km'de ~11 ayrım. `tools/bot.js` Sonsuz'da 1500 m'ye kadar her ayrımı iki yönden denetler.
+
 Üretilen bölümlerin çoğunda (8+, 73'ün 54'ü) gerçek bir yol ayrımı: karar noktasında ana halkanın karşı tarafında **turuncu oklu halka**. Ondan sonraki halka (bir **ateşböceği** halkası) asılıyken menzil dışında; ancak ip halkaya varmak üzereyken bırakıp fırlayınca uçarken menzile girer. Karar: güvenli ana yol mu, zamanlama isteyen ve ateşböceği veren yol mu. Akışı olmayan turuncu halkadan ana yola döner, sıkışmaz.
 
 Üretici (`gen.js` → `dalBul`, `dalDogrula`) adayları motorla gerçek bölümde dener: asılıyken menzil dışı, akış penceresinde bırakınca ulaşılır; geçemeyen aday konmaz. Rastgele sayı kullanmaz, en son eklenir: mevcut halkalar değişmez. Yay ya da sarkaçtan sonra (oyuncu havada gelir), ana ve ateşböceği yollarının hatlarına 40 birimden yakın ve sarkaçlara 150 birimden yakın yerlere konmaz. Bekçinin notları bu ateşböceğine asılmaz. `tools/bot.js` her ayrımı iki yönden denetler (54/54).
@@ -126,7 +128,7 @@ Bas-bırak'tan daha etkili hızlanma, ustalıkla gelir. Akış sürerken yapıla
 
 ## Hız ve ödül
 - **En yüksek hız:** Raunt boyunca ipte değilken, yukarı ya da yana giderken ulaşılan en yüksek hız (m/sn). Kancanın çekme hızı ve düşüş sayılmaz. Bekleyerek oynayan yaklaşık 5–6 m/sn, ipi erken bırakıp zincirleyen 40–57 m/sn.
-- **Hız çarpanı:** 10 m/sn'den sonra başlar, 57,5 m/sn'de en yüksek: x1,00 – x1,50 (0,05 adımlarla).
+- **Çarpan** (v0.46): hız payı (10 m/sn'den sonra başlar, 57,5 m/sn'de en yüksek: x1,00 – x1,50, 0,05 adımlarla) + ustalık payı (her TAM bırakış +0,05, en çok +0,50). En çok x2,00; sonuç kartında döküm görünür.
 - **Bölüm ödülü** = (100 + 25 × ateşböceği + 50 Kusursuz + 50 Akış) × hız çarpanı.
 - **Bölüm sonu kartı** ekranın altından açılır: ödül sayarak gelir ve hesabı yazılır, üç madalya (bu oyunda ilk kez kazanılan "YENİ" etiketiyle), süre ve en yüksek hız (kırılan rekorlar "REKOR" etiketiyle), büyük "Bölüm N ›" düğmesi, Tekrar ve Bölümler. Sonsuz Kuyu sonucu da aynı yapıda.
 - **Sonsuz Kuyu puanı** = (metre + akış bonusu + ateşböcekleri) × hız çarpanı.

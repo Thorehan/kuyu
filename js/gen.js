@@ -220,6 +220,37 @@
     for (k = 0; k < 144; k++) { E.step(s); if (k % 4 === 0) yol.push({ x: s.p.x, y: s.p.y }); }
     return yol;
   }
+  // Sonsuz Kuyu için ayrımı küçük bir motor sahnesinde dener (çevredeki halkalarla): karar noktasında asılı başla,
+  // B1'e tutun; a) asılı salınırken B2 menzilde olmamalı, b) akış penceresinde bırakınca uçarken menzile girip tutunulmalı.
+  function dalMini(rings, from, b1, b2) {
+    var E = (typeof root !== 'undefined' && root.KuyuEngine) || (typeof require === 'function' ? require('./engine.js') : null);
+    if (!E) return false;
+    var C = E.CFG, liste = rings.map(function (g) { return [g.x, g.y]; }).concat([[b1.x, b1.y, 'firlat'], [b2.x, b2.y]]);
+    function sahne() {
+      var s = E.createSim({ start: [from.x, from.y], rects: [], rings: liste });
+      s.p.px = s.p.x; s.p.py = s.p.y;
+      E.press(s, b1.x, b1.y);
+      for (var k = 0; k < 120 && !(s.rope && !s.hook); k++) E.step(s);
+      var g1 = null; for (var q = 0; q < s.rings.length; q++) if (s.rings[q].firlat) g1 = s.rings[q];
+      return s.rope && s.rope.ref === g1 ? s : null;
+    }
+    function bul(s) { for (var q = 0; q < s.rings.length; q++) { var g = s.rings[q]; if (g.x === b2.x && g.y === b2.y) return g; } return null; }
+    function menzil(s, g) { return Math.hypot(g.x - s.p.x, g.y - s.p.y) <= C.HOOK_MAX - 6 && E.reachable(s, { x: g.x, y: g.y, kind: 'ring', ref: g }, E.currentIgnore(s)); }
+    var s = sahne(); if (!s) return false;
+    var g2 = bul(s);
+    for (var t = 0; t < 240; t++) { E.step(s); if (s.rope && s.rope.len <= C.MIN_LEN + 0.5 && menzil(s, g2)) return false; }
+    var kalalar = [50, 30, 70], tuttu = 0;
+    for (var ki = 0; ki < kalalar.length; ki++) {
+      s = sahne(); if (!s) return false;
+      for (t = 0; t < 150 && s.rope.len > C.MIN_LEN + kalalar[ki]; t++) E.step(s);
+      E.release(s); g2 = bul(s);
+      for (t = 0; t < 150; t++) {
+        E.step(s);
+        if (!s.hook && menzil(s, g2)) { E.press(s, g2.x, g2.y); for (var u = 0; u < 60 && !(s.rope || !s.hook); u++) E.step(s); if (s.rope && s.rope.ref === g2) tuttu++; break; }
+      }
+    }
+    return tuttu >= 2;
+  }
   function noktaHat(p, a, b) {
     var dx = b.x - a.x, dy = b.y - a.y, L = dx * dx + dy * dy || 1, t = clamp(((p.x - a.x) * dx + (p.y - a.y) * dy) / L, 0, 1);
     return Math.hypot(p.x - (a.x + dx * t), p.y - (a.y + dy * t));
@@ -409,7 +440,7 @@
       var dl = dalAday[ai];
       var b1 = [dl.b1.x, Math.round(dl.b1.y + off)], b2 = [dl.b2.x, Math.round(dl.b2.y + off)];
       // B2 ateşböceği halkası: fırlatma yolunun ödülü (akış ana yoldan zaten hızlı; ödül hız değil ateşböceği)
-      var dene = Object.assign({}, def, { rings: def.rings.concat([[b1[0], b1[1], 'firlat'], [b2[0], b2[1], 'ff']]) });
+      var dene = Object.assign({}, def, { rings: def.rings.concat([[b1[0], b1[1], 'firlat'], [b2[0], b2[1], 'ff', 'dal']]) });
       if (!dalDogrula(dene, route, dl.i, b1, b2)) continue;
       def.rings = dene.rings;
       // fırlatma yolu rotası (akışla): ayrımda B1, fırlayıp B2, sonra ana yolun k. düğümü
@@ -492,7 +523,7 @@
     var ko = (kural && kural.o) || {};
     var yayGap = ko.yayGap || YAY_GAP, sarkacGap = ko.sarkacGap || SARKAC_GAP, gateGap = ko.gateGap || 2, portalGap = ko.portalGap || 12, ffP = ko.ffP != null ? ko.ffP : 0.4;
     var startY = 0;
-    var st = { hp: { x: 180, y: startY }, prevKind: null, nodes: [], frontier: startY, segs: [], anchors: [], prevHp: null, prevT: null, lastFF: -9, altPrev: true, lastGate: -9, lastYay: -9, prevRing: null, hist: [], lastPortal: -9, portalN: 0, lastSw: -9 };
+    var st = { hp: { x: 180, y: startY }, prevKind: null, nodes: [], frontier: startY, segs: [], anchors: [], prevHp: null, prevT: null, lastFF: -9, altPrev: true, lastGate: -9, lastYay: -9, prevRing: null, hist: [], lastPortal: -9, portalN: 0, lastSw: -9, lastDal: -99 };
     var def = {
       id: 'sonsuz', name: 'Sonsuz Kuyu', endless: true, seed: seed, kural: kural ? kural.id : null,
       hint: 'Su durmadan yükselir. Sağa ya da sola dokunarak tırman; ipi erken bırakıp zincirlersen ekstra puan.',
@@ -507,6 +538,42 @@
       },
       path: st.nodes
     };
+    // Fırlatma yolu (Sonsuz): her DAL_ARALIK düğümde bir denenir; karar noktası 4 düğüm geride (kestirmenin
+    // bağlanacağı düğümler hazır olsun). Rastgele sayı kullanmaz: ana yol, tohumlar ve Günlük Kuyu değişmez.
+    var DAL_ARALIK = 10;
+    def.dallar = [];
+    function halkaOf(s, nn) {
+      for (var q = s.rings.length - 1; q >= 0; q--) { var g = s.rings[q]; if (g.sw ? (g.sw.px === nn.x) : (g.x === nn.x && g.y === nn.y)) return g; }
+      return null;
+    }
+    function sonsuzDal(s) {
+      var nd = st.nodes, dk = nd.length - 5;
+      if (dk < 8 || dk - st.lastDal < DAL_ARALIK) return;
+      if (kural && kural.id === 'gecit') { /* geçit gününde de olur */ }
+      var once = halkaOf(s, nd[dk - 1]);
+      if (once && (once.yay != null || once.sarkac || once.sw)) return;   // karar noktasına asılı gelinmeli
+      var tdk = target(nd[dk]), from = hangOf(nd[dk - 1]);
+      var yakin = s.rings.filter(function (g) { return g.y > target(nd[nd.length - 1]).y - 300 && g.y < from.y + 300; });
+      if (yakin.some(function (g) { return (g.ff || g.hiz || g.gecitId || g.cikis) && Math.abs(g.y - tdk.y) < 45; })) return; // karar noktasında başka seçenek yok
+      var allPts = []; allPts[dk] = from;
+      var hatlar = [];
+      for (var j = dk; j < nd.length; j++) hatlar.push([hangOf(nd[j - 1]), target(nd[j])]);
+      yakin.forEach(function (g) {
+        if (!(g.ff || g.hiz)) return;
+        for (var j2 = dk; j2 < nd.length - 1; j2++) {
+          var tj = target(nd[j2]);
+          if (Math.abs(g.y - tj.y) < 45) { hatlar.push([hangOf(nd[j2 - 1]), g]); hatlar.push([{ x: g.x, y: g.y + MIN }, target(nd[j2 + 1])]); }
+        }
+      });
+      var halkalar = yakin.map(function (g) { return g.sw ? { x: g.sw.px, y: g.sw.py + 100, sarkac: true } : { x: g.x, y: g.y, sarkac: !!g.sarkac }; });
+      var dl = dalBul(allPts, nd, dk, halkalar, hatlar);
+      if (!dl || !dalMini(yakin.filter(function (g) { return !g.sw && !g.sarkac && !g.kapi; }), from, dl.b1, dl.b2)) return;
+      var b1 = { x: dl.b1.x, y: dl.b1.y, firlat: true }, b2 = { x: dl.b2.x, y: dl.b2.y, ff: true, dal: true };
+      s.rings.push(b1, b2);
+      s.fireflies.push({ x: b2.x, y: b2.y, got: false, ring: b2 });
+      def.dallar.push({ i: dk, k: dl.k, b1: [b1.x, b1.y], b2: [b2.x, b2.y], from: [from.x, from.y] });
+      st.lastDal = dk;
+    }
     def.extend = function (s) {
       // oyuncunun 1400 birim üstüne kadar üret
       while (st.frontier > s.p.y - 1400) {
@@ -580,6 +647,7 @@
         st.nodes.push(n);
         st.hp = hangOf(n);
         st.frontier = t.y;
+        sonsuzDal(s);
       }
       // çok aşağıda kalanları temizle
       if (s.water != null && s.t % 1 < 0.01) {

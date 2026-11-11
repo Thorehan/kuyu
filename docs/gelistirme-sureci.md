@@ -13,7 +13,10 @@ Bu belge geliştirme sırasını, kararları ve yapılanları tutar. Claude her 
 Bir aşamadaki işler bitmeden sonrakine geçilmez; yeni bulunan oynanış sorunları her zaman öne alınır.
 
 ## Geri dönüş noktaları
-- `geri-donus-v0.17` (2026-11-10): oyun başarılı, halka türleri ve mağaza öncesi. GitHub'da etiket olarak duruyor; dönmek gerekirse o noktadan devam edilir.
+- `geri-donus-v0.17` (2026-11-10): oyun başarılı, halka türleri ve mağaza öncesi. En eski nokta.
+- `geri-donus-v0.45` (2026-11-11): hikâye, alevlenme, karar ve zamanlama, fırlatma yolu, nişan kuralı; istişare iyileştirmeleri öncesi.
+
+İkisi de GitHub'da etiket olarak duruyor; dönmek gerekirse istenen noktadan yeni bir dal açılır (main'e zorla push yok).
 
 ## Kalıcı kararlar
 - **Mobil oyun, tek elle oynanır.** İmleç yok; başparmak ekranın alt kısmında kalır. Her yeni özellik 375 px telefonda tek el ile denenir.
@@ -37,7 +40,8 @@ Kalan işler geliştirme sırasına göre. Bekleyenler senden bir karar ya da te
 7. [x] Karar ve zamanlama (v0.43): ölçüm `tools/spam.js`. Boş atış akışı bitirir ve kanca dönene kadar yeni atış yok; ip halkadan uzaktayken bırakmak akış sayılmaz; alev akış içindeki TAM'larla dolar. Spam 6 km → ~1–2 km, düşünen oyuncu ve ortalama tempo aynı.
 8. [x] Fırlatma yolu (v0.44, bölümler): turuncu oklu halkadan akışla fırlayınca ulaşılan ateşböceği; asılıyken ulaşılmaz. 54/73 üretilen bölümde, motorla doğrulanmış. Hız ödülü işe yaramadı (akış ana yolu zaten hızlı), ödül ateşböceği. Spam yine de %54–65 alıyor, bilerek seçen %78.
 9. [x] Nişan kuralı (v0.45): yukarısı şartlı öncelikli, şartlar sağlanmazsa aşağısı. Bekleme (yukarı hedef 0,35 sn içinde menzile girecekse), hattı kesen yukarı halka, değilen halka engel değil. `tools/nisan.js` kurala aykırı aşağı atışı sayar (0).
-10. [ ] Sonsuz Kuyu'ya fırlatma yolu.
+10. [x] İstişare iyileştirmeleri (v0.46): fırlatma yolu ateşböceği yalnız akışla (spam 29–35 → 22–30/54, bilerek seçen 42/54); çarpana ustalık payı (TAM başına +0,05, en çok x2,00; akış oyuncusu x1,50 → x1,96); Sonsuz Kuyu'ya fırlatma yolu (~her 180 m, motorla denenmiş). Tempo 1:17, günlük kazanç ~100 → ~102.
+11. [ ] Telefonda denenecek ayarlar: akış penceresi, boş atış kilidi, nişan beklemesi. Karar bekleyenler: istişare belgesi.
 
 Bekleyenler: telefon denemesi düzeltmeleri, fiyatların gözden geçirilmesi, ana menü geri bildirimi, bekçinin adı, online için arka uç seçimi, Mustafa'nın parçaları.
 
@@ -120,6 +124,7 @@ Kullanıcı hikâyeye online'dan önce geçti; online (5) sonra.
 ## Yapılanlar
 - 2026-11-11 · v0.34 · Hikâye: Çıra (önsöz, bölge kartları, Çıra'nın yolu, metinler); oyun ekranı gizliyken döngü çizim yapmaz.
 - 2026-11-11 · v0.35 · Bekçinin notları: 12 not, ateşböceği yolunda; Çıra'nın yolu'nda okunur.
+- 2026-11-11 · v0.46 · İstişare iyileştirmeleri: fırlatma yolu ateşböceği yalnız akışla, çarpana ustalık payı, Sonsuz Kuyu'da fırlatma yolu. Geri dönüş noktası `geri-donus-v0.45`.
 - 2026-11-11 · v0.45 · Nişan kuralı: yükselirken aşağıya atılma düzeltildi (bekleme, hattı kesen yukarı halka, değilen halka engel değil); nişan testine kural denetimi.
 - 2026-11-11 · v0.44 · Fırlatma yolu: bölümlerde gerçek yol ayrımı (turuncu oklu halka → akışla ulaşılan ateşböceği), üreticide motorla doğrulama, bot denetimi, tanıtım kartı.
 - 2026-11-11 · v0.43 · Karar ve zamanlama: boş atış bedeli, akış penceresi, alev TAM ile dolar; `tools/spam.js` ölçümü; rota botunda akış için nişanla yedek ölçüt.

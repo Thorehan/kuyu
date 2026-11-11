@@ -55,6 +55,8 @@
     BEKLE_VY: 150,      // nişan beklemesi: bundan hızlı yükselirken...
     BEKLE_EK: 110,      // ...yukarı hedef menzilin en çok bu kadar ötesindeyse kanca hemen aşağıya atılmaz
     BEKLE_SN: 0.35,     // en çok bu kadar beklenir; hedef menzile girmezse aşağıdakine atılır
+    USTALIK_TAM: 0.05,  // çarpanın ustalık payı: her TAM bırakış...
+    USTALIK_MAX: 0.5,   // ...en çok bu kadar (hız payıyla birlikte en çok x2,00)
     TAM_ITIS: 200,      // tam zamanında bırakış ek yukarı itiş verir (birim/sn)
     TAM_SERI_ITIS: 150, // art arda her 3. tam bırakışta bunun kadar daha
     ALEV_ESIK: [2, 4, 7],        // alevlenme: akış sürerken bu kadar TAM bırakış yapınca Çıra alevlenir (1, 2, 3); akış bitince söner
@@ -91,6 +93,7 @@
       pressed: false, hook: null, rope: null, lastAnchor: null,
       rings: (def.rings || []).map(function (r) {
         var o = { x: r[0], y: r[1], ff: r[2] === 'ff', hiz: r[2] === 'hiz', kapi: r[2] === 'kapi', firlat: r[2] === 'firlat' };
+        if (r[2] === 'ff' && r[3] === 'dal') o.dal = true; // fırlatma yolunun ateşböceği: yalnız akışla alınır
         if (r[2] === 'yay') o.yay = r[3] || 0; // okun dikeyden açısı (derece, eksi sol)
         if (r[2] === 'gecit') o.gecitId = r[3];  // geçit girişi; çıkışı aynı numaralı 'cikis'
         if (r[2] === 'cikis') o.cikisId = r[3];
@@ -602,7 +605,7 @@
     // ateşböcekleri
     for (i = 0; i < s.fireflies.length; i++) {
       var f = s.fireflies[i];
-      if (!f.got && Math.abs(f.y - p.y) < 40 && dist(p.x, p.y, f.x, f.y) < CFG.R + (f.ring ? 20 : 12)) {
+      if (!f.got && Math.abs(f.y - p.y) < 40 && dist(p.x, p.y, f.x, f.y) < CFG.R + (f.ring ? 20 : 12) && !(f.ring && f.ring.dal && !akista(s))) {
         f.got = true; if (f.ring) f.ring.got = true; s.fireflyPts += 25; s.ffGot++;
         s.events.push({ type: 'firefly', x: f.x, y: f.y });
       }
@@ -673,17 +676,23 @@
     s.events.push({ type: 'kapi', x: gt.x, y: gt.y, combo: s.combo });
   }
 
+  // Akış sürüyor mu: zincir en az x2, ya da pencere içinde erken bırakıp havadasın (zincir sürüyor)
+  function akista(s) { return s.combo >= 2 || (!s.rope && s.chain); }
   function collectRing(s, rg) {
+    if (rg.dal && !akista(s)) return; // fırlatma yolunun ateşböceği akışsız alınmaz
     for (var i = 0; i < s.fireflies.length; i++) {
       var f = s.fireflies[i];
       if (f.ring === rg && !f.got) { f.got = true; rg.got = true; s.fireflyPts += 25; s.ffGot++; s.events.push({ type: 'firefly', x: f.x, y: f.y }); }
     }
   }
-  // Hız çarpanı: 1,00 – 1,50 (0,05 adımlarla)
-  function speedMult(s) {
+  // Çarpan = hız payı (1,00 – 1,50, 0,05 adımlarla) + ustalık payı (her TAM bırakış +0,05, en çok +0,50).
+  // Hızın tavanına akışla kolay varılıyor; ustalık payı zamanlamayı da ayrıştırır (en çok x2,00).
+  function hizPay(s) {
     var k = Math.max(0, Math.min(1, (s.maxSpeed - CFG.SPEED_BASE) / (CFG.SPEED_TOP - CFG.SPEED_BASE)));
     return 1 + Math.round(k * 10) / 20;
   }
+  function ustalikPay(s) { return Math.min(CFG.USTALIK_MAX, Math.round((s.tam || 0) * CFG.USTALIK_TAM * 100) / 100); }
+  function speedMult(s) { return Math.round((hizPay(s) + ustalikPay(s)) * 100) / 100; }
   function speedMs(v) { return v / 20; } // birim/sn → m/sn (20 birim = 1 m)
   function die(s, why) { s.status = 'dead'; s.rope = null; s.hook = null; s.events.push({ type: 'dead', why: why }); }
   function dist(ax, ay, bx, by) { var x = ax - bx, y = ay - by; return Math.sqrt(x * x + y * y); }
@@ -696,9 +705,9 @@
 
   var api = {
     CFG: CFG, createSim: createSim, step: step, press: press, release: release,
-    fireflyCount: fireflyCount, hookRay: hookRay, meters: meters, score: score, segRect: segRect, aim: aim,
+    fireflyCount: fireflyCount, akista: akista, hookRay: hookRay, meters: meters, score: score, segRect: segRect, aim: aim,
     candidates: candidates, reachable: reachable, currentIgnore: currentIgnore, makeSwing: makeSwing,
-    speedMult: speedMult, speedMs: speedMs, finalScore: finalScore
+    speedMult: speedMult, hizPay: hizPay, ustalikPay: ustalikPay, speedMs: speedMs, finalScore: finalScore
   };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.KuyuEngine = api;

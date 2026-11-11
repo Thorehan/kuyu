@@ -31,6 +31,26 @@ function audit(s, f, a, where) {
   }
 }
 
+// Aşağı atış denetimi (kural: yukarısı öncelikli; koşul sağlanmazsa aşağısı): havada yükselirken aşağı atılan her
+// kanca için, o tarafta menzilde ya da menzilin hemen ötesinde (bekleme koşulu) görüş hattı açık yukarı hedef var mıydı?
+let asagiAtis = 0, asagiIhlal = 0; const asagiOrnek = [];
+function asagiDenetle(s, f, a, where) {
+  if (a.miss || a.rescue || a.kind === 'none' || (s.rope && s.rope.kind === 'anchor')) return;
+  if (a.y <= s.p.y + 5) return;
+  asagiAtis++;
+  const vy = (s.p.y - s.p.py) / C.DT; if (vy > -C.BEKLE_VY) return;   // düşerken aşağı atmak serbest
+  const side = f < 0.5 ? -1 : 1, ig = E.currentIgnore(s);
+  const ust = E.candidates(s).filter(c => c.ref !== ig && s.p.y - c.y >= C.UP_RISE && (side < 0 ? c.x - s.p.x <= C.NEAR_V : c.x - s.p.x >= -C.NEAR_V) && E.reachable(s, c, ig));
+  if (ust.length && !process.env.BEKLEME_YOK) { asagiIhlal++; if (asagiOrnek.length < 6) asagiOrnek.push(`${where} t=${s.t.toFixed(1)} vy=${vy | 0} aşağı (+${(a.y - s.p.y) | 0}) seçildi, menzilde yukarı ${ust.length}`); }
+}
+// Oyundaki gibi: işaret "bekle" diyorsa kanca kısa süre bekler; yukarı hedef menzile girince ona, yoksa o taraftakine
+function bekleyerek(s, f, a) {
+  if (!a.bekle || process.env.BEKLEME_YOK) return a;
+  const son = s.t + C.BEKLE_SN;
+  while (s.status === 'play') { E.step(s); a = E.aim(s, f); if (!a.bekle || s.t >= son || s.p.y - s.p.py >= 0) break; }
+  return a;
+}
+
 // işaret oyuncusu: iki işarete bakar, yukarıdakini seçer
 function play(def, where, maxT, style) {
   const s = E.createSim(def);
@@ -42,11 +62,19 @@ function play(def, where, maxT, style) {
     }
     const L = E.aim(s, 0.25), R = E.aim(s, 0.75);
     audit(s, 0.25, L, where); audit(s, 0.75, R, where);
-    let pick = null;
-    if (L.rescue || R.rescue) pick = L.rescue ? L : R;
-    else if (!L.miss && !R.miss) pick = L.y <= R.y ? L : R;
-    else if (!L.miss) pick = L; else if (!R.miss) pick = R;
+    let pick = null, pf = 0.25;
+    const yy = a => (a.bekle || a).y, ok = a => !a.miss || a.bekle;
+    if (L.rescue || R.rescue) { pick = L.rescue ? L : R; pf = L.rescue ? 0.25 : 0.75; }
+    else if (!L.miss && !L.bekle && !R.miss && !R.bekle) { pick = L.y <= R.y ? L : R; pf = pick === L ? 0.25 : 0.75; }
+    // bir taraf hemen atılabilir (tam renk işaret), öbürü bekleyecek (soluk): oyuncu tam renkli yukarı hedefi seçer
+    else if (!L.miss && !L.bekle && L.tier === 0) pick = L;
+    else if (!R.miss && !R.bekle && R.tier === 0) { pick = R; pf = 0.75; }
+    else if (ok(L) && ok(R)) { pick = yy(L) <= yy(R) ? L : R; pf = pick === L ? 0.25 : 0.75; }
+    else if (ok(L)) pick = L; else if (ok(R)) { pick = R; pf = 0.75; }
     if (!pick) { runFor(s, 0.3); continue; }
+    pick = bekleyerek(s, pf, pick);
+    asagiDenetle(s, pf, pick, where);
+    if (pick.kind === 'none' && !pick.miss) { runFor(s, 0.1); continue; }
     E.release(s);
     E.press(s, pick.x, pick.y, { rescue: !!pick.rescue });
     runFor(s, 0.8, () => (s.rope && !s.hook) || !s.hook);
@@ -59,12 +87,14 @@ function play(def, where, maxT, style) {
 }
 
 for (const style of ['isaret', 'akis', 'hava']) {
-  found.length = 0; checks = 0;
+  found.length = 0; checks = 0; asagiAtis = 0; asagiIhlal = 0; asagiOrnek.length = 0;
   let won = 0, total = 0;
   for (const def of LEVELS) { total++; if (play(def, `B${def.id}`, 60, style).status === 'won') won++; }
   for (let n = 7; n <= 80; n++) { total++; if (play(G.createLevel(n), `B${n}`, 60, style).status === 'won') won++; }
   let meters = 0;
   for (let seed = 1; seed <= 5; seed++) meters += E.meters(play(G.createEndless(seed), `S${seed}`, 60, style));
   if (process.argv.includes('-v')) found.slice(0, 8).forEach(l => console.log('  ' + l));
-  console.log(`${style.padEnd(7)} ${checks} işaret, yan seçim ${found.length} (%${(found.length / checks * 100).toFixed(1)}); bölüm ${won}/${total}; sonsuz ort. ${Math.round(meters / 5)} m (60 sn)`);
+  console.log(`${style.padEnd(7)} ${checks} işaret, yan seçim ${found.length} (%${(found.length / checks * 100).toFixed(1)}); aşağı atış ${asagiAtis}, kurala aykırı ${asagiIhlal}; bölüm ${won}/${total}; sonsuz ort. ${Math.round(meters / 5)} m (60 sn)`);
+  asagiOrnek.forEach(l => console.log('  ! ' + l));
+  if (asagiIhlal) process.exitCode = 1;
 }

@@ -1,6 +1,6 @@
 # Kuyu
 
-**Funday Morning Games** · 2D mobil oyun · prototip v0.44
+**Funday Morning Games** · 2D mobil oyun · prototip v0.45
 
 Derin bir kuyunun dibindesin. Telefonu tek elle tut: ekranın soluna ya da sağına dokun, kanca o taraftaki hedefe fırlasın; basılı tut, ipe sarıl; bırak, savrul. Halkadan halkaya, ahşaptan ahşaba tırmanıp kuyudan çık.
 
@@ -90,6 +90,16 @@ Yolun üstünde, bir halkadan sıradakine giden hatta duran yatay şerit (112 bi
 En iyi koşunun soluk bir kopyası seninle aynı zamanlamayla tırmanır: bölümde en kısa süreli geçişin, Sonsuz Kuyu'da rekor koşun, Günlük Kuyu'da günün en iyisi. Sonsuz her koşuda farklı olduğundan orada bir yükseklik yarışıdır. Hayalet ekranın dışındaysa üst ya da alt kenarda küçük bir işaret görünür. Yalnızca görüntüdür; nişan, puan ve fizik etkilenmez. Ayarlar → Hayalet ile kapatılır.
 
 Kayıt `js/hayalet.js`: kahramanın yeri sim zamanına göre saniyede 15 kez alınır, farklarla yazılır (~60 bayt/sn) ve ana kayıttan ayrı `kuyu.hayalet` anahtarında durur. Test: `node tools/hayalet-test.js`.
+
+## Nişan kuralı (v0.45)
+Temel kural: **yukarısı belirli şartlarda önceliklidir; şartlar sağlanmazsa aşağıdaki seçilir.** Kademeler: bu taraftaki dik yukarı hedef → yandaki sığ hedef (v0.17) → aşağıdaki. Bütün yeni mekanikler bu kurala uymalı; `tools/nisan.js` her değişiklikten sonra "kurala aykırı aşağı atış" sayar (0 olmalı).
+
+v0.42'deki itişler ve v0.44'teki fırlatma yolu uçuşları uzattı; havadayken basınca yukarı hedef menzilin hemen ötesinde kaldığında nişan aşağıdaki halkayı seçiyordu (havada basan oyuncuda atışların %14–20'si aşağı, 60 bölümün 10'u kalıyordu). Şartlar:
+- **Bekleme:** yükselirken bu taraftaki yukarı hedef, bekleme süresinde (`BEKLE_SN` 0,35 sn; ya da tepe noktasında) varılacak yerden menzile girecekse kanca bekler ve girince ona atılır; işaret o hedefi soluk gösterir. Girmeyecekse ya da düşmeye başlarsan aşağıdakine atılır. Yan halka geçerli seçim olduğundan onun yerine beklenmez.
+- **Hattı kesen halka:** yukarıdaki hedefin hattını başka bir halka/ahşap kesiyorsa ve o da bu tarafta dik yukarıdaysa o alınır.
+- **Değdiğin halka engel değil:** Çıra'nın içinden geçtiği halka kancayı ve nişanı engellemez.
+
+Sonuç: havada basan oyuncuda aşağı atış %0,4–0,6, bölümler 60/60; nişan testinde kurala aykırı 0, bütün tarzlarda 80/80. Ortalama tempo aynı (1:17). Spam de aşağıya atılmadığı için Sonsuz'da ~1,1'den ~2,2 km'ye çıktı (düşünen 16 km).
 
 ## Fırlatma yolu (v0.44)
 Üretilen bölümlerin çoğunda (8+, 73'ün 54'ü) gerçek bir yol ayrımı: karar noktasında ana halkanın karşı tarafında **turuncu oklu halka**. Ondan sonraki halka (bir **ateşböceği** halkası) asılıyken menzil dışında; ancak ip halkaya varmak üzereyken bırakıp fırlayınca uçarken menzile girer. Karar: güvenli ana yol mu, zamanlama isteyen ve ateşböceği veren yol mu. Akışı olmayan turuncu halkadan ana yola döner, sıkışmaz.

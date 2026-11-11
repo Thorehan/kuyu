@@ -338,7 +338,7 @@
     sonsuzBolge = 0;
     if (mode === 'endless') MZ.sahne('tas');
     MZ.kis(false);
-    parts = []; floaters = []; trail = []; winT = null; deadT = null; finalT = null; resultShown = false; lastHud = ''; introOgeSayisi = 0;
+    parts = []; floaters = []; trail = []; winT = null; deadT = null; finalT = null; bekleyen = null; resultShown = false; lastHud = ''; introOgeSayisi = 0;
     $('katman').hidden = true;
     closePause(); closeIntro(true);
     paused = false; acc = 0; lastT = 0;
@@ -956,9 +956,12 @@
     if (sim.status !== 'play') return;
     var L = E.aim(sim, 0.25), R = E.aim(sim, 0.75);
     if (L.rescue || R.rescue) { drawRescueMarker(L.rescue ? L : R, t); return; }
+    // bekleme koşulu sağlanıyorsa işaret, kancanın bekleyip atılacağı yukarı hedefi soluk gösterir (hemen değil, az sonra)
+    var bL = !!L.bekle, bR = !!R.bekle;
+    if (bL) L = L.bekle; if (bR) R = R.bekle;
     var same = L.kind !== 'none' && R.kind !== 'none' && Math.hypot(L.x - R.x, L.y - R.y) < 4;
-    if (L.kind !== 'none') marker(L, COL_SOL, -1, t); else emptySide(-1);
-    if (R.kind !== 'none' && !same) marker(R, COL_SAG, 1, t); else if (R.kind === 'none') emptySide(1);
+    if (L.kind !== 'none') { if (bL) ctx.globalAlpha = 0.5; marker(L, COL_SOL, -1, t); ctx.globalAlpha = 1; } else emptySide(-1);
+    if (R.kind !== 'none' && !same) { if (bR) ctx.globalAlpha = 0.5; marker(R, COL_SAG, 1, t); ctx.globalAlpha = 1; } else if (R.kind === 'none') emptySide(1);
     if (same) arrow(R.x, R.y, COL_SAG, 1);
   }
   // Bu tarafta hedef yok: oyuncunun o yanında soluk bir ×; o yana basmak kancayı boşa atar.
@@ -1236,6 +1239,7 @@
       var n = 0;
       while (acc >= CFG.DT && n < 8) { E.step(sim); acc -= CFG.DT; n++; if (sim.status !== 'play') break; }
       if (n === 8) acc = 0;
+      if (bekleyen) bekleyeniAt();
       if (HY) HY.ornekle(hayaletKayit, sim);
     } else if (sim.status === 'won' && winT !== null) {
       winT += dt;
@@ -1625,10 +1629,24 @@
     var tgt = E.aim(sim, f, w.x, w.y);
     // Tutunurken yukarıda hedef yoksa ip bırakılmaz ve aşağı atılmaz; parmak kalkınca yine bırakılır.
 
-    var dx = tgt.x - sim.p.x, dy = tgt.y - sim.p.y, d = Math.sqrt(dx * dx + dy * dy) || 1;
+    var hd = tgt.bekle || tgt, dx = hd.x - sim.p.x, dy = hd.y - sim.p.y, d = Math.sqrt(dx * dx + dy * dy) || 1;
     aim = { x: dx / d, y: dy / d };
+    // Yükselirken yukarıdaki hedef menzilin hemen ötesindeyse kanca kısa süre bekler (nişan kuralı: yukarısı öncelikli)
+    if (tgt.bekle) { bekleyen = { f: f, son: sim.t + CFG.BEKLE_SN }; return; }
+    bekleyen = null;
     E.press(sim, tgt.x, tgt.y, { rescue: !!tgt.rescue, keep: !!tgt.miss });
   });
+  // Bekleyen atış: yukarı hedef menzile girince ona; süre biter ya da düşmeye başlarsan o taraftaki hedefe (aşağıdaki)
+  var bekleyen = null;
+  function bekleyeniAt() {
+    if (!bekleyen || !sim || sim.status !== 'play') { bekleyen = null; return; }
+    var a = E.aim(sim, bekleyen.f), vy = (sim.p.y - sim.p.py) / CFG.DT;
+    if (a.bekle && sim.t < bekleyen.son && vy < 0) return;
+    bekleyen = null;
+    var dx = a.x - sim.p.x, dy = a.y - sim.p.y, d = Math.sqrt(dx * dx + dy * dy) || 1;
+    aim = { x: dx / d, y: dy / d };
+    E.press(sim, a.x, a.y, { rescue: !!a.rescue, keep: !!a.miss });
+  }
   function up(ev) {
     if (ev.pointerId !== active) return;
     active = null;

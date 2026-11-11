@@ -52,6 +52,9 @@
     TAM_SARIM: 80,      // ...ve o tutunuşta ip en az bu kadar sarıldıysa (yakın halkada kendiliğinden olmasın)
     TAM_PTS: 10,        // sonsuz mod: tam zamanında bırakma puanı (bölüm ödülünü değiştirmez)
     AKIS_PENCERE: 130,  // akış zamanlama ister: ip halkaya bundan uzaktayken (sarılırken) bırakmak akış sayılmaz
+    BEKLE_VY: 150,      // nişan beklemesi: bundan hızlı yükselirken...
+    BEKLE_EK: 110,      // ...yukarı hedef menzilin en çok bu kadar ötesindeyse kanca hemen aşağıya atılmaz
+    BEKLE_SN: 0.35,     // en çok bu kadar beklenir; hedef menzile girmezse aşağıdakine atılır
     TAM_ITIS: 200,      // tam zamanında bırakış ek yukarı itiş verir (birim/sn)
     TAM_SERI_ITIS: 150, // art arda her 3. tam bırakışta bunun kadar daha
     ALEV_ESIK: [2, 4, 7],        // alevlenme: akış sürerken bu kadar TAM bırakış yapınca Çıra alevlenir (1, 2, 3); akış bitince söner
@@ -152,13 +155,20 @@
   }
 
   // Kanca ucunun bu adımda neye çarptığı. ignore: az önce tutunulan halka ya da ahşap.
-  function hookRay(s, x0, y0, x1, y1, ignore) {
+  // Atış anında Çıra'nın değdiği (içinden geçtiği) halkalar: kanca onlara takılmaz, nişan da onları engel saymaz.
+  // Değdiğin halkaya tutunmanın anlamı yok; aday listesi de 18 birimden yakın hedefleri zaten almaz.
+  function yakinHalkalar(s) {
+    var out = [], lim = CFG.R + CFG.RING_R + 5;
+    for (var i = 0; i < s.rings.length; i++) { var rg = s.rings[i]; if (!rg.kapi && dist(s.p.x, s.p.y, rg.x, rg.y) < lim) out.push(rg); }
+    return out;
+  }
+  function hookRay(s, x0, y0, x1, y1, ignore, yakin) {
     var best = null, i;
     var minY = Math.min(y0, y1) - 40, maxY = Math.max(y0, y1) + 40;
     function consider(tt, hit) { if (tt != null && (!best || tt < best.t)) { hit.t = tt; best = hit; } }
     for (i = 0; i < s.rings.length; i++) {
       var rg = s.rings[i];
-      if (rg === ignore || rg.kapi || rg.y < minY || rg.y > maxY) continue;
+      if (rg === ignore || rg.kapi || rg.y < minY || rg.y > maxY || (yakin && yakin.indexOf(rg) >= 0)) continue;
       consider(segCircle(x0, y0, x1, y1, rg.x, rg.y, CFG.RING_R + (rg.sw ? 12 : 2)), { kind: 'ring', ring: rg });
     }
     if (s.goal) consider(segCircle(x0, y0, x1, y1, s.goal.x, s.goal.y, 16), { kind: 'goal' });
@@ -317,13 +327,55 @@
   // Bu noktaya atılan kanca gerçekten oraya mı takılır?
   function reachable(s, c, ignore) {
     var p = s.p, dx = c.x - p.x, dy = c.y - p.y, d = Math.sqrt(dx * dx + dy * dy);
-    var hit = hookRay(s, p.x, p.y, p.x + dx / d * (d + 6), p.y + dy / d * (d + 6), ignore);
+    var hit = hookRay(s, p.x, p.y, p.x + dx / d * (d + 6), p.y + dy / d * (d + 6), ignore, yakinHalkalar(s));
     if (!hit) return false;
     if (c.kind === 'goal') return hit.kind === 'goal';
     return (hit.ring || hit.rect || hit.box) === c.ref;
   }
 
+  // Yukarıdaki c'ye atılan kancanın önce çarptığı şey; bu tarafta ve dik yukarıdaysa (yukarı koşulu) hedef olarak döner.
+  function engel(s, c, ignore, side, refX, refY, slope) {
+    var p = s.p, dx = c.x - p.x, dy = c.y - p.y, d = Math.sqrt(dx * dx + dy * dy) || 1;
+    var ex = p.x + dx / d * (d + 6), ey = p.y + dy / d * (d + 6);
+    var hit = hookRay(s, p.x, p.y, ex, ey, ignore, yakinHalkalar(s));
+    if (!hit) return null;
+    var ref = hit.ring || hit.rect, kind = hit.ring ? 'ring' : hit.rect && hit.rect.type === 'w' ? 'wood' : null;
+    if (!ref || !kind || ref === ignore || (hit.ring && hit.ring.kapi)) return null;
+    var hx = hit.ring ? hit.ring.x : p.x + (ex - p.x) * hit.t, hy = hit.ring ? hit.ring.y : p.y + (ey - p.y) * hit.t;
+    var hdx = hx - p.x, sideOk = side < 0 ? hdx <= CFG.NEAR_V : hdx >= -CFG.NEAR_V;
+    var rise = refY - hy;
+    if (!sideOk || rise < CFG.UP_RISE || rise < Math.abs(hx - refX) * slope) return null; // yalnızca dik yukarıdaki
+    return { x: hx, y: hy, kind: kind, ref: ref };
+  }
+
+  // Nişan (tek el): önce bu taraftaki dik yukarı hedef, sonra yandaki sığ hedef, en son aşağıdaki.
+  // Yükselirken yukarı hedef menzilin hemen ötesindeyse (bekleme koşulu): sonuç "bekle" taşır; oyun kancayı kısa süre
+  // (BEKLE_SN) tutar, hedef menzile girince ona atar. Koşul bozulursa (süre biter, düşmeye başlarsın) aşağıdakine atar.
   function aim(s, f, tapX, tapY) {
+    var r = aimTemel(s, f, tapX, tapY);
+    if (r.rescue || !(r.tier === 2 || r.miss)) return r; // yalnızca aşağıdaki hedef ya da boş atış yerine beklenir (yan halka geçerli)
+    var p = s.p, vy = (p.y - p.py) / CFG.DT;
+    if ((s.rope && s.rope.kind === 'anchor') || vy > -CFG.BEKLE_VY) return r;
+    var side = f < 0.5 ? -1 : 1, ignore = currentIgnore(s), yakin = yakinHalkalar(s), en = null;
+    var list = candidates(s, CFG.HOOK_MAX + CFG.BEKLE_EK);
+    // bekleme sonunda (ya da tepe noktasında) varılacak yer: yukarı hedef oradan menzile girecekse beklenir
+    var vx = (p.x - p.px) / CFG.DT, tb = Math.min(CFG.BEKLE_SN, -vy / CFG.G);
+    var bx = p.x + vx * tb, by = p.y + vy * tb + 0.5 * CFG.G * tb * tb;
+    for (var i = 0; i < list.length; i++) {
+      var c = list[i], dx = c.x - p.x;
+      if (c.ref === ignore || c.d <= CFG.HOOK_MAX - 4) continue;                 // menzildeki zaten değerlendirildi
+      if (!(side < 0 ? dx <= CFG.NEAR_V : dx >= -CFG.NEAR_V)) continue;
+      if (p.y - c.y < CFG.UP_RISE) continue;                                   // yalnızca yukarıdaki
+      var d = c.d, hit = hookRay(s, p.x, p.y, p.x + dx / d * (d + 6), p.y + (c.y - p.y) / d * (d + 6), ignore, yakin);
+      if (!hit || (hit.ring || hit.rect || hit.box || (hit.kind === 'goal' ? 'goal' : null)) !== c.ref) continue;
+      if (dist(bx, by, c.x, c.y) > CFG.HOOK_MAX - 16) continue;                // beklerken menzile girmeyecekse beklenmez
+      if (!en || c.d < en.d) en = c;
+    }
+    if (en) r.bekle = { x: en.x, y: en.y, kind: en.kind, ref: en.ref };
+    return r;
+  }
+
+  function aimTemel(s, f, tapX, tapY) {
     var p = s.p, ignore = currentIgnore(s), list = candidates(s), i, c;
     // hassas dokunuş: hedefin üstüne basıldıysa onu al
     if (tapX != null) {
@@ -368,6 +420,14 @@
       for (i = 0; i < tier.length; i++) {
         if (reachable(s, tier[i], ignore)) return { x: tier[i].x, y: tier[i].y, kind: tier[i].kind, ref: tier[i].ref, tier: tI, assisted: true };
       }
+      // Yukarıdaki hedefin hattını başka bir halka/ahşap kesiyorsa ve o da bu tarafta, dik yukarıdaysa onu al:
+      // kanca o yöne atılınca zaten ona takılır. Yukarı koşulu sağlanmazsa sıradaki kademeye (yan, sonra aşağı) geçilir.
+      if (tI === 0) {
+        for (i = 0; i < tier.length; i++) {
+          var e = engel(s, tier[i], ignore, side, refX, refY, slope);
+          if (e) return { x: e.x, y: e.y, kind: e.kind, ref: e.ref, tier: 0, assisted: true };
+        }
+      }
     }
     var missAt = { x: p.x + dirX * CFG.HOOK_MAX, y: p.y + dirY * CFG.HOOK_MAX, kind: 'none', miss: true, assisted: false };
     // Bu tarafta hedef yok. Diğer tarafta varsa ya da tutunuyorsan: kanca bu yöne boşa gider, ip bırakılmaz.
@@ -397,7 +457,7 @@
     if (s.hook && s.hook.keep) { s.events.push({ type: 'kilit' }); return; }
     if (keep && !rescue) { s.tamSeri = 0; breakCombo(s, 'boş atış'); }
     s.hook = { x: s.p.x, y: s.p.y, ox: s.p.x, oy: s.p.y, dx: dx / d, dy: dy / d, state: 'fly', ignore: ignore,
-      max: rescue ? CFG.RESCUE_MAX : CFG.HOOK_MAX, rescue: rescue, keep: keep };
+      max: rescue ? CFG.RESCUE_MAX : CFG.HOOK_MAX, rescue: rescue, keep: keep, yakin: yakinHalkalar(s) };
     s.shots++;
     if (keep) s.misses++;
     if (rescue) { s.rescues++; if (s.combo > 0) breakCombo(s, 'kurtarma'); }
@@ -435,7 +495,7 @@
         var sgr = s.rings[i];
         if (sgr.sw && sgr !== hk.ignore && dist(hk.x, hk.y, sgr.x, sgr.y) < CFG.RING_R + 12) hit = { kind: 'ring', ring: sgr, x: hk.x, y: hk.y };
       }
-      if (!hit) hit = hookRay(s, hk.x, hk.y, nx, ny, hk.ignore);
+      if (!hit) hit = hookRay(s, hk.x, hk.y, nx, ny, hk.ignore, hk.yakin);
       if (hit) {
         if ((hit.kind === 'ring' || hit.kind === 'wood' || hit.kind === 'goal' || hit.kind === 'box') && s.rope) detach(s, 'repress');
         if (hit.kind === 'ring' || hit.kind === 'wood' || hit.kind === 'goal') {

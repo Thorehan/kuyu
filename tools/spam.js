@@ -9,7 +9,9 @@ const C = E.CFG;
 function rng(seed) { let x = seed >>> 0 || 1; return () => ((x = (x * 1664525 + 1013904223) >>> 0) / 4294967296); }
 function step(s, sec) { const n = Math.round(sec / C.DT); for (let i = 0; i < n && s.status === 'play'; i++) E.step(s); }
 function tap(s, f) {
-  const a = E.aim(s, f);
+  let a = E.aim(s, f);
+  // oyundaki gibi: işaret "bekle" diyorsa kanca kısa süre bekler
+  if (a.bekle) { const son = s.t + C.BEKLE_SN; while (s.status === 'play') { E.step(s); a = E.aim(s, f); if (!a.bekle || s.t >= son || s.p.y - s.p.py >= 0) break; } }
   E.press(s, a.x, a.y, { rescue: !!a.rescue, keep: !!a.miss });
   return a;
 }

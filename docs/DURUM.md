@@ -8,38 +8,30 @@
 - Devir noktası: v0.51, etiket `geri-donus-v0.51`
 - Devir Mustafa'dayken Törehan projede geliştirme yapmaz; geri devir `docs/DEVIR-MUSTAFA.md` §6'daki adımlarla yapılır.
 
-## Son durum (v0.51)
+## Son durum (v0.55)
 
-- Yayında: https://thorehan.github.io/kuyu/
-- Son yapılanlar:
-  - v0.48: takip eden su
-  - v0.49: devam hakkı
-  - v0.50: güçlendirmeler (kalkan, fener, kanat) ve su takibi düzeltmesi
-  - v0.51: "dokun ve başla" ana ekranı, Bölümler → Hikâye
-- Testler temiz:
-  - bot çıkış 0
-  - nişanda kurala aykırı 0
-  - tek tarafa basan oyuncu 0/74
-  - ekonomi günde ~98 ateşböceği
-  - hata.js: hatasız oyuncu hiç yanmıyor, %10 hata ~2 dk'da yakıyor, spam ~1 dk'da yanıyor
-- Telefonda henüz denenmedi: v0.50'nin su ayarı ve v0.51'in ana ekranı.
+- **Yayında hâlâ v0.51.** v0.52–v0.55 yerelde commit'lendi, push edilmedi (Mustafa'nın onayı bekleniyor).
+- Bu dönemde yapılanlar (ayrıntı `docs/yol-haritasi.md`, `README.md`):
+  - v0.52: bölge suyu (Hikâye'de zorluk eğrisi, 17. bölümden başlar)
+  - v0.53: ekonomi dengesi, Dolap 47 görünüm, Alev rengi, ışık yolu 20 seviye
+  - v0.54: Haftalık Kuyu ve lig
+  - v0.55: meydan okuma bağlantısı, skor tablosu istemcisi (kapalı), yedek kodu, pazar araştırması
+- Testler temiz: bot çıkış 0 · nişanda kurala aykırı 0 · tek taraf 0/74 · spam ile geçilen bölüm 74 → 37/76 · hatasız oyuncu Sonsuz ve Haftalık'ta yanmıyor · ortalama gün ~119 ateşböceği · birim testleri (ekonomi, görev, hayalet, istatistik, online) tamam.
+- Telefonda denenmedi: v0.50'den beri hiçbir şey. Liste: `docs/telefon-testi.md` §6.
 
-## Sıradaki iş (İstişare 2'nin kalanı, sırayla)
+## Sıradaki iş
 
-1. **Telefonda deneme:** `docs/telefon-testi.md`. Özellikle şunlar: su çok mu affediyor, çok mu sert; dokun ve başla; güçlendirmeler.
-2. **Görsel akıcılık:**
-   - kamera: yumuşak takip, hıza göre bakış
-   - ekran ve koşu geçişleri
-   - paralaks derinlik (arka duvar katmanları)
-   - su ve ışık
-3. **24 uzun, öğretici bölüm (4 bölge × 6):** Her yeni mekanik kendi bölümünde öğretilir. Bölümler 1,5–2,5 dk sürer, kontrol noktalıdır. Eski ilerleme, bekçinin notları ve bölge finalleri yeni bölümlere taşınır. En büyük iş bu; başlamadan önce Törehan ile plan konuşulur.
+1. **Telefonda deneme**, özellikle bölge suyu mesafeleri ve Haftalık Kuyu.
+2. **Push kararı** (Mustafa) ve Pages'te sürüm doğrulaması.
+3. **Skor tablosunu açmak:** Supabase hesabı + iki değer (`docs/online-kurulum.md`).
+4. İstişare 2'nin kalanı: görsel akıcılık → 24 uzun bölüm (Törehan ile planlanır).
 
 ## Açık sorular (Törehan'a)
 
-- Bekçinin adı.
-- İki para birimi mi, tek mi (ateşböceği + ödül puanı)?
-- Online için arka uç seçimi.
-- Müzik: gerçek parçalar Mustafa'dan (`js/muzik.js` → `PARCALAR`, dosyalar `assets/muzik/`).
+- Bu dönemde alınan ve oyunun hissine dokunan kararların gözden geçirilmesi: `docs/yol-haritasi.md` → "Törehan'ın gözden geçirmesi için".
+- Online için arka uç: öneri Supabase (istemci bu biçimde yazıldı); hesap kimde açılacak?
+- Ölçüm (analitik) eklensin mi, hangi hizmet?
+- Bekçinin adı. İki para birimi mi, tek mi. Müzik parçaları (Mustafa'dan).
 
 ## Devir geçmişi
 

@@ -35,6 +35,20 @@ Her maddenin yanına ✓ (sorun yok), ✗ (sorun var) ya da kısa bir not yazın
 - [ ] Yakalanınca sonuç kartı çıkıyor; "Yeniden dene" hemen başlatıyor.
 - [ ] Profil kartında (ana menüde adınıza dokunun) rekor, metre ve kat görünüyor.
 
+## 6. Yeni olanlar (v0.52 – v0.55, yaklaşık 10 dk)
+Yayına çıkmadan yerelde denemek için: bilgisayarda `python3 -m http.server 8766`, telefonda aynı Wi-Fi'de `http://<bilgisayarın-IP'si>:8766`.
+- [ ] **17. bölüm** (Hikâye → 17): "Su artık seni izliyor" kartı çıkıyor ve anlaşılıyor.
+- [ ] 17–20. bölümlerde yanlış tarafa basınca ip bırakılıyor; bu adil mi, sinir bozucu mu?
+- [ ] Su mesafesi: Maden (17–36) çok mu affediyor, çok mu sert? Kristal Mağara (37+) ve Eski Kule (57+) için de not.
+- [ ] **Haftalık Kuyu** (ana menüde mor şerit): koşu başlıyor, sonuç kartında lig ve üst lige kalan puan okunuyor.
+- [ ] Haftalık Kuyu, Sonsuz Kuyu'dan belirgin biçimde daha gergin mi?
+- [ ] **Meydan oku** (Sonsuz ya da Haftalık sonuç kartı): paylaşım menüsü açılıyor; bağlantıyı başka telefonda açınca aynı kuyu geliyor ve sonuç iki puanı karşılaştırıyor.
+- [ ] **Dolap:** altı sekme sığıyor; Alev sekmesinde önizleme alevli; "Işık N" yazan ürünler satın alınamıyor.
+- [ ] Alev rengi satın alınınca oyunda alev, iz ve "ALEV!" yazısı o renkte.
+- [ ] **Ayarlar → Yedek kodu al:** kod kopyalanıyor; başka tarayıcıda "Yedekten yükle" ilerlemeyi getiriyor.
+- [ ] Görevler: hedefler (ör. 20 ateşböceği, 1000 m) bir oturumda makul mü?
+- [ ] 360 px genişlikte ana menü tek ekrana sığıyor, yana taşma yok.
+
 ## 5. Genel izlenim (serbest)
 - En sevdiğim an:
 - En çok zorlandığım yer:

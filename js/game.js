@@ -506,10 +506,30 @@
       } else if (e.type === 'comboBreak') floatText(sim.p.x, sim.p.y - 26, 'akış bitti (' + e.why + ')', '#8fa09c', 12);
       else if (e.type === 'slip') { SFX.slip(); buzz(30); floatText(sim.p.x, sim.p.y - 24, 'el kaydı!', COL.kahraman, 15); }
       else if (e.type === 'tam') {
-        // Tam zamanında bırakma: altın ışıltı, iki notalı tını; sonsuzda puanı da yazar
-        tone(988, 0.09, 'sine', 0.06); setTimeout(function () { tone(1480, 0.14, 'sine', 0.05); }, 55);
-        burst(e.x, e.y, 10, '#ffd36a', 190, 0.35, -30);
-        floatText(e.x + 18, e.y - 14, mode === 'endless' ? 'TAM! +' + CFG.TAM_PTS : 'TAM!', '#ffd36a', 14);
+        // Tam zamanında bırakma: altın ışıltı, iki notalı tını; sonsuzda puanı da yazar. Her 3. art arda TAM'da ek itiş.
+        var seri3 = e.seri && e.seri % 3 === 0;
+        tone(988, 0.09, 'sine', 0.06); setTimeout(function () { tone(seri3 ? 1760 : 1480, 0.14, 'sine', 0.05); }, 55);
+        burst(e.x, e.y, seri3 ? 18 : 10, '#ffd36a', 190, 0.35, -30);
+        floatText(e.x + 18, e.y - 14, (seri3 ? 'TAM x' + e.seri + '!' : 'TAM!') + (mode === 'endless' ? ' +' + CFG.TAM_PTS : ''), '#ffd36a', seri3 ? 17 : 14);
+      }
+      else if (e.type === 'itis') {
+        // bırakış itişi (TAM ya da alev): aşağı saçılan kıvılcımlar ve kısa bir hışırtı
+        tone(260 + e.guc * 0.4, 0.16, 'triangle', 0.04, 520 + e.guc * 0.8);
+        burst(e.x, e.y + CFG.R, 6 + Math.round(e.guc / 50), e.alev ? ALEV_RENK[e.alev - 1] : '#ffd36a', 160, 0.4, 220);
+        if (e.guc >= 300) buzz(10);
+      }
+      else if (e.type === 'alev') {
+        if (e.seviye > e.onceki) {
+          tone([392, 523, 659][e.seviye - 1], 0.3, 'sawtooth', 0.035, [523, 659, 880][e.seviye - 1]);
+          burst(sim.p.x, sim.p.y, 14 + 4 * e.seviye, ALEV_RENK[e.seviye - 1], 200, 0.5, -60);
+          floatText(sim.p.x, sim.p.y - 34, ALEV_AD[e.seviye - 1], ALEV_RENK[e.seviye - 1], 16 + 2 * e.seviye);
+          buzz([12, 30, 12]);
+          // ilk alevlenmede bir kez, oyunu durdurmayan kısa açıklama
+          if (!save.seen.alev && window.KuyuScreens && window.KuyuScreens.hikaye) {
+            save.seen.alev = 1; persist();
+            window.KuyuScreens.hikaye('Alevlendin!', 'Akış x5: Çıra alev aldı. Akış sürdükçe her erken bırakış seni daha yükseğe fırlatır; x10 ve x15\'te alev büyür. TAM bırakış da iter.', 6000);
+          }
+        } else if (e.seviye === 0) tone(330, 0.25, 'sine', 0.04, 165); // alev söndü
       }
       else if (e.type === 'clink') { SFX.clink(); burst(e.x, e.y, 7, '#e9f3f0', 220, 0.25, 0); }
       else if (e.type === 'firefly') { SFX.firefly(); buzz([8, 40, 8]); burst(e.x, e.y, 16, COL.atesbocegi, 160, 0.6, -40); if (mode === 'endless') floatText(e.x, e.y - 10, '+25', COL.atesbocegi, 14); notAl(e); }
@@ -862,15 +882,34 @@
     ctx.beginPath(); ctx.arc(sim.p.x, sim.p.y, CFG.R + 6, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * left); ctx.stroke();
   }
 
+  // Alevlenme (akış x5 / x10 / x15): Çıra'nın etrafında titreyen alev; basamak büyüdükçe büyür ve sararır
+  var ALEV_RENK = ['#ff9a3c', '#ffb84a', '#ffe08a'], ALEV_AD = ['ALEV!', 'ALEV x2!', 'TAM ALEV!'];
+  function drawAlev(p, t, a) {
+    var r = CFG.R * (1.7 + 0.45 * a), fl = 0.85 + 0.15 * Math.sin(t / 60);
+    var g = ctx.createRadialGradient(p.x, p.y, CFG.R * 0.6, p.x, p.y, r * fl);
+    g.addColorStop(0, 'rgba(255,170,70,' + (0.35 + 0.12 * a) + ')'); g.addColorStop(1, 'rgba(255,120,40,0)');
+    ctx.fillStyle = g; ctx.fillRect(p.x - r, p.y - r, r * 2, r * 2);
+    // yukarı kıvrılan alev dilleri
+    ctx.fillStyle = ALEV_RENK[a - 1];
+    for (var k = 0; k < 3 + a; k++) {
+      var ph = t / 90 + k * 2.1, ox = Math.sin(ph) * CFG.R * 0.7, h = CFG.R * (0.9 + 0.35 * a) * (0.7 + 0.3 * Math.sin(ph * 1.7));
+      ctx.globalAlpha = 0.55;
+      ctx.beginPath(); ctx.moveTo(p.x + ox - 4, p.y - CFG.R * 0.5); ctx.quadraticCurveTo(p.x + ox + Math.sin(ph * 2) * 4, p.y - CFG.R * 0.5 - h * 0.6, p.x + ox, p.y - CFG.R * 0.5 - h);
+      ctx.quadraticCurveTo(p.x + ox + 2, p.y - CFG.R * 0.5 - h * 0.4, p.x + ox + 4, p.y - CFG.R * 0.5); ctx.closePath(); ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+  }
   function drawHero(t) {
     var p = sim.p, vx = p.x - p.px, vy = p.y - p.py;
     var sp = Math.sqrt(vx * vx + vy * vy);
-    trail.unshift({ x: p.x, y: p.y }); if (trail.length > 7) trail.pop();
-    var hot = sim.combo >= 2;
+    trail.unshift({ x: p.x, y: p.y }); if (trail.length > (sim.alev ? 10 : 7)) trail.pop();
+    var hot = sim.combo >= 2, alev = sim.alev || 0;
+    if (alev) drawAlev(p, t, alev);
     if (trail.length > 2) {
-      ctx.strokeStyle = hot ? COL.atesbocegi : trailCol(t); ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+      ctx.strokeStyle = alev ? ALEV_RENK[alev - 1] : hot ? COL.atesbocegi : trailCol(t); ctx.lineCap = 'round'; ctx.lineJoin = 'round';
       for (var i = 1; i < trail.length; i++) {
-        ctx.lineWidth = (hot ? 6 : 5) - i * 0.55;
+        ctx.lineWidth = (alev ? 6 + alev : hot ? 6 : 5) - i * 0.55;
+        if (ctx.lineWidth <= 0) break;
         ctx.beginPath(); ctx.moveTo(trail[i - 1].x, trail[i - 1].y + 3); ctx.lineTo(trail[i].x, trail[i].y + 3 + i * 0.6); ctx.stroke();
       }
     }

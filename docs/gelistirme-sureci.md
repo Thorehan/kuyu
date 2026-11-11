@@ -32,6 +32,8 @@ Kalan işler geliştirme sırasına göre. Bekleyenler senden bir karar ya da te
 4. [x] Ateşböceği ışığı (v0.40): ömür boyu kazanılan ateşböceği (harcamak söndürmez) 10 ışık seviyesine bölünür (25, 60, 120, 200, 320, 480, 700, 1000, 1400, 2000). Menüdeki kuyuda ateşböcekleri çoğalır, sıcak parıltı artar, 3. seviyeden sonra duvar fenerleri yanar. Profil'de "Kuyunun ışığı" çubuğu; seviye atlayınca menüde bildirim.
 5. [x] İkinci yolculuk (v0.41): 77. bölümden sonra her bölgeye ilk girişte kendi kartı; Çıra'nın yolu'nda toplanır, bölüm listesinde "· ikinci yolculuk".
 
+6. [x] Hızlanma (v0.42, karar 2026-11-11): akış x5/x10/x15'te alevlenme, alevliyken erken bırakış +150/+250/+350 yukarı itiş; TAM bırakış +200, art arda her 3. TAM'da +150 daha. Kanca uçuşu ve ip sarma hızı aynı. Ortalama/iyi oyuncunun temposu aynı (1:17); akışla oynayan %13 daha yükseğe çıkıyor.
+
 Bekleyenler: telefon denemesi düzeltmeleri, fiyatların gözden geçirilmesi, ana menü geri bildirimi, bekçinin adı, online için arka uç seçimi, Mustafa'nın parçaları.
 
 ## Yapılacaklar listesi (2026-11-10)
@@ -113,6 +115,7 @@ Kullanıcı hikâyeye online'dan önce geçti; online (5) sonra.
 ## Yapılanlar
 - 2026-11-11 · v0.34 · Hikâye: Çıra (önsöz, bölge kartları, Çıra'nın yolu, metinler); oyun ekranı gizliyken döngü çizim yapmaz.
 - 2026-11-11 · v0.35 · Bekçinin notları: 12 not, ateşböceği yolunda; Çıra'nın yolu'nda okunur.
+- 2026-11-11 · v0.42 · Alevlenme ve TAM itişi: akış basamaklarında Çıra alevlenir, erken bırakışlar ve TAM bırakışlar yukarı iter; ilk alevlenmede kısa açıklama.
 - 2026-11-11 · v0.41 · İkinci yolculuk: 77+ bölge kartları ve Çıra'nın yolu metinleri; bölüm listesinde yolculuk adı.
 - 2026-11-11 · v0.40 · Kuyunun ışığı: kazanılan ateşböcekleri menüdeki kuyuyu kalıcı aydınlatır (10 seviye); Profil'de ilerleme.
 - 2026-11-11 · v0.39 · Günün kuralı: Günlük Kuyu'da herkes için aynı tek değişiklik; menü kartında ve koşu başında gösterilir.

@@ -1,6 +1,6 @@
 # Kuyu
 
-**Funday Morning Games** · 2D mobil oyun · prototip v0.41
+**Funday Morning Games** · 2D mobil oyun · prototip v0.42
 
 Derin bir kuyunun dibindesin. Telefonu tek elle tut: ekranın soluna ya da sağına dokun, kanca o taraftaki hedefe fırlasın; basılı tut, ipe sarıl; bırak, savrul. Halkadan halkaya, ahşaptan ahşaba tırmanıp kuyudan çık.
 
@@ -90,6 +90,11 @@ Yolun üstünde, bir halkadan sıradakine giden hatta duran yatay şerit (112 bi
 En iyi koşunun soluk bir kopyası seninle aynı zamanlamayla tırmanır: bölümde en kısa süreli geçişin, Sonsuz Kuyu'da rekor koşun, Günlük Kuyu'da günün en iyisi. Sonsuz her koşuda farklı olduğundan orada bir yükseklik yarışıdır. Hayalet ekranın dışındaysa üst ya da alt kenarda küçük bir işaret görünür. Yalnızca görüntüdür; nişan, puan ve fizik etkilenmez. Ayarlar → Hayalet ile kapatılır.
 
 Kayıt `js/hayalet.js`: kahramanın yeri sim zamanına göre saniyede 15 kez alınır, farklarla yazılır (~60 bayt/sn) ve ana kayıttan ayrı `kuyu.hayalet` anahtarında durur. Test: `node tools/hayalet-test.js`.
+
+## Alevlenme ve TAM itişi (v0.42)
+Bas-bırak'tan daha etkili hızlanma, ustalıkla gelir. Akış x5'te Çıra **alevlenir**, x10'da alev büyür, x15'te tam alev olur. Alevliyken erken bırakış (fırlama) ek yukarı itiş verir: +150 / +250 / +350 birim/sn (`ALEV_ESIK`, `ALEV_ITIS`). Akış bozulunca alev söner. **TAM** bırakış da +200 iter; art arda her 3. TAM'da +150 daha (`TAM_ITIS`, `TAM_SERI_ITIS`). Asılı kalıp bırakan itiş almaz. Kanca uçuşu ve ip sarma hızı (REEL 760) aynı kalır; hız halkası gibi yalnızca bırakış anında itiş.
+
+Ölçüm (`tools/tempo.js`, `tools/oyuncu.js`): ortalama ve iyi oyuncunun yakalanma süresi aynı (1:17); akışla oynayan bot Sonsuz'da %13 daha yükseğe çıkıyor; bütün bölümler geçiliyor, tek tarafla geçiş yok.
 
 ## Tam zamanında bırakma (v0.37)
 İp halkaya varmadan hemen önce (son ~0,09 sn, `TAM_PENCERE` 70 birim) bırakılırsa altın bir ışıltı, iki notalı tını ve "TAM!" yazısı gelir; Sonsuz Kuyu'da +10 puan (`TAM_PTS`). Bölüm ödülü değişmez, fizik aynıdır: yalnızca akışı öğreten bir geri bildirim. O tutunuşta ip en az 80 birim sarılmış olmalı (`TAM_SARIM`), yoksa yakın halkada kendiliğinden olurdu. Sonuç kartında kaç kez yapıldığı görünür.

@@ -51,6 +51,11 @@
     TAM_PENCERE: 70,    // tam zamanında bırakma: ip halkaya bu kadar kala (≈0,09 sn) bırakılırsa
     TAM_SARIM: 80,      // ...ve o tutunuşta ip en az bu kadar sarıldıysa (yakın halkada kendiliğinden olmasın)
     TAM_PTS: 10,        // sonsuz mod: tam zamanında bırakma puanı (bölüm ödülünü değiştirmez)
+    TAM_ITIS: 200,      // tam zamanında bırakış ek yukarı itiş verir (birim/sn)
+    TAM_SERI_ITIS: 150, // art arda her 3. tam bırakışta bunun kadar daha
+    ALEV_ESIK: [5, 10, 15],      // alevlenme: akış bu basamaklara ulaşınca Çıra alevlenir (1, 2, 3)
+    ALEV_ITIS: [150, 250, 350],  // alevliyken erken bırakış (fırlama) bu kadar ek yukarı itiş verir
+    // (kanca uçuşu ve ip sarma hızı aynı kalır; hız halkası gibi yalnızca bırakış anında itiş: karar 2026-11-11)
     COMBO_PTS: 3,       // sonsuz mod: akışlı her tutunma min(akış, COMBO_CAP) × bu kadar puan
     COMBO_CAP: 12
   };
@@ -100,7 +105,7 @@
       grounded: false,
       // akış ve skor
       hang: 0, air: 0, chain: false, combo: 0, maxCombo: 0, hooks: 0, shots: 0, slips: 0,
-      startY: sy, topY: sy, bonus: 0, fireflyPts: 0, maxSpeed: 0, rescues: 0, misses: 0, boosts: 0, gates: 0, springs: 0, float: 0, portals: 0, swings: 0, ffGot: 0, tam: 0
+      startY: sy, topY: sy, bonus: 0, fireflyPts: 0, maxSpeed: 0, rescues: 0, misses: 0, boosts: 0, gates: 0, springs: 0, float: 0, portals: 0, swings: 0, ffGot: 0, tam: 0, tamSeri: 0, alev: 0, itisler: 0
     };
     // geçit çiftlerini bağla
     s.rings.forEach(function (g) {
@@ -208,6 +213,13 @@
   function breakCombo(s, why) {
     if (s.combo >= 2) s.events.push({ type: 'comboBreak', combo: s.combo, why: why });
     s.combo = 0; s.chain = false;
+    alevGuncelle(s);
+  }
+  // Alevlenme basamağı akıştan gelir; değişince olay yazılır (görüntü ve ses için)
+  function alevGuncelle(s) {
+    var a = 0, E = CFG.ALEV_ESIK;
+    for (var i = 0; i < E.length; i++) if (s.combo >= E[i]) a = i + 1;
+    if (a !== s.alev) { s.events.push({ type: 'alev', seviye: a, onceki: s.alev }); s.alev = a; }
   }
 
   // İpi bırak (parmak kalktı, yeni atış ya da el kaydı).
@@ -216,12 +228,21 @@
     if (!rp) return;
     if (rp.kind === 'anchor') {
       // Tam zamanında bırakma: ip halkaya varmadan hemen önce bırakılırsa küçük ödül (yalnızca geri bildirim + puan; fizik aynı)
+      var tamOldu = false, itis = 0;
       if ((why === 'release' || why === 'repress') && rp.len0 != null && rp.len > CFG.MIN_LEN + 0.5 && rp.len <= CFG.MIN_LEN + CFG.TAM_PENCERE && rp.len0 - rp.len >= CFG.TAM_SARIM) {
-        s.tam++; s.bonus += CFG.TAM_PTS;
-        s.events.push({ type: 'tam', x: s.p.x, y: s.p.y });
-      }
+        tamOldu = true; s.tam++; s.tamSeri++; s.bonus += CFG.TAM_PTS;
+        itis += CFG.TAM_ITIS;
+        if (s.tamSeri % 3 === 0) itis += CFG.TAM_SERI_ITIS;
+        s.events.push({ type: 'tam', x: s.p.x, y: s.p.y, seri: s.tamSeri });
+      } else if (why !== 'repress') s.tamSeri = 0;
       s.lastAnchor = rp; s.lastAnchorT = s.t;
       s.chain = s.hang < CFG.EARLY && why !== 'slip';
+      // Alevliyken erken bırakış (fırlama) ek yukarı itiş verir; asılı kalıp bırakan almaz
+      if (s.chain && s.alev > 0) itis += CFG.ALEV_ITIS[s.alev - 1];
+      if (itis > 0) {
+        s.p.py += itis * CFG.DT; s.itisler++;
+        s.events.push({ type: 'itis', x: s.p.x, y: s.p.y, guc: itis, alev: s.alev, tam: tamOldu });
+      }
       s.air = 0;
       // Hız halkası: bırakınca yukarı fırlatır (el kayması hariç)
       if (rp.ref && rp.ref.hiz && why !== 'slip') {
@@ -246,6 +267,7 @@
       s.bonus += Math.min(s.combo, CFG.COMBO_CAP) * CFG.COMBO_PTS;
       s.events.push({ type: 'combo', combo: s.combo, x: x, y: y });
     }
+    alevGuncelle(s);
     s.events.push({ type: 'attach', x: x, y: y, what: what });
   }
 
@@ -574,7 +596,7 @@
   function passGate(s, gt) {
     gt.got = true;
     s.gates++;
-    s.combo++;
+    s.combo++; alevGuncelle(s);
     s.air = 0;        // havada kalma süresi tazelenir
     if (s.combo > s.maxCombo) s.maxCombo = s.combo;
     if (s.combo >= 2) s.bonus += Math.min(s.combo, CFG.COMBO_CAP) * CFG.COMBO_PTS;

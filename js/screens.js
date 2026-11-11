@@ -147,8 +147,9 @@
     Object.keys(s.best || {}).forEach(function (k2) { tot += s.best[k2].reward || 0; ates += s.best[k2].ff || 0; });
     $('toplamOdul').textContent = tot + (s.odulEk || 0);
     $('toplamAtes').textContent = G.cuzdan().ates; // harcanabilir bakiye
-    var rec = s.endless || {};
-    $('sonsuzRekor').textContent = rec.score ? 'Rekor ' + rec.score + ' · ' + rec.meters + ' m' : 'Bölüm yok, su yükselir';
+    var rec = s.endless || {}, ilk = ilkKez();
+    $('dokunAlt').textContent = ilk ? "İlk Halka · Çıra'nın yolu başlıyor" : rec.meters ? 'Sonsuz Kuyu · en iyi ' + rec.meters + ' m' : 'Sonsuz Kuyu';
+    $('dokunBtn').setAttribute('aria-label', ilk ? 'Başla: İlk Halka' : 'Başla: Sonsuz Kuyu');
     renderAnaGorev();
     var di = G.dailyInfo();
     $('gunlukBilgi').textContent = di.tries ? di.kural.ad + ' · en iyi ' + di.best : 'Bugün: ' + di.kural.ad;
@@ -189,7 +190,9 @@
   }
   $('anaGorevBtn').addEventListener('click', function () { openTasks(); });
   $('oynaBtn').addEventListener('click', function () { G.startLevel(save().last || 1); });
-  $('sonsuzBtn').addEventListener('click', function () { G.startEndless(); });
+  // dokun ve başla: ilk bölüm geçilene dek öğretici (İlk Halka), sonra Sonsuz Kuyu
+  function ilkKez() { var b = (save().best || {})[1]; return !(b && b.done); }
+  $('dokunBtn').addEventListener('click', function () { if (ilkKez()) G.startLevel(1); else G.startEndless(); });
   $('gunlukBtn').addEventListener('click', function () { G.startDaily(); });
   $('profilBtn').addEventListener('click', function () { openProfile(); });
 
@@ -692,10 +695,10 @@
     // halkalar
     var ringY = current === 'ekAna' ? h * 0.47 : h * 0.52;
     if (current === 'ekAna') {
-      // kahraman logo ile alttaki kartlar (görev şeridi) arasındaki boşlukta sallansın, arkalarına girmesin
+      // kahraman logo ile "Başlamak için dokun" yazısı arasındaki boşlukta sallansın, üstlerine binmesin
       var cvTop = sceneCanvas.getBoundingClientRect().top;
       var lb = document.querySelector('#ekAna .ana-logo').getBoundingClientRect().bottom - cvTop;
-      var at = document.querySelector('#ekAna .ana-alt').getBoundingClientRect().top - cvTop;
+      var at = document.querySelector('#ekAna .dokun-yazi').getBoundingClientRect().top - cvTop; // "dokun" yazısının üstünde kalsın
       ringY = Math.max(lb + 16 * u, Math.min(ringY, at - 46 * u - 13 * u - 12));
     }
     ring(ctx, cx, ringY, 11 * u);

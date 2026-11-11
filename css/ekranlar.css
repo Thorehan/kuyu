@@ -475,3 +475,28 @@ button:active { filter: brightness(.94); }
 /* güçlendirme çipleri (v0.50) */
 .cip.guc-cip { color: #ffd36a; border-color: rgba(255,211,106,.45); font-weight: 700; }
 .cip.guc-cip.kalkan { color: #7fd6ff; border-color: rgba(127,214,255,.45); }
+
+/* Dokun ve başla (v0.51, İstişare 2): sahnenin ortası tek büyük dokunma alanı; altta nabız gibi atan çağrı */
+.dokun-alan {
+  flex: 1 1 auto; width: 100%; max-width: 448px; margin: 0 auto; min-height: 140px; padding: 0 0 6px;
+  display: flex; align-items: flex-end; justify-content: center;
+  background: none; border: none; box-shadow: none; border-radius: 0; color: inherit; -webkit-tap-highlight-color: transparent;
+}
+.dokun-alan:hover, .dokun-alan:active { background: none; transform: none; box-shadow: none; }
+.dokun-alan:focus-visible { outline: 2px solid var(--gok); outline-offset: -6px; border-radius: 20px; }
+.dokun-yazi { display: flex; flex-direction: column; align-items: center; gap: 4px; pointer-events: none; }
+.dokun-yazi b {
+  font-family: var(--font-oyun); font-weight: 800; font-size: 26px; letter-spacing: .01em; color: #ffe2b8;
+  text-shadow: 0 3px 0 #0b1213, 0 0 22px rgba(255,140,60,.55); animation: dokunNabiz 1.8s ease-in-out infinite;
+}
+.dokun-yazi span { color: var(--soluk); font-size: 13px; font-variant-numeric: tabular-nums; text-shadow: 0 1px 0 #0b1213; }
+@keyframes dokunNabiz { 0%, 100% { opacity: .62; transform: scale(.97); } 50% { opacity: 1; transform: scale(1); } }
+.ana-ekran .ana-alt { margin: 0 auto; }
+.ana-kart.hikaye { background: linear-gradient(160deg, rgba(74,42,26,.95), rgba(40,26,20,.95)); border-color: #7a3f22; }
+.ana-kart.hikaye b { color: #ffb48a; }
+.ana-kart.hikaye > span:nth-child(2) { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+.ana-kart.hikaye .hedefler { margin-top: 3px; }
+.ana-kart.hikaye .hedefler i { background: rgba(255,180,138,.22); }
+.ana-kart.hikaye .hedefler i.var { background: #ffd36a; box-shadow: none; }
+@media (max-height: 680px) { .dokun-alan { min-height: 90px; } .dokun-yazi b { font-size: 22px; } }
+@media (prefers-reduced-motion: reduce) { .dokun-yazi b { animation: none; opacity: 1; } }

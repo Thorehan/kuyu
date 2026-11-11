@@ -8,7 +8,10 @@
   var EKRANLAR = ['ekAcilis', 'ekGiris', 'ekTanitim', 'ekAna', 'ekBolumler', 'ekAyarlar', 'ekProfil', 'ekGorevler', 'ekDolap', 'ekIstat'];
   var current = 'ekAcilis';
   var q = new URLSearchParams(location.search);
-  var deepLink = q.get('mod') === 'gunluk' ? { mode: 'daily' } : q.get('mod') === 'haftalik' ? { mode: 'weekly' } : q.get('mod') === 'sonsuz' ? { mode: 'endless' } : q.get('bolum') ? { mode: 'level', n: parseInt(q.get('bolum'), 10) || 1 } : null;
+  var ONL = window.KuyuOnline;
+  if (q.get('online') && ONL) ONL.ayarBaglanti(q.get('online')); // ?online=yerel: yerel sahte skor sunucusu; ?online=kapat
+  var meydanLink = ONL && q.get('meydan') ? ONL.meydanCoz(q.get('meydan')) : null;
+  var deepLink = meydanLink ? { mode: 'meydan', m: meydanLink } : q.get('mod') === 'gunluk' ? { mode: 'daily' } : q.get('mod') === 'haftalik' ? { mode: 'weekly' } : q.get('mod') === 'sonsuz' ? { mode: 'endless' } : q.get('bolum') ? { mode: 'level', n: parseInt(q.get('bolum'), 10) || 1 } : null;
   var save = function () { return G.save(); };
 
   var SEKMELER = ['ekAna', 'ekBolumler', 'ekGorevler', 'ekDolap', 'ekProfil', 'ekAyarlar', 'ekIstat'];
@@ -71,7 +74,7 @@
   function openDeepLink() {
     var d = deepLink; deepLink = null;
     try { history.replaceState(null, '', location.pathname); } catch (e) {}
-    if (d.mode === 'daily') G.startDaily(); else if (d.mode === 'weekly') G.startWeekly(); else if (d.mode === 'endless') G.startEndless(); else G.startLevel(d.n);
+    if (d.mode === 'meydan') G.startMeydan(d.m); else if (d.mode === 'daily') G.startDaily(); else if (d.mode === 'weekly') G.startWeekly(); else if (d.mode === 'endless') G.startEndless(); else G.startLevel(d.n);
   }
 
   // ---------- giriş ----------
@@ -365,6 +368,9 @@
   function renderDolap() {
     var sv = save(), bak = G.cuzdan().ates, kus = sv.dolap.kusan, sahip = sv.dolap.sahip;
     $('dolapBakiye').textContent = bak;
+    // koleksiyon: bedava varsayılanlar dışında sahip olunan / toplam
+    var KAT = window.KuyuEkonomi.KATALOG, ozel = KAT.filter(function (it) { return it.fiyat !== 0; });
+    $('dolapKoleksiyon').textContent = 'Koleksiyon ' + ozel.filter(function (it) { return sahip.indexOf(it.id) >= 0; }).length + '/' + ozel.length;
     document.querySelectorAll('[data-dolap]').forEach(function (b) { b.setAttribute('aria-selected', b.dataset.dolap === dolapTur ? 'true' : 'false'); });
     $('dolapListe').innerHTML = window.KuyuEkonomi.KATALOG.filter(function (it) { return it.tur === dolapTur; }).map(function (it) {
       var has = sahip.indexOf(it.id) >= 0, on = kus[it.tur] === it.id, bak2 = onizleme === it.id, durum;
@@ -606,6 +612,18 @@
   $('istatSifirla').addEventListener('click', function () {
     if (!sifirSor) { sifirSor = true; $('istatSifirla').textContent = 'Emin misin? Silmek için tekrar dokun'; return; }
     G.istatSifirla(); toast('İstatistik sıfırlandı'); openIstat();
+  });
+  // Yedek: ilerleme kodu panoya kopyalanır; geri yükleme kodu yapıştırılarak yapılır (bu cihazdaki ilerlemenin yerine geçer)
+  $('yedekAlBtn').addEventListener('click', function () {
+    var kod = G.yedekAl();
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(kod).then(function () { toast('Yedek kodu kopyalandı. Notlarına ya da kendine mesaj olarak sakla.', 3600); }, function () { window.prompt('Yedek kodun (kopyala ve sakla):', kod); });
+    else window.prompt('Yedek kodun (kopyala ve sakla):', kod);
+  });
+  $('yedekYukleBtn').addEventListener('click', function () {
+    var kod = window.prompt('Yedek kodunu yapıştır (KUYU1. ile başlar):');
+    if (!kod) return;
+    if (!window.confirm('Bu cihazdaki ilerlemenin yerine yedekteki ilerleme gelecek. Devam edilsin mi?')) return;
+    if (G.yedekYukle(kod)) location.reload(); else toast('Kod geçersiz. KUYU1. ile başlayan kodun tamamını yapıştır.', 3600);
   });
   $('ipucuSifirBtn').addEventListener('click', function () { G.resetIntros(); toast('Tanıtım kartları yeni şeyleri ilk gördüğünde yeniden çıkacak.'); });
 

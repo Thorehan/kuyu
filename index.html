@@ -16,8 +16,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&family=Figtree:wght@400;600&display=swap">
-<link rel="stylesheet" href="css/kuyu.css?v=0.54">
-<link rel="stylesheet" href="css/ekranlar.css?v=0.54">
+<link rel="stylesheet" href="css/kuyu.css?v=0.55">
+<link rel="stylesheet" href="css/ekranlar.css?v=0.55">
 </head>
 <body>
 <div class="app" id="oyunEkrani" hidden>
@@ -72,7 +72,7 @@
   <img id="acilisLogo" class="marka-logo" src="assets/funday-morning-logo.webp" alt="Funday Morning Games">
   <div class="yukleme" aria-hidden="true"><div id="yuklemeDolgu"></div></div>
   <div class="yukleme-not" id="yuklemeNot">Yükleniyor…</div>
-  <div class="ek-surum">Kuyu v0.54</div>
+  <div class="ek-surum">Kuyu v0.55</div>
 </section>
 
 <!-- Giriş: yalnızca ilk açılışta -->
@@ -170,7 +170,7 @@
 </section>
 
 <section class="ekran sayfa-ekran sekmeli" id="ekDolap" hidden>
-  <div class="sayfa-ust"><h2>Dolap</h2><span class="bakiye"><i class="ikon-ates" aria-hidden="true"></i><b id="dolapBakiye">0</b><span class="sr">ateşböceği</span></span></div>
+  <div class="sayfa-ust"><h2>Dolap</h2><span class="koleksiyon-say" id="dolapKoleksiyon"></span><span class="bakiye"><i class="ikon-ates" aria-hidden="true"></i><b id="dolapBakiye">0</b><span class="sr">ateşböceği</span></span></div>
   <div class="sayfa-ic">
     <canvas class="dolap-onizleme" id="dolapOnizleme" aria-label="Kahramanın kuşandığı görünüm"></canvas>
     <div class="satin-cubuk" id="satinCubuk" hidden>
@@ -273,10 +273,12 @@
       <li>Kanca ahşaba ve halkaya saplanır, taştan seker. Alttan yükselen suya dikkat.</li>
     </ol>
     <div class="ayar-satir" id="tamEkranSatir"><div><b>Tam ekran</b><span id="tamEkranYazi">Tarayıcı çubukları gizlenir. Ana ekrana eklersen oyun kendiliğinden tam ekran açılır.</span></div><button type="button" id="tamEkranBtn">Aç</button></div>
+    <div class="ayar-satir"><div><b>Yedek</b><span>İlerleme bu cihazda durur. Kodu sakla; telefon değiştirince ya da tarayıcı verisi silinince geri yükle.</span></div></div>
+    <div class="dur-iki"><button type="button" id="yedekAlBtn">Yedek kodu al</button><button type="button" id="yedekYukleBtn">Yedekten yükle</button></div>
     <button type="button" id="istatBtn">Oyun istatistikleri</button>
     <button type="button" id="tanitimBtn">Tanıtımı yeniden izle</button>
     <button type="button" id="ipucuSifirBtn">Tanıtım kartlarını yeniden göster</button>
-    <p class="surum">Kuyu v0.54 · prototip · Funday Morning Games</p>
+    <p class="surum">Kuyu v0.55 · prototip · Funday Morning Games</p>
   </div>
 </section>
 
@@ -312,16 +314,17 @@
 <div class="hikaye-kart" id="hikayeKart" role="status" hidden><b id="hkBaslik"></b><span id="hkMetin"></span></div>
 <div class="bildirim" id="bildirim" role="status" hidden></div>
 
-<script src="js/engine.js?v=0.54"></script>
-<script src="js/levels.js?v=0.54"></script>
-<script src="js/gen.js?v=0.54"></script>
-<script src="js/gorevler.js?v=0.54"></script>
-<script src="js/ekonomi.js?v=0.54"></script>
-<script src="js/istatistik.js?v=0.54"></script>
-<script src="js/muzik.js?v=0.54"></script>
-<script src="js/notlar.js?v=0.54"></script>
-<script src="js/hayalet.js?v=0.54"></script>
-<script src="js/game.js?v=0.54"></script>
-<script src="js/screens.js?v=0.54"></script>
+<script src="js/engine.js?v=0.55"></script>
+<script src="js/levels.js?v=0.55"></script>
+<script src="js/gen.js?v=0.55"></script>
+<script src="js/gorevler.js?v=0.55"></script>
+<script src="js/ekonomi.js?v=0.55"></script>
+<script src="js/istatistik.js?v=0.55"></script>
+<script src="js/muzik.js?v=0.55"></script>
+<script src="js/notlar.js?v=0.55"></script>
+<script src="js/hayalet.js?v=0.55"></script>
+<script src="js/online.js?v=0.55"></script>
+<script src="js/game.js?v=0.55"></script>
+<script src="js/screens.js?v=0.55"></script>
 </body>
 </html>

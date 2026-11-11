@@ -25,7 +25,7 @@ Devir elindeyken iş bitirme ve devretme adımları `docs/DEVIR-MUSTAFA.md` §6'
 | `docs/hikaye.md` | Hikâye "Çıra": tek kaynak, metin kuralları |
 | `docs/telefon-testi.md` | Telefonda deneme listesi |
 
-Kod: `js/engine.js` (deterministik fizik ve kurallar, DT 1/120), `js/gen.js` (bölüm, Sonsuz ve Günlük üreticisi), `js/game.js` (çizim, ses, oyun döngüsü, sonuç kartları), `js/screens.js` (menüler), `js/ekonomi.js`, `js/gorev.js`, `js/hayalet.js`, `js/notlar.js`, `js/muzik.js`; stil `css/`.
+Kod: `js/engine.js` (deterministik fizik ve kurallar, DT 1/120), `js/gen.js` (bölüm, Sonsuz ve Günlük üreticisi), `js/game.js` (çizim, ses, oyun döngüsü, sonuç kartları), `js/screens.js` (menüler), `js/ekonomi.js`, `js/gorev.js`, `js/hayalet.js`, `js/notlar.js`, `js/muzik.js`, `js/online.js` (meydan okuma bağlantısı, skor tablosu istemcisi; `AYAR` boşken kapalı); stil `css/`.
 
 ## 3 · Kalıcı tasarım kararları (Törehan'ın kararları; değiştirmeden önce sor)
 
@@ -48,9 +48,9 @@ Kod: `js/engine.js` (deterministik fizik ve kurallar, DT 1/120), `js/gen.js` (b�
   - `node tools/oyuncu.js`
   - `node tools/spam.js`
   - `node tools/hata.js 6`
-  - ekonomi ölçümü: `node tools/ekonomi-olcum.js` (ortalama oyuncu günde ~115 ateşböceği; v0.53'ten beri hata yapan oyuncularla ölçülür)
+  - ekonomi ölçümü: `node tools/ekonomi-olcum.js` (ortalama oyuncu günde ~119 ateşböceği; v0.53'ten beri hata yapan oyuncularla ölçülür)
   - zorluk eğrisi: `node tools/denge.js` (bölümlerde geçme oranı bölgeyle düşmeli, hatasız oyuncu geçmeli)
-  - birim testleri: `node tools/ekonomi-test.js`, `node tools/gorev-test.js`, `node tools/hayalet-test.js`, `node tools/istatistik-test.js`
+  - birim testleri: `node tools/ekonomi-test.js`, `node tools/gorev-test.js`, `node tools/hayalet-test.js`, `node tools/istatistik-test.js`, `node tools/online-test.js`
 - **Yerelde deneme:** Proje klasöründe `python3 -m http.server 8766` (Windows'ta `python`), sonra http://localhost:8766. Tarayıcıda servis çalışanı önbellekler; değişiklik görünmüyorsa kayıtlı servis çalışanını sil ve sayfayı yenile.
 - **Sürüm:** Her yayında `index.html` içindeki `?v=0.xx` ve "Kuyu v0.xx" etiketleri birlikte artırılır (`kontrol.js` denetler). README'nin başındaki sürüm ve `docs/gelistirme-sureci.md` "Yapılanlar" bölümü güncellenir.
 - **Git:**

@@ -72,6 +72,7 @@
     { id: 'kusursuz', ad: 'Kusursuz', acik: 'Kusursuz geçilen bölüm', t: [5, 20, 60], val: function (s) { return count(s, 'perfect'); } },
     { id: 'derin', ad: 'Derin kuyu', acik: 'Bir koşuda en yüksek metre', t: [500, 2000, 5000], val: function (s) { return Math.max(s.totals.maxMeters, (s.endless && s.endless.meters) || 0); }, fmt: function (n) { return n + ' m'; } },
     { id: 'sadik', ad: 'Sadık', acik: 'En uzun Günlük Kuyu serisi', t: [3, 7, 30], val: function (s) { return (s.streak && s.streak.max) || 0; }, fmt: function (n) { return n + ' gün'; } },
+    { id: 'koleksiyon', ad: 'Koleksiyoncu', acik: 'Dolap\'ta toplanan görünüm', t: [3, 12, 30], val: function (s) { return Math.max(0, ((s.dolap && s.dolap.sahip) || []).length - 6); } },
     { id: 'gorevci', ad: 'Görevci', acik: 'Tamamlanan görev', t: [5, 25, 100], val: function (s) { return s.totals.missions; } }
   ];
   var KADEME = ['Bronz', 'Gümüş', 'Altın'];

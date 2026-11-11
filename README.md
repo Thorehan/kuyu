@@ -1,6 +1,6 @@
 # Kuyu
 
-**Funday Morning Games** · 2D mobil oyun · prototip v0.54
+**Funday Morning Games** · 2D mobil oyun · prototip v0.55
 
 Derin bir kuyunun dibindesin. Telefonu tek elle tut: ekranın soluna ya da sağına dokun, kanca o taraftaki hedefe fırlasın; basılı tut, ipe sarıl; bırak, savrul. Halkadan halkaya, ahşaptan ahşaba tırmanıp kuyudan çık.
 
@@ -351,6 +351,13 @@ Rekabet modu. Pazartesiden pazara (İstanbul saati) herkes **aynı kuyuyu** oyna
 - **Lig:** Haftanın en iyi puanı ligi belirler: Bronz 500, Gümüş 2000, Altın 6000, Elmas 20000, Fener 50000. Sahte rakip yok; lig kendi puanına göredir. Online skor tablosu gelince aynı puan gönderilir.
 - **Ödül:** Hafta bitince, bir sonraki açılışta ödenir: 15 / 30 / 50 / 80 / 120 ateşböceği (geri dönme nedeni). Mantık `js/ekonomi.js` → `LIG`, `haftalikKaydet`, `haftalikKapat`.
 - Sonuç kartı: haftanın en iyisi, lig, bir üst lige kalan puan, yeni kuyuya kalan süre. Kendi hayaletin haftalık kuyuda da seninle tırmanır.
+
+### Meydan okuma, skor tablosu ve yedek (v0.55)
+- **Meydan oku:** Sonsuz ve Haftalık Kuyu sonuç kartındaki düğme, koşunun kuyusunu (tohum) ve puanını bir bağlantıya yazar ve telefonun paylaşım menüsünü açar (yoksa panoya kopyalar). Bağlantıyı açan **aynı kuyuyu** oynar; devam hakkı yoktur, sonuç iki puanı karşılaştırır ("Kazandın!", "Karşılık ver"). Arka uç gerekmez; puan beyana dayanır. Rekorlara yazılmaz.
+- **Skor tablosu:** Haftalık ve Günlük Kuyu için istemci hazır ama **kapalı** (`js/online.js` → `AYAR` boş). Hesap açılıp iki değer yazılınca sonuç kartında "N. sıradasın" ve ilk 5 görünür. Kurulum ve sınırlar: [docs/online-kurulum.md](docs/online-kurulum.md). Hesapsız deneme: `node tools/sahte-sunucu.js 8767 --dolu` ve `?online=yerel`. Test: `node tools/online-test.js`.
+- **Yedek kodu:** Ayarlar → "Yedek kodu al" ilerlemeyi tek bir metne çevirip panoya kopyalar; "Yedekten yükle" başka cihazda ya da tarayıcı verisi silinince geri getirir. Bulut kayıt değildir.
+- **Koleksiyon:** Dolap başlığında "Koleksiyon 7/47" sayacı ve Koleksiyoncu başarımı (3 / 12 / 30 görünüm).
+- Pazar araştırması ve rakip kıyası: [docs/pazar-arastirmasi.md](docs/pazar-arastirmasi.md).
 
 ### Günlük Kuyu (v0.15)
 **Günün kuralı (v0.39):** her gün herkes için aynı tek değişiklik; altı kural gün sırasıyla döner, art arda iki gün aynı gelmez: Yay günü (yay halkaları bol), Rüzgâr günü (şeritler daha sık), Ateşböceği gecesi (karar noktalarında ateşböceği daha sık), Sarkaç günü (sarkaçlar bol), Geçit günü (geçit çiftleri sık), Hız günü (hız halkaları sık). Kural yalnızca halkaların türünü değiştirir: üretici aynı rastgele sayıları aynı sırayla çeker, yerler, su ve zorluk aynı kalır (`gen.js` → `KURALLAR`, `gunKurali`). Menüdeki Günlük kartında ve koşu başında kısa bir kartla gösterilir. `tools/bot.js` her kuralı 4 tohumla dener; tempo: `KURAL=sarkac node tools/tempo.js`.

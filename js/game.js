@@ -1,7 +1,7 @@
 /* Kuyu — ekranlar, çizim, ses ve girdi. Kurallar js/engine.js, bölümler js/levels.js ve js/gen.js. */
 (function () {
   'use strict';
-  var E = window.KuyuEngine, HAND = window.KuyuLevels, GEN = window.KuyuGen, GOREV = window.KuyuGorev, EKO = window.KuyuEkonomi, IST = window.KuyuIstat, NOT = window.KuyuNotlar, HY = window.KuyuHayalet, CFG = E.CFG;
+  var E = window.KuyuEngine, HAND = window.KuyuLevels, GEN = window.KuyuGen, GOREV = window.KuyuGorev, EKO = window.KuyuEkonomi, IST = window.KuyuIstat, NOT = window.KuyuNotlar, HY = window.KuyuHayalet, ONLINE = window.KuyuOnline, CFG = E.CFG;
   var $ = function (id) { return document.getElementById(id); };
   var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -258,6 +258,8 @@
   // ---------- Haftalık Kuyu (v0.54) ----------
   // Hafta pazartesi başlar (İstanbul saati); anahtar o pazartesinin tarihi. Herkes aynı tohumu oynar.
   var weekKey = null;
+  // Meydan okuma (v0.55): bağlantıdan gelen { tur, seed, puan, ad }; aynı kuyu oynanır, devam hakkı yok, rekorlara yazılmaz
+  var meydan = null;
   function haftaKey() { var d = new Date(Date.now() + GUN_KAYMA); d.setUTCDate(d.getUTCDate() - (d.getUTCDay() + 6) % 7); return d.toISOString().slice(0, 10); }
   function msHaftaSonu() { var n = new Date(Date.now() + GUN_KAYMA), t = Date.UTC(n.getUTCFullYear(), n.getUTCMonth(), n.getUTCDate() - (n.getUTCDay() + 6) % 7 + 7); return t - n.getTime(); }
   function kalanYazi(ms) { var g = Math.floor(ms / 864e5), sa = Math.floor(ms % 864e5 / 36e5), dk = Math.floor(ms % 36e5 / 6e4); return g ? g + ' gün ' + sa + ' sa' : sa ? sa + ' sa ' + dk + ' dk' : dk + ' dk'; }
@@ -294,7 +296,7 @@
 
   function startLevel(n) {
     istatBitir('terk');
-    dailyKey = null; weekKey = null;
+    dailyKey = null; weekKey = null; meydan = null;
     mode = 'level';
     levelNo = Math.max(1, Math.floor(n) || 1);
     def = levelDef(levelNo);
@@ -327,21 +329,23 @@
   }
   var sonsuzBolge = 0;
 
-  function startEndless(daily, weekly) {
+  function startEndless(daily, weekly, md) {
     istatBitir('terk');
     mode = 'endless';
-    dailyKey = daily ? todayKey() : null;
-    weekKey = weekly && !daily ? haftaKey() : null;
+    meydan = md || null;
+    dailyKey = daily && !meydan ? todayKey() : null;
+    weekKey = weekly && !daily && !meydan ? haftaKey() : null;
     deaths = 0;
     $('puan').hidden = false;
-    $('baslik').textContent = dailyKey ? 'Günlük Kuyu' : weekKey ? 'Haftalık Kuyu' : 'Sonsuz Kuyu';
+    $('baslik').textContent = meydan ? 'Meydan okuma' : dailyKey ? 'Günlük Kuyu' : weekKey ? 'Haftalık Kuyu' : 'Sonsuz Kuyu';
     reset();
+    if (meydan && window.KuyuScreens && window.KuyuScreens.hikaye) window.KuyuScreens.hikaye(meydan.ad + ' sana meydan okudu', 'Aynı kuyu, ' + meydan.puan + ' puan. Geçebilir misin? Devam hakkı yok.', 4200);
     var kural = dailyKey ? GEN.gunKurali(dailyKey) : null;
     $('ipucu').textContent = kural ? 'Günün kuralı: ' + kural.ad + '. ' + kural.metin + ' Kuyu herkes için aynı; günün en iyi puanın ve serin sayılır.' : def.hint;
     // günün kuralı: koşu başında oyunu durdurmayan kısa kart
     if (kural && window.KuyuScreens && window.KuyuScreens.hikaye) window.KuyuScreens.hikaye('Günün kuralı · ' + kural.ad, kural.metin, 3800);
   }
-  function newEndlessDef() { return dailyKey ? GEN.createEndless(dailySeed(dailyKey), GEN.gunKurali(dailyKey)) : weekKey ? GEN.createHaftalik(tohum('kuyu-haftalik-' + weekKey)) : GEN.createEndless((Date.now() ^ (Math.random() * 1e9)) >>> 0); }
+  function newEndlessDef() { return meydan ? (meydan.tur === 'h' ? GEN.createHaftalik(meydan.seed) : GEN.createEndless(meydan.seed)) : dailyKey ? GEN.createEndless(dailySeed(dailyKey), GEN.gunKurali(dailyKey)) : weekKey ? GEN.createHaftalik(tohum('kuyu-haftalik-' + weekKey)) : GEN.createEndless((Date.now() ^ (Math.random() * 1e9)) >>> 0); }
   function reset() {
     istatBitir('terk'); // Baştan başla / Yeni koşu
     if (mode === 'endless') def = newEndlessDef();
@@ -1650,7 +1654,7 @@
   // Su yakalayınca 5 sn teklif: ilk devamda video (oyuncu seçerse), ya da ateşböceği (25 / 50 / 100), ya da geç.
   // Bir koşuda en çok 3. Günlük Kuyu'da yok (herkes için eşit). Devam edince en yüksek güvenli halkadan sürer.
   var devamDurum = null;
-  function devamUygun() { return mode === 'endless' && !dailyKey && !weekKey && sim.def.suTakip && sim.sonGuvenli && EKO.devamBedel(sim.devam || 0) != null; }
+  function devamUygun() { return mode === 'endless' && !dailyKey && !weekKey && !meydan && sim.def.suTakip && sim.sonGuvenli && EKO.devamBedel(sim.devam || 0) != null; }
   function devamKapat() { if (devamDurum) { clearInterval(devamDurum.iv); devamDurum = null; } }
   function devamTeklif() {
     var n = sim.devam || 0, bedel = EKO.devamBedel(n), bakiye = (save.cuzdan && save.cuzdan.ates) || 0, yeter = bakiye >= bedel;
@@ -1706,6 +1710,12 @@
       title = isRecord && d.tries > 1 ? 'Günün rekoru!' : isRecord ? 'Bugünün ilk puanı' : 'Su yetişti';
       sub = 'Günlük Kuyu · ' + new Date(dailyKey + 'T12:00:00Z').toLocaleDateString('tr-TR', { day: 'numeric', month: 'long' }) + ' · ' + d.tries + '. deneme';
       recLine = 'Bugünün en iyisi ' + d.best + ' puan · seri ' + st.count + ' gün · yeni kuyu ' + hh + ' sa ' + mm + ' dk sonra';
+    } else if (meydan) {
+      // Meydan okuma: iki puan karşılaştırılır; Sonsuz rekoruna yazılmaz (tohum ve kural bağlantıdan geldi)
+      isRecord = false; recM = false;
+      title = sc > meydan.puan ? 'Kazandın!' : sc === meydan.puan ? 'Berabere!' : 'Bu sefer olmadı';
+      sub = 'Meydan okuma · ' + meydan.ad + ' ile aynı kuyu';
+      recLine = 'Sen ' + sc + ' puan · ' + meydan.ad + ' ' + meydan.puan + ' puan' + (sc > meydan.puan ? ' · ' + (sc - meydan.puan) + ' puan öndesin' : sc < meydan.puan ? ' · ' + (meydan.puan - sc) + ' puan eksik' : '');
     } else if (weekKey) {
       // Haftalık: haftanın en iyisi ve lig (js/ekonomi.js); ödül hafta bitince ödenir
       var hk = EKO.haftalikKaydet(save, weekKey, sc, m), hd = EKO.haftalikDurum(save, weekKey);
@@ -1726,6 +1736,8 @@
     if (HY && isRecord) HY.sakla(hayaletYeri(), hayaletKayit, sc); // rekor koşu (Günlük'te günün en iyisi) hayalet olur
     var odenen = EKO.kazan(save, E.fireflyCount(sim));
     var kaz = recordRun({ mode: dailyKey ? 'daily' : weekKey ? 'weekly' : 'endless', ff: E.fireflyCount(sim), boosts: sim.boosts, gates: sim.gates, maxCombo: sim.maxCombo, meters: m, speed: speed });
+    // Online skor tablosu (v0.55): yalnız arka uç ayarlıysa ve ortak tohumlu modlarda (Haftalık, Günlük)
+    var tahta = ONLINE && ONLINE.acik() && !meydan ? (weekKey ? 'h-' + weekKey : dailyKey ? 'g-' + dailyKey : null) : null;
     $('kart').className = 'kart sonuc';
     $('kart').innerHTML =
       '<div class="sonuc-bas"><h2>' + title + '</h2><span>' + sub + '</span></div>' +
@@ -1741,14 +1753,39 @@
       '</div>' +
       '<p class="rekor-satir">' + recLine + '</p>' + kazanimHtml(kaz, odenen) +
       dolapKisaYol(cuzdanOnce) +
-      '<button type="button" class="ana buyuk genis" id="yenidenBtn">' + (dailyKey || weekKey ? 'Bir daha dene' : 'Yeniden dene') + '</button>' +
-      '<button type="button" class="genis" id="menuDonBtn">Ana menü</button>';
+      (tahta ? '<div class="skor-tablo" id="skorTablo" aria-live="polite"><small>Skor tablosu yükleniyor…</small></div>' : '') +
+      '<button type="button" class="ana buyuk genis" id="yenidenBtn">' + (dailyKey || weekKey || meydan ? 'Bir daha dene' : 'Yeniden dene') + '</button>' +
+      (dailyKey ? '<button type="button" class="genis" id="menuDonBtn">Ana menü</button>'
+        : '<div class="dur-iki"><button type="button" id="meydanBtn">' + (meydan ? 'Karşılık ver' : 'Meydan oku') + '</button><button type="button" id="menuDonBtn">Ana menü</button></div>');
     showSheet();
     countUp($('odulSayi'), sc);
     $('menuDonBtn').onclick = function () { goHome(); };
     $('yenidenBtn').onclick = function () { reset(); };
+    // Meydan oku: bu koşunun kuyusu (tohum) ve puanı bağlantıya yazılır; açan aynı kuyuyu oynar
+    var kosuTohum = sim.def.seed, kosuTur = sim.def.haftalik ? 'h' : 's';
+    if ($('meydanBtn')) $('meydanBtn').onclick = function () { meydanPaylas({ tur: kosuTur, seed: kosuTohum, puan: sc, ad: (save.profile && save.profile.name) || 'Tırmanıcı' }); };
+    if (tahta) skorTablosu(tahta, sc, m);
     dolapKisaBagla();
     $('yenidenBtn').focus({ preventScroll: true });
+  }
+
+  function bildir(msg, ms) { if (window.KuyuScreens && window.KuyuScreens.toast) window.KuyuScreens.toast(msg, ms); }
+  function meydanPaylas(m) {
+    var url = ONLINE.meydanBaglanti(location.origin + location.pathname, m);
+    var metin = 'Kuyu\'da ' + m.puan + ' puan yaptım. Aynı kuyuda beni geçebilir misin?';
+    if (navigator.share) { navigator.share({ title: 'Kuyu', text: metin, url: url }).catch(function () {}); return; }
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(metin + ' ' + url).then(function () { bildir('Bağlantı kopyalandı. Arkadaşına gönder.', 2800); }, function () { bildir(url, 6000); });
+    else bildir(url, 6000);
+  }
+  // Skoru gönder, sonra listeyi çek: ilk 5 ve kendi sıran. Ağ yoksa sessizce tek satır not.
+  function skorTablosu(tahta, puan, metre) {
+    var kosu = sim, ad = (save.profile && save.profile.name) || 'Tırmanıcı';
+    function yaz(html) { var el = $('skorTablo'); if (el && sim === kosu) el.innerHTML = html; }
+    ONLINE.gonder(save, tahta, ad, puan, metre).then(function () { persist(); return ONLINE.tablo(tahta, 100); }).then(function (rows) {
+      var oz = ONLINE.ozet(rows, ONLINE.kimlik(save), 5);
+      yaz('<b>Skor tablosu' + (oz.sira ? ' · ' + oz.sira + '. sıradasın (' + oz.toplam + (oz.toplam >= 100 ? '+' : '') + ' oyuncu)' : ' · ilk 100 dışındasın') + '</b><ol>' +
+        oz.liste.map(function (r) { return '<li class="' + (r.ben ? 'ben' : '') + '"><span>' + r.sira + '. ' + r.ad + '</span><em>' + r.puan + '</em></li>'; }).join('') + '</ol>');
+    }).catch(function () { yaz('<small>Skor tablosuna ulaşılamadı. Puanın bu cihazda kayıtlı.</small>'); });
   }
 
   // ---------- ekranlar ----------
@@ -1991,6 +2028,19 @@
     startEndless: function () { ac(); startEndless(false); },
     startDaily: function () { ac(); startEndless(true); },
     startWeekly: function () { ac(); startEndless(false, true); },
+    startMeydan: function (m) { ac(); startEndless(false, false, m); },
+    // Yedek (v0.55): ilerleme tek bir metin kodu olarak dışa verilir; başka cihazda ya da tarayıcı verisi silinince geri yüklenir
+    yedekAl: function () { return 'KUYU1.' + btoa(unescape(encodeURIComponent(JSON.stringify(save)))); },
+    yedekYukle: function (kod) {
+      try {
+        var p = String(kod || '').trim();
+        if (p.indexOf('KUYU1.') !== 0) return false;
+        var o = JSON.parse(decodeURIComponent(escape(atob(p.slice(6)))));
+        if (!o || typeof o !== 'object' || Array.isArray(o) || typeof o.best !== 'object' || !o.best) return false;
+        localStorage.setItem(KEY, JSON.stringify(o));
+        return true;
+      } catch (e) { return false; }
+    },
     dailyInfo: dailyInfo,
     haftalikInfo: haftalikInfo,
     // yeni hafta başladıysa geçen haftanın lig ödülünü öder; ödenen varsa { ligAd, puan, odul } döner

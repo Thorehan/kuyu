@@ -421,3 +421,39 @@ button.oyna { padding: 10px 12px 10px 22px; min-height: 84px; }
   font-size: 14px; line-height: 1.45; color: var(--yazi); }
 .hk-son em { font-style: normal; font-family: var(--font-oyun); font-weight: 700; font-size: 14px; color: rgb(var(--isik)); }
 .buyuk-yazi .hk-son { font-size: 16px; }
+
+/* ---------- Paneller ve açılır pencereler: kor teması (v0.47) ----------
+   Bütün kartlar aynı aileden: koyu taş zemin, üst kenarda ince kor çizgisi, sıcak iç parıltı, yumuşak giriş.
+   Arka plan bulanıklaşır (oyun alanı geride kalır). Hareket azaltma açıksa animasyon yok. */
+.katman, .katman-ust { -webkit-backdrop-filter: blur(3px); backdrop-filter: blur(3px); }
+.katman > .kart, .katman-ust > .kart {
+  position: relative; overflow: hidden; border-radius: 20px;
+  background: linear-gradient(180deg, #1b2523 0%, #141c1b 100%);
+  border: 1px solid #34423e;
+  box-shadow: 0 24px 60px rgba(0,0,0,.55), inset 0 1px 0 rgba(255,200,140,.08), inset 0 0 40px rgba(242,106,58,.05);
+  animation: panelGir .28s cubic-bezier(.2, .9, .3, 1) both;
+}
+.katman > .kart::before, .katman-ust > .kart::before {
+  content: ""; position: absolute; left: 18%; right: 18%; top: 0; height: 2px; border-radius: 2px;
+  background: linear-gradient(90deg, rgba(242,106,58,0), #f26a3a 30%, #ffd36a 50%, #f26a3a 70%, rgba(242,106,58,0));
+  opacity: .85;
+}
+.katman > .kart > *, .katman-ust > .kart > * { position: relative; }
+@keyframes panelGir { from { transform: translateY(14px) scale(.97); opacity: 0; } }
+button.ana {
+  background: linear-gradient(180deg, #ff8a52 0%, #f26a3a 55%, #d9552a 100%);
+  border-color: #ff9a6e; box-shadow: 0 3px 0 #9c3a17, 0 8px 18px rgba(242,106,58,.25);
+  transition: transform .08s, box-shadow .08s, filter .15s;
+}
+button.ana:hover { background: linear-gradient(180deg, #ff9862 0%, #ff7c4d 55%, #e65f31 100%); }
+button.ana:active { transform: translateY(2px); box-shadow: 0 1px 0 #9c3a17, 0 4px 10px rgba(242,106,58,.2); }
+button:active { filter: brightness(.94); }
+.katman > .kart button:not(.ana):not(.anahtar):not(.metin-btn), .katman-ust > .kart button:not(.ana):not(.anahtar):not(.metin-btn) {
+  background: #222d2b; border-color: #3a4844;
+}
+@media (prefers-reduced-motion: reduce) {
+  .katman > .kart, .katman-ust > .kart { animation: none; }
+  button.ana, button.ana:active { transition: none; transform: none; }
+}
+/* iki düğmeli satırda biri gizliyse kalan tam genişlik (sıradan bağımsız) */
+.dur-iki:has(> button[hidden]) > button:not([hidden]) { grid-column: 1 / -1; }

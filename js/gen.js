@@ -546,6 +546,23 @@
       for (var q = s.rings.length - 1; q >= 0; q--) { var g = s.rings[q]; if (g.sw ? (g.sw.px === nn.x) : (g.x === nn.x && g.y === nn.y)) return g; }
       return null;
     }
+    // Ateşböceği zinciri (Sonsuz): her ZINCIR_ARALIK düğümde bir, art arda üç adımın kanca hattının ortasına sıralı
+    // üç ateşböceği. Hat ip sarılırken izlenen yol; akışla zincirlemek hepsini alır. Rastgele sayı kullanmaz.
+    var ZINCIR_ARALIK = 13;
+    function sonsuzZincir(s) {
+      var nd = st.nodes, c = nd.length - 4;
+      if (c < 6 || c - (st.lastZincir == null ? -99 : st.lastZincir) < ZINCIR_ARALIK || Math.abs(c - st.lastDal) < 4) return;
+      var noktalar = [];
+      for (var j = c; j < c + 3; j++) {
+        var a = hangOf(nd[j - 1]), b = target(nd[j]);
+        var p = { x: Math.round(lerp(a.x, b.x, 0.5)), y: Math.round(lerp(a.y, b.y, 0.5)) };
+        if (s.rings.some(function (g) { return Math.hypot(g.x - p.x, g.y - p.y) < 45; })) return;
+        noktalar.push(p);
+      }
+      st.zincirN = (st.zincirN || 0) + 1;
+      noktalar.forEach(function (p, k) { s.fireflies.push({ x: p.x, y: p.y, got: false, zincir: st.zincirN, sira: k + 1 }); });
+      st.lastZincir = c;
+    }
     function sonsuzDal(s) {
       var nd = st.nodes, dk = nd.length - 5;
       if (dk < 8 || dk - st.lastDal < DAL_ARALIK) return;
@@ -648,6 +665,7 @@
         st.hp = hangOf(n);
         st.frontier = t.y;
         sonsuzDal(s);
+        sonsuzZincir(s);
       }
       // çok aşağıda kalanları temizle
       if (s.water != null && s.t % 1 < 0.01) {

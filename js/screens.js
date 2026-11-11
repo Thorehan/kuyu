@@ -645,9 +645,7 @@
 
   function hero(ctx, x, y, r, look, scarf) {
     var L0 = (current === 'ekDolap' && onizlemeGorunum) || G.gorunum();
-    ctx.fillStyle = L0.govde2 || '#b8401b'; ctx.beginPath(); ctx.arc(x, y + 1.2, r, 0, 6.29); ctx.fill();
-    ctx.fillStyle = L0.govde || '#f26a3a'; ctx.beginPath(); ctx.arc(x, y, r, 0, 6.29); ctx.fill();
-    ctx.fillStyle = 'rgba(255,255,255,.18)'; ctx.beginPath(); ctx.arc(x - r * 0.32, y - r * 0.36, r * 0.32, 0, 6.29); ctx.fill();
+    G.korCiz(ctx, x, y, r, performance.now() / 1000, L0.govde || '#f26a3a', L0.govde2 || '#b8401b');
     ctx.fillStyle = scarf || G.renk(G.gorunum().atki); ctx.fillRect(x - r * 0.75, y + r * 0.2, r * 1.5, r * 0.36);
     ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(x + look.x * r * 0.27, y - r * 0.18 + look.y * r * 0.18, r * 0.4, 0, 6.29); ctx.fill();
     ctx.fillStyle = '#1a1210'; ctx.beginPath(); ctx.arc(x + look.x * r * 0.45, y - r * 0.18 + look.y * r * 0.3, r * 0.18, 0, 6.29); ctx.fill();

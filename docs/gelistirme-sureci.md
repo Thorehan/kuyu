@@ -41,6 +41,8 @@ Kalan işler geliştirme sırasına göre. Bekleyenler senden bir karar ya da te
 8. [x] Fırlatma yolu (v0.44, bölümler): turuncu oklu halkadan akışla fırlayınca ulaşılan ateşböceği; asılıyken ulaşılmaz. 54/73 üretilen bölümde, motorla doğrulanmış. Hız ödülü işe yaramadı (akış ana yolu zaten hızlı), ödül ateşböceği. Spam yine de %54–65 alıyor, bilerek seçen %78.
 9. [x] Nişan kuralı (v0.45): yukarısı şartlı öncelikli, şartlar sağlanmazsa aşağısı. Bekleme (yukarı hedef 0,35 sn içinde menzile girecekse), hattı kesen yukarı halka, değilen halka engel değil. `tools/nisan.js` kurala aykırı aşağı atışı sayar (0).
 10. [x] İstişare iyileştirmeleri (v0.46): fırlatma yolu ateşböceği yalnız akışla (spam 29–35 → 22–30/54, bilerek seçen 42/54); çarpana ustalık payı (TAM başına +0,05, en çok x2,00; akış oyuncusu x1,50 → x1,96); Sonsuz Kuyu'ya fırlatma yolu (~her 180 m, motorla denenmiş). Tempo 1:17, günlük kazanç ~100 → ~102.
+12. [x] Görsellik ve oynanış (v0.47): kor karakter, panel/popup kor teması, hayalet ve rekor koşullu ve sade, ateşböceği zinciri (Sonsuz), TAM kova (bölümler).
+13. [ ] Sırada: döner çark ve kor halka (istişare), Dolap'ta yeni türler (başlık, alev rengi), iki para birimi kararı.
 11. [ ] Telefonda denenecek ayarlar: akış penceresi, boş atış kilidi, nişan beklemesi. Karar bekleyenler: istişare belgesi.
 
 Bekleyenler: telefon denemesi düzeltmeleri, fiyatların gözden geçirilmesi, ana menü geri bildirimi, bekçinin adı, online için arka uç seçimi, Mustafa'nın parçaları.
@@ -124,6 +126,7 @@ Kullanıcı hikâyeye online'dan önce geçti; online (5) sonra.
 ## Yapılanlar
 - 2026-11-11 · v0.34 · Hikâye: Çıra (önsöz, bölge kartları, Çıra'nın yolu, metinler); oyun ekranı gizliyken döngü çizim yapmaz.
 - 2026-11-11 · v0.35 · Bekçinin notları: 12 not, ateşböceği yolunda; Çıra'nın yolu'nda okunur.
+- 2026-11-12 · v0.47 · Görsellik ve oynanış: kor karakter, panel teması, sade hayalet + rekor çizgisi, ateşböceği zinciri, TAM kova.
 - 2026-11-11 · v0.46 · İstişare iyileştirmeleri: fırlatma yolu ateşböceği yalnız akışla, çarpana ustalık payı, Sonsuz Kuyu'da fırlatma yolu. Geri dönüş noktası `geri-donus-v0.45`.
 - 2026-11-11 · v0.45 · Nişan kuralı: yükselirken aşağıya atılma düzeltildi (bekleme, hattı kesen yukarı halka, değilen halka engel değil); nişan testine kural denetimi.
 - 2026-11-11 · v0.44 · Fırlatma yolu: bölümlerde gerçek yol ayrımı (turuncu oklu halka → akışla ulaşılan ateşböceği), üreticide motorla doğrulama, bot denetimi, tanıtım kartı.

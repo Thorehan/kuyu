@@ -360,36 +360,58 @@
   }
   function hayaletKur() {
     hayaletKayit = HY ? HY.yeni(sim.startY) : null;
+    hayaletGecildi = false; rekorGecildi = false;
     hayaletIz = HY && hayaletAcik() ? HY.al(hayaletYeri()) : null;
   }
-  function drawHayalet(t) {
-    if (!hayaletIz || sim.status !== 'play') return;
-    var p = HY.yer(hayaletIz, sim.t);
-    if (!p) return;
-    var x = p.x, y = sim.startY + p.y, vh = viewH / K, ust = cam + 18, alt = cam + vh - 18;
-    var a = 0.38 * Math.min(1, sim.t / 0.6);
-    ctx.save();
-    if (y < ust || y > alt) {
-      // ekran dışında: kenarda küçük bir işaret (yukarıdaysa önde, aşağıdaysa geride)
-      var yukari = y < ust, ey = yukari ? ust : alt;
-      ctx.globalAlpha = a + 0.1;
-      ctx.fillStyle = '#dff3f6';
-      ctx.beginPath(); ctx.arc(x, ey, 5, 0, Math.PI * 2); ctx.fill();
-      ctx.beginPath();
-      if (yukari) { ctx.moveTo(x - 5, ey - 7); ctx.lineTo(x + 5, ey - 7); ctx.lineTo(x, ey - 13); }
-      else { ctx.moveTo(x - 5, ey + 7); ctx.lineTo(x + 5, ey + 7); ctx.lineTo(x, ey + 13); }
-      ctx.closePath(); ctx.fill();
-      ctx.restore();
+  // Hayalet sade gösterilir (dikkat dağıtmasın): koşunun ilk 3 saniyesinde görünüp söner; sonra yalnızca sana
+  // dikeyde yakınken (160 birim) soluk belirir. Geçince bir kez "hayaletini geçtin". Ekran kenarı işareti yok.
+  // Sonsuz/Günlük'te rekor yüksekliğine 25 m kala ince bir rekor çizgisi belirir; geçince bir kez "YENİ REKOR!".
+  var hayaletGecildi = false, rekorGecildi = false;
+  function rekorMetre() {
+    if (mode !== 'endless') return 0;
+    if (dailyKey) return save.daily && save.daily.date === dailyKey ? (save.daily.meters || 0) : 0;
+    return (save.endless && save.endless.meters) || 0;
+  }
+  function drawRekorCizgisi() {
+    if (mode !== 'endless' || !hayaletAcik()) return;
+    var rm = rekorMetre(), m = E.meters(sim);
+    if (rm < 30) return;
+    if (m > rm) {
+      if (!rekorGecildi) { rekorGecildi = true; tone(784, 0.18, 'triangle', 0.05, 1175); floatText(sim.p.x, sim.p.y - 40, 'YENİ REKOR!', '#ffd36a', 18); buzz([10, 40, 10]); }
       return;
     }
+    if (m < rm - 25) return;
+    var y = sim.startY - rm * 20, a = 0.18 + 0.27 * (1 - (rm - m) / 25);
+    ctx.save();
+    ctx.globalAlpha = a; ctx.strokeStyle = '#ffd36a'; ctx.lineWidth = 1.5; ctx.setLineDash([6, 8]);
+    ctx.beginPath(); ctx.moveTo(CFG.WALL + 4, y); ctx.lineTo(CFG.W - CFG.WALL - 4, y); ctx.stroke(); ctx.setLineDash([]);
+    ctx.font = '700 10px "Figtree", system-ui, sans-serif'; ctx.textAlign = 'right'; ctx.textBaseline = 'bottom';
+    ctx.fillStyle = '#ffd36a'; ctx.fillText('rekor ' + rm + ' m', CFG.W - CFG.WALL - 6, y - 3);
+    ctx.restore();
+  }
+  function drawHayalet(t) {
+    if (sim.status !== 'play') return;
+    drawRekorCizgisi();
+    if (!hayaletIz) return;
+    var p = HY.yer(hayaletIz, sim.t);
+    if (!p) return;
+    var x = p.x, y = sim.startY + p.y;
+    if (!hayaletGecildi && sim.t > 3 && sim.p.y < y - 40 && mode === 'level') { hayaletGecildi = true; floatText(sim.p.x, sim.p.y - 30, 'hayaletini geçtin', '#dff3f6', 13); }
+    var bas = 0.38 * Math.min(1, sim.t / 0.4) * Math.max(0, Math.min(1, (3 - sim.t) / 0.8));
+    var yak = Math.abs(y - sim.p.y), yakin = sim.t >= 2.2 && yak < 160 ? 0.2 * (1 - yak / 160) : 0;
+    var a = Math.max(bas, yakin);
+    if (a < 0.02) return;
+    ctx.save();
     ctx.globalAlpha = a;
-    var g = ctx.createRadialGradient(x, y, 2, x, y, CFG.R * 2.2);
-    g.addColorStop(0, 'rgba(223,243,246,0.55)'); g.addColorStop(1, 'rgba(223,243,246,0)');
-    ctx.fillStyle = g; ctx.fillRect(x - CFG.R * 2.2, y - CFG.R * 2.2, CFG.R * 4.4, CFG.R * 4.4);
+    if (bas > yakin) {
+      var g = ctx.createRadialGradient(x, y, 2, x, y, CFG.R * 2.2);
+      g.addColorStop(0, 'rgba(223,243,246,0.55)'); g.addColorStop(1, 'rgba(223,243,246,0)');
+      ctx.fillStyle = g; ctx.fillRect(x - CFG.R * 2.2, y - CFG.R * 2.2, CFG.R * 4.4, CFG.R * 4.4);
+    }
     ctx.fillStyle = '#dff3f6'; ctx.beginPath(); ctx.arc(x, y, CFG.R, 0, Math.PI * 2); ctx.fill();
     ctx.fillStyle = '#5b6f73'; ctx.beginPath(); ctx.arc(x + 2, y - 2, 2.6, 0, Math.PI * 2); ctx.fill();
     if (sim.t < 3) {
-      ctx.globalAlpha = Math.min(1, (3 - sim.t)) * 0.8;
+      ctx.globalAlpha = Math.max(0, Math.min(1, (3 - sim.t))) * 0.8;
       ctx.font = '700 11px "Figtree", system-ui, sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'bottom';
       ctx.lineWidth = 3; ctx.strokeStyle = 'rgba(8,13,14,0.85)'; ctx.strokeText('en iyi koşun', x, y - CFG.R - 6);
       ctx.fillStyle = '#dff3f6'; ctx.fillText('en iyi koşun', x, y - CFG.R - 6);
@@ -492,6 +514,17 @@
     for (var i = 0; i < ev.length; i++) {
       var e = ev[i];
       if (e.type === 'fire') SFX.fire();
+      else if (e.type === 'zincirAdim') { tone(e.bozuk ? 440 : 523 + e.n * 110, 0.09, 'sine', 0.05); burst(e.x, e.y, 6, e.bozuk ? '#8fa09c' : '#ffd36a', 120, 0.35, -20); floatText(e.x + 14, e.y - 16, e.n + '/' + CFG.ZINCIR_N, e.bozuk ? '#8fa09c' : '#ffd36a', 12); }
+      else if (e.type === 'zincir') {
+        tone(659, 0.12, 'triangle', 0.06); setTimeout(function () { tone(880, 0.12, 'triangle', 0.06); }, 80); setTimeout(function () { tone(1175, 0.2, 'triangle', 0.06); }, 160);
+        burst(e.x, e.y, 22, '#ffd36a', 220, 0.6, -40); buzz([10, 30, 10, 30, 10]);
+        floatText(e.x, e.y - 30, 'ZİNCİR! +' + CFG.ZINCIR_BONUS, '#ffd36a', 18);
+      }
+      else if (e.type === 'tamKova') {
+        tone(784, 0.15, 'triangle', 0.06); setTimeout(function () { tone(1047, 0.25, 'triangle', 0.06); }, 90);
+        burst(e.x, e.y, 18, '#ffd36a', 200, 0.6, -30);
+        floatText(e.x, e.y + 40, 'TAM KOVA!', '#ffd36a', 18);
+      }
       else if (e.type === 'erken') { if (sim.combo >= 2) floatText(e.x, e.y - 24, 'erken!', '#8fa09c', 13); }
       else if (e.type === 'kilit') tone(180, 0.05, 'square', 0.025);
       else if (e.type === 'missShot') { wantIntro('bos'); tone(300, 0.08, 'triangle', 0.04, 200); floatText(sim.p.x + (aim.x < 0 ? -30 : 30), sim.p.y - 26, 'bu tarafta yok', '#8fa09c', 12); }
@@ -842,11 +875,30 @@
   }
   function drawFirefly(f, t) {
     if (f.got || f.ring) return;
+    if (f.zincir != null) { drawZincirAtes(f, t); return; }
     var y = f.y + Math.sin(t / 400 + f.x) * 3, x = f.x + Math.cos(t / 600 + f.y) * 2;
     var g = ctx.createRadialGradient(x, y, 0, x, y, 16);
     g.addColorStop(0, 'rgba(232,242,124,0.9)'); g.addColorStop(0.3, 'rgba(232,242,124,0.35)'); g.addColorStop(1, 'rgba(232,242,124,0)');
     ctx.fillStyle = g; ctx.fillRect(x - 16, y - 16, 32, 32);
     ctx.fillStyle = '#fbffd8'; ctx.beginPath(); ctx.arc(x, y, 2.6, 0, Math.PI * 2); ctx.fill();
+  }
+
+  // Zincir ateşböceği: altın renkli, sıra numaralı; sıradakine kesikli ince bir çizgiyle bağlı
+  function drawZincirAtes(f, t) {
+    var x = f.x, y = f.y + Math.sin(t / 380 + f.sira) * 2;
+    var sonraki = null;
+    for (var i = 0; i < sim.fireflies.length; i++) { var o = sim.fireflies[i]; if (o.zincir === f.zincir && o.sira === f.sira + 1 && !o.got) sonraki = o; }
+    if (sonraki) {
+      ctx.save(); ctx.globalAlpha = 0.35; ctx.strokeStyle = '#ffd36a'; ctx.lineWidth = 1.2; ctx.setLineDash([2, 5]);
+      ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(sonraki.x, sonraki.y); ctx.stroke(); ctx.restore();
+    }
+    var g = ctx.createRadialGradient(x, y, 0, x, y, 17);
+    g.addColorStop(0, 'rgba(255,211,106,0.9)'); g.addColorStop(0.35, 'rgba(255,211,106,0.35)'); g.addColorStop(1, 'rgba(255,211,106,0)');
+    ctx.fillStyle = g; ctx.fillRect(x - 17, y - 17, 34, 34);
+    ctx.strokeStyle = 'rgba(255,211,106,0.8)'; ctx.lineWidth = 1.4; ctx.beginPath(); ctx.arc(x, y, 7, 0, Math.PI * 2); ctx.stroke();
+    ctx.fillStyle = '#fff3c4'; ctx.beginPath(); ctx.arc(x, y, 2.8, 0, Math.PI * 2); ctx.fill();
+    ctx.font = '800 9px "Baloo 2", system-ui, sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillStyle = '#ffd36a'; ctx.fillText(String(f.sira), x + 10, y - 9);
   }
 
   function drawWater(t) {
@@ -923,6 +975,63 @@
     }
     ctx.globalAlpha = 1;
   }
+
+  // ---------- Çıra: kor görünümü (oyun, menü, Dolap aynı çizimi kullanır) ----------
+  // Gövde rengi (Dolap) korun tonunu verir: içi açık ve sıcak, kenarı koyu; kül çatlakları, nabız gibi atan
+  // sıcak noktalar, tepede küçük bir alev ucu ve titreyen bir hale. c: tuval, (x, y) merkez, r yarıçap, t saniye.
+  function hexRgb(h) {
+    if (!h || h[0] !== '#') return null;
+    var n = parseInt(h.length === 4 ? h[1] + h[1] + h[2] + h[2] + h[3] + h[3] : h.slice(1, 7), 16);
+    return [n >> 16 & 255, n >> 8 & 255, n & 255];
+  }
+  function karis(a, b, k) { return [Math.round(a[0] + (b[0] - a[0]) * k), Math.round(a[1] + (b[1] - a[1]) * k), Math.round(a[2] + (b[2] - a[2]) * k)]; }
+  function rgbS(a, al) { return 'rgba(' + a[0] + ',' + a[1] + ',' + a[2] + ',' + (al == null ? 1 : al) + ')'; }
+  function korCiz(c, x, y, r, t, renk1, renk2, sade) {
+    var a1 = hexRgb(renk1) || [242, 106, 58], a2 = hexRgb(renk2) || [184, 64, 27];
+    var ic = karis(a1, [255, 236, 170], 0.62), sicak = karis(a1, [255, 210, 120], 0.35);
+    var fl = 0.85 + 0.1 * Math.sin(t * 9.1) + 0.05 * Math.sin(t * 23.7);
+    // hale
+    if (!sade) {
+      var hg = c.createRadialGradient(x, y, r * 0.6, x, y, r * 2.3 * fl);
+      hg.addColorStop(0, rgbS(sicak, 0.32)); hg.addColorStop(1, rgbS(sicak, 0));
+      c.fillStyle = hg; c.fillRect(x - r * 2.4, y - r * 2.4, r * 4.8, r * 4.8);
+    }
+    // alev ucu (gövdenin arkasında, tepede)
+    var fh = r * (1.05 + 0.22 * Math.sin(t * 7.3)), fw = r * 0.55, sw = Math.sin(t * 5.1) * r * 0.16;
+    c.fillStyle = rgbS(karis(a1, [255, 190, 90], 0.5), 0.9);
+    c.beginPath(); c.moveTo(x - fw, y - r * 0.55); c.quadraticCurveTo(x - fw * 0.6 + sw, y - r * 0.55 - fh * 0.7, x + sw * 1.6, y - r * 0.55 - fh);
+    c.quadraticCurveTo(x + fw * 0.6 + sw, y - r * 0.55 - fh * 0.6, x + fw, y - r * 0.55); c.closePath(); c.fill();
+    c.fillStyle = rgbS([255, 236, 170], 0.85);
+    c.beginPath(); c.moveTo(x - fw * 0.45, y - r * 0.6); c.quadraticCurveTo(x + sw, y - r * 0.55 - fh * 0.55, x + sw * 1.3, y - r * 0.6 - fh * 0.62);
+    c.quadraticCurveTo(x + fw * 0.3 + sw, y - r * 0.6 - fh * 0.3, x + fw * 0.45, y - r * 0.6); c.closePath(); c.fill();
+    // gövde: içi parlak, kenarı koyu kor
+    var kabuk = karis(a2, [28, 14, 10], 0.45);
+    var g = c.createRadialGradient(x - r * 0.12, y - r * 0.15, r * 0.08, x, y, r * 1.02);
+    g.addColorStop(0, rgbS(ic)); g.addColorStop(0.45, rgbS(a1)); g.addColorStop(0.85, rgbS(a2)); g.addColorStop(1, rgbS(kabuk));
+    c.fillStyle = g; c.beginPath(); c.arc(x, y, r, 0, Math.PI * 2); c.fill();
+    // ışıyan çatlaklar (korun içindeki ateş kabuğun yarıklarından görünür)
+    c.save();
+    if (!sade) { c.shadowColor = rgbS([255, 200, 110], 0.9); c.shadowBlur = r * 0.5; }
+    c.strokeStyle = rgbS(karis(ic, [255, 250, 220], 0.4), 0.55 + 0.25 * fl); c.lineWidth = Math.max(0.9, r * 0.085); c.lineCap = 'round'; c.lineJoin = 'round';
+    c.beginPath();
+    c.moveTo(x - r * 0.78, y + r * 0.1); c.lineTo(x - r * 0.45, y + r * 0.28); c.lineTo(x - r * 0.52, y + r * 0.6);
+    c.moveTo(x + r * 0.82, y - r * 0.05); c.lineTo(x + r * 0.5, y + r * 0.12); c.lineTo(x + r * 0.58, y + r * 0.42);
+    c.moveTo(x - r * 0.1, y + r * 0.92); c.lineTo(x + r * 0.08, y + r * 0.66);
+    c.stroke();
+    c.restore();
+    // nabız gibi atan sıcak noktalar
+    if (!sade) {
+      var noktalar = [[-0.5, 0.42, 0], [0.55, 0.3, 2.1], [0.05, 0.78, 4.2]];
+      for (var i = 0; i < noktalar.length; i++) {
+        var q = noktalar[i], pa = 0.35 + 0.35 * Math.sin(t * 3.2 + q[2]);
+        c.fillStyle = 'rgba(255,230,150,' + pa.toFixed(2) + ')';
+        c.beginPath(); c.arc(x + q[0] * r, y + q[1] * r, r * 0.11, 0, Math.PI * 2); c.fill();
+      }
+    }
+    // üstte ışık yansıması
+    c.fillStyle = 'rgba(255,255,255,0.12)'; c.beginPath(); c.arc(x - r * 0.34, y - r * 0.4, r * 0.2, 0, Math.PI * 2); c.fill();
+  }
+  var kivilcimT = 0;
   function drawHero(t) {
     var p = sim.p, vx = p.x - p.px, vy = p.y - p.py;
     var sp = Math.sqrt(vx * vx + vy * vy);
@@ -940,20 +1049,20 @@
     var st = Math.min(0.25, sp / 40), ang = Math.atan2(vy, vx);
     ctx.save(); ctx.translate(p.x, p.y);
     if (sp > 1) { ctx.rotate(ang); ctx.scale(1 + st, 1 - st * 0.6); ctx.rotate(-ang); }
-    ctx.fillStyle = look().govde2 || COL.kahramanKoyu;
-    ctx.beginPath(); ctx.arc(0, 1, CFG.R, 0, Math.PI * 2); ctx.fill();
-    ctx.fillStyle = look().govde || COL.kahraman;
-    ctx.beginPath(); ctx.arc(0, 0, CFG.R, 0, Math.PI * 2); ctx.fill();
-    ctx.fillStyle = 'rgba(255,255,255,0.18)';
-    ctx.beginPath(); ctx.arc(-3.5, -4, 3.5, 0, Math.PI * 2); ctx.fill();
+    korCiz(ctx, 0, 0, CFG.R, t / 1000, look().govde || COL.kahraman, look().govde2 || COL.kahramanKoyu);
     ctx.restore();
+    // ara ara yükselen kıvılcım (hareket azaltma açıksa yok)
+    if (!reduceMotion && t - kivilcimT > (sp > 3 ? 90 : 220)) {
+      kivilcimT = t;
+      parts.push({ x: p.x + (Math.random() - 0.5) * CFG.R, y: p.y - CFG.R * 0.6, vx: (Math.random() - 0.5) * 30 - vx * 4, vy: -50 - Math.random() * 40, g: -20, r: 1 + Math.random() * 0.9, life: 0.6, max: 0.6, color: Math.random() < 0.5 ? '#ffd36a' : '#ff9a3c' });
+    }
     ctx.fillStyle = scarfCol(t); ctx.fillRect(p.x - 8, p.y + 2, 16, 4);
     var lx = aim.x, ly = aim.y;
     ctx.fillStyle = '#fff';
     ctx.beginPath(); ctx.arc(p.x + lx * 3, p.y - 2 + ly * 2, 4.4, 0, Math.PI * 2); ctx.fill();
     ctx.fillStyle = '#1a1210';
     ctx.beginPath(); ctx.arc(p.x + lx * 5, p.y - 2 + ly * 3.4, 2, 0, Math.PI * 2); ctx.fill();
-    if (Math.floor(t / 2600) % 3 === 0 && t % 2600 < 110) { ctx.fillStyle = look().govde || COL.kahraman; ctx.fillRect(p.x + lx * 3 - 5, p.y - 7 + ly * 2, 10, 5); }
+    if (Math.floor(t / 2600) % 3 === 0 && t % 2600 < 110) { ctx.fillStyle = look().govde2 || COL.kahramanKoyu; ctx.fillRect(p.x + lx * 3 - 5, p.y - 7 + ly * 2, 10, 5); }
   }
 
   // Sol ve sağ dokunuşun kancayı nereye atacağı: sol hedef turkuaz, sağ hedef sarı halka ve ok.
@@ -1212,8 +1321,7 @@
     // Çıra
     if (cy > 0) {
       parilti(cx, cy, (34 + (finalBi === 2 ? 30 * kolay((p - 0.8) / 2) : 0)) * u, '255,150,80', 0.6);
-      ctx.fillStyle = COL.kahraman; ctx.beginPath(); ctx.arc(cx, cy, 9 * u, 0, Math.PI * 2); ctx.fill();
-      ctx.fillStyle = '#ffd08a'; ctx.beginPath(); ctx.arc(cx - 2.5 * u, cy - 3 * u, 3 * u, 0, Math.PI * 2); ctx.fill();
+      korCiz(ctx, cx, cy, 9 * u, t, look().govde || COL.kahraman, look().govde2 || COL.kahramanKoyu);
     }
     // metin
     var buyuk = document.documentElement.classList.contains('buyuk-yazi'), ya = kolay((p - 2.8) / 0.6);
@@ -1361,7 +1469,7 @@
     var perfect = shots <= def.par, flow = sim.maxCombo >= def.flow;
     var b = save.best[levelNo] || {};
     // Ödül: temel (bölüm + ateşböceği + madalyalar) × çarpan (hız + ustalık)
-    var base = 100 + 25 * ff + (perfect ? 50 : 0) + (flow ? 50 : 0);
+    var base = 100 + 25 * ff + (perfect ? 50 : 0) + (flow ? 50 : 0) + (sim.tamKova ? 50 : 0); // TAM kova +50
     var mult = E.speedMult(sim), reward = Math.round(base * mult);
     var speed = E.speedMs(sim.maxSpeed);
     // bu oyunda kırılan rekorlar ve ilk kez kazanılan madalyalar
@@ -1393,6 +1501,7 @@
       stat(SURE_IK, fmt(time, 1) + ' sn', 'süre ' + fmt(time, 1) + ' saniye', recTime) +
       stat(IK.hiz, fmt(speed, 0) + ' m/sn', 'en yüksek hız ' + fmt(speed, 1) + ' metre/saniye', recSpeed) +
       (sim.tam ? stat(IK.tam, sim.tam + ' tam', sim.tam + ' kez tam zamanında bıraktın', false) : '') +
+      (sim.tamKova ? stat(IK.tam, 'TAM kova +50', 'kovaya akışla ve TAM bırakışla girdin, ödüle 50 eklendi', false) : '') +
       '</div>' + kazanimHtml(kaz, odenen) +
       dolapKisaYol(cuzdanOnce) +
       '<button type="button" class="ana buyuk genis" id="sonrakiBtn">Bölüm ' + (levelNo + 1) + ' ›</button>' +
@@ -1447,6 +1556,7 @@
       stat(IK.akis, 'x' + sim.maxCombo, 'en uzun akış x' + sim.maxCombo, recC) +
       stat(IK.hiz, fmt(speed, 0) + ' m/sn', 'en yüksek hız', false) +
       (sim.tam ? stat(IK.tam, sim.tam + ' tam', sim.tam + ' kez tam zamanında bıraktın', false) : '') +
+      (sim.zincir ? stat(IK.tam, sim.zincir + ' zincir', sim.zincir + ' ateşböceği zincirini akışla tamamladın', false) : '') +
       '</div>' +
       '<p class="rekor-satir">' + recLine + '</p>' + kazanimHtml(kaz, odenen) +
       dolapKisaYol(cuzdanOnce) +
@@ -1492,6 +1602,8 @@
       i: '<svg viewBox="0 0 64 64"><circle cx="32" cy="18" r="7" fill="#f26a3a"/><path d="M4 40c6-5 10-5 14 0s10 5 14 0 10-5 14 0 10 5 14 0V60H4z" fill="#1c6a72"/><path d="M4 40c6-5 10-5 14 0s10 5 14 0 10-5 14 0 10 5 14 0" fill="none" stroke="#5fc3c9" stroke-width="3"/><path d="M32 34v-6" stroke="#5fc3c9" stroke-width="3" stroke-linecap="round"/><path d="M28 31l4-4 4 4" fill="none" stroke="#5fc3c9" stroke-width="3" stroke-linecap="round"/></svg>' },
     akis: { t: 'Akış!', m: 'İpi halkaya varmak üzereyken bırakıp havadayken sıradakine tutundun. Zincir uzadıkça Akış madalyası ve puan gelir. Çok erken bırakmak, uzun asılı kalmak ve boş atış zinciri bitirir.',
       i: '<svg viewBox="0 0 64 64"><path d="M6 40C14 22 22 22 30 40S46 58 58 30" fill="none" stroke="#e8f27c" stroke-width="5" stroke-linecap="round"/><text x="40" y="22" fill="#e8f27c" font-family="Baloo 2, sans-serif" font-weight="800" font-size="16">x2</text></svg>' },
+    zincir: { t: 'Ateşböceği zinciri', m: 'Altın ateşböcekleri sıralıdır: 1, 2, 3. Hepsini akış kopmadan (ipi halkaya varmak üzereyken bırakıp havadayken tutunarak) alırsan +' + CFG.ZINCIR_BONUS + ' ateşböceği kazanırsın; akış koparsa zincir söner.',
+      i: '<svg viewBox="0 0 64 64"><path d="M12 48L32 32L52 16" stroke="#ffd36a" stroke-width="2" stroke-dasharray="2 5" fill="none"/><circle cx="12" cy="48" r="6" fill="none" stroke="#ffd36a" stroke-width="2.5"/><circle cx="32" cy="32" r="6" fill="none" stroke="#ffd36a" stroke-width="2.5"/><circle cx="52" cy="16" r="6" fill="none" stroke="#ffd36a" stroke-width="2.5"/><circle cx="12" cy="48" r="2.5" fill="#fff3c4"/><circle cx="32" cy="32" r="2.5" fill="#fff3c4"/><circle cx="52" cy="16" r="2.5" fill="#fff3c4"/></svg>' },
     firlat: { t: 'Fırlatma yolu', m: 'Turuncu oklu halka yukarıdaki bir ateşböceğine çıkar: tutun, ip halkaya varmak üzereyken bırak ve fırla; ateşböceği halkası ancak uçarken menzile girer ve yalnız akışla (sönük değilken) alınır. Asılı kalırsan ulaşamazsın, ana yoldan devam edersin.',
       i: '<svg viewBox="0 0 64 64"><circle cx="22" cy="50" r="8" fill="none" stroke="#ff9a3c" stroke-width="4"/><path d="M15 36l7-6 7 6M15 28l7-6 7 6" fill="none" stroke="#ffaa50" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/><path d="M24 40C28 22 36 14 46 12" fill="none" stroke="#ffaa50" stroke-width="2" stroke-dasharray="3 4"/><circle cx="48" cy="12" r="7" fill="none" stroke="#d08a45" stroke-width="3.5"/></svg>' },
     sarkac: { t: 'Sarkaç halka', m: 'Zincirde sağa sola sallanır. Hangi taraftaysa o tarafa dokun; işaret onu gösterir. Uzaksa biraz bekle. Tutununca seni de sallar, doğru anda bırakırsan savrulursun.',
@@ -1515,7 +1627,7 @@
   // Yeni öğe kartları (halka türleri, ahşap, kutu): el yapımı 1–6. bölümler dışında bir koşuda en çok bir tane;
   // kalanı sonraki bölümlerde gelir. 7. bölümde yay, sarkaç ve şerit birlikte ilk kez çıkıyordu (art arda 3 kart).
   // Acil kartlar (boş atış, kurtarma, su, akış, el yorulması) sınırsız.
-  var OGE_KARTLARI = ['ff', 'hiz', 'ahsap', 'kutu', 'kapi', 'yay', 'gecit', 'sarkac'], introOgeSayisi = 0;
+  var OGE_KARTLARI = ['ff', 'hiz', 'ahsap', 'kutu', 'kapi', 'yay', 'gecit', 'sarkac', 'firlat', 'zincir'], introOgeSayisi = 0;
   function ogeSiniri() { return !(mode === 'level' && levelNo <= HAND.length) && introOgeSayisi >= 1; }
   function maybeIntro() {
     if (introOpen || pauseOpen || sim.t < 0.6) return;
@@ -1527,6 +1639,7 @@
     if (!save.seen.gecit && sim.rings.some(function (r) { return r.gecit && inView(r.y); })) wantIntro('gecit');
     if (!save.seen.sarkac && sim.rings.some(function (r) { return r.sw && inView(r.y); })) wantIntro('sarkac');
     if (!save.seen.firlat && sim.rings.some(function (r) { return r.firlat && inView(r.y); })) wantIntro('firlat');
+    if (!save.seen.zincir && sim.fireflies.some(function (f) { return f.zincir != null && !f.got && inView(f.y); })) wantIntro('zincir');
     if (!save.seen.ahsap && sim.rects.some(function (r) { return r.type === 'w' && inView(r.y + r.h / 2); })) wantIntro('ahsap');
     if (!save.seen.kutu && sim.boxes.length && sim.boxes.some(function (b) { return inView(b.y); })) wantIntro('kutu');
     if (!save.seen.kurtarma && !sim.rope && !sim.hook && E.aim(sim, 0.25).rescue) wantIntro('kurtarma');
@@ -1694,6 +1807,7 @@
     satinAl: function (id) { var r = EKO.satinAl(save, id); GORUNUM = null; persist(); return r; },
     kusan: function (id) { var r = EKO.kusan(save, id); GORUNUM = null; persist(); return r; },
     gorunum: function () { return look(); },
+    korCiz: function (c, x, y, r, t, r1, r2, sade) { korCiz(c, x, y, r, t, r1, r2, sade); },
     renk: renk,
     kancaCiz: kancaCiz,
     gorevBekleyen: function () { return GOREV.unclaimed(save, todayKey()); },

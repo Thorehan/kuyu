@@ -57,6 +57,8 @@
     BEKLE_SN: 0.35,     // en çok bu kadar beklenir; hedef menzile girmezse aşağıdakine atılır
     USTALIK_TAM: 0.05,  // çarpanın ustalık payı: her TAM bırakış...
     USTALIK_MAX: 0.5,   // ...en çok bu kadar (hız payıyla birlikte en çok x2,00)
+    ZINCIR_N: 3,        // ateşböceği zinciri: sıralı bu kadar ateşböceği...
+    ZINCIR_BONUS: 3,    // ...hepsi akış sürerken alınırsa bu kadar ateşböceği (tek tek alınanlar sayılmaz)
     TAM_ITIS: 200,      // tam zamanında bırakış ek yukarı itiş verir (birim/sn)
     TAM_SERI_ITIS: 150, // art arda her 3. tam bırakışta bunun kadar daha
     ALEV_ESIK: [2, 4, 7],        // alevlenme: akış sürerken bu kadar TAM bırakış yapınca Çıra alevlenir (1, 2, 3); akış bitince söner
@@ -121,7 +123,7 @@
     });
     // Ateşböcekleri halkaların içinde: o halkaya tutunmak ya da içinden geçmek yeter.
     s.rings.forEach(function (rg) { if (rg.ff) s.fireflies.push({ x: rg.x, y: rg.y, got: false, ring: rg }); });
-    (def.fireflies || []).forEach(function (f) { s.fireflies.push({ x: f[0], y: f[1], got: false }); });
+    (def.fireflies || []).forEach(function (f) { s.fireflies.push({ x: f[0], y: f[1], got: false, zincir: f[2], sira: f[3] }); });
     if (def.extend) def.extend(s);
     return s;
   }
@@ -249,6 +251,7 @@
         if (s.tamSeri % 3 === 0) itis += CFG.TAM_SERI_ITIS;
         s.events.push({ type: 'tam', x: s.p.x, y: s.p.y, seri: s.tamSeri });
       } else if (why !== 'repress') s.tamSeri = 0;
+      s.sonTam = tamOldu;
       s.lastAnchor = rp; s.lastAnchorT = s.t;
       s.chain = s.hang < CFG.EARLY && why !== 'slip';
       // Çok erken bırakış: ip daha halkaya varmadan, uzaktayken bırakmak akış sayılmaz (kör ritim akış kuramasın)
@@ -288,6 +291,8 @@
       s.events.push({ type: 'combo', combo: s.combo, x: x, y: y });
     }
     alevGuncelle(s);
+    // TAM kova: kovaya akış sürerken ve son bırakış TAM iken tutunmak
+    if (what === 'goal' && s.combo >= 2 && s.sonTam) { s.tamKova = true; s.events.push({ type: 'tamKova', x: x, y: y }); }
     s.events.push({ type: 'attach', x: x, y: y, what: what });
   }
 
@@ -606,7 +611,10 @@
     for (i = 0; i < s.fireflies.length; i++) {
       var f = s.fireflies[i];
       if (!f.got && Math.abs(f.y - p.y) < 40 && dist(p.x, p.y, f.x, f.y) < CFG.R + (f.ring ? 20 : 12) && !(f.ring && f.ring.dal && !akista(s))) {
-        f.got = true; if (f.ring) f.ring.got = true; s.fireflyPts += 25; s.ffGot++;
+        f.got = true;
+        // zincir ateşböceği tek başına sayılmaz (herkes ip sarılırken geçer): ödül yalnızca zincir akışla tamamlanınca
+        if (f.zincir != null) { zincirAl(s, f); continue; }
+        if (f.ring) f.ring.got = true; s.fireflyPts += 25; s.ffGot++;
         s.events.push({ type: 'firefly', x: f.x, y: f.y });
       }
     }
@@ -676,6 +684,18 @@
     s.events.push({ type: 'kapi', x: gt.x, y: gt.y, combo: s.combo });
   }
 
+  // Ateşböceği zinciri: sıralı üç ateşböceği; hepsi akış sürerken alınırsa ZİNCİR_BONUS ateşböceği daha
+  function zincirAl(s, f) {
+    var z = (s.zincirler || (s.zincirler = {}))[f.zincir] || (s.zincirler[f.zincir] = { n: 0, tamam: false, bozuk: false });
+    z.n++;
+    if (!akista(s)) z.bozuk = true;
+    s.events.push({ type: 'zincirAdim', x: f.x, y: f.y, n: z.n, bozuk: z.bozuk });
+    if (z.n === CFG.ZINCIR_N && !z.bozuk && !z.tamam) {
+      z.tamam = true; s.zincir = (s.zincir || 0) + 1;
+      s.ffGot += CFG.ZINCIR_BONUS; s.fireflyPts += 25 * CFG.ZINCIR_BONUS;
+      s.events.push({ type: 'zincir', x: f.x, y: f.y });
+    }
+  }
   // Akış sürüyor mu: zincir en az x2, ya da pencere içinde erken bırakıp havadasın (zincir sürüyor)
   function akista(s) { return s.combo >= 2 || (!s.rope && s.chain); }
   function collectRing(s, rg) {

@@ -1,6 +1,6 @@
 # Kuyu
 
-**Funday Morning Games** · 2D mobil oyun · prototip v0.46
+**Funday Morning Games** · 2D mobil oyun · prototip v0.47
 
 Derin bir kuyunun dibindesin. Telefonu tek elle tut: ekranın soluna ya da sağına dokun, kanca o taraftaki hedefe fırlasın; basılı tut, ipe sarıl; bırak, savrul. Halkadan halkaya, ahşaptan ahşaba tırmanıp kuyudan çık.
 
@@ -90,6 +90,13 @@ Yolun üstünde, bir halkadan sıradakine giden hatta duran yatay şerit (112 bi
 En iyi koşunun soluk bir kopyası seninle aynı zamanlamayla tırmanır: bölümde en kısa süreli geçişin, Sonsuz Kuyu'da rekor koşun, Günlük Kuyu'da günün en iyisi. Sonsuz her koşuda farklı olduğundan orada bir yükseklik yarışıdır. Hayalet ekranın dışındaysa üst ya da alt kenarda küçük bir işaret görünür. Yalnızca görüntüdür; nişan, puan ve fizik etkilenmez. Ayarlar → Hayalet ile kapatılır.
 
 Kayıt `js/hayalet.js`: kahramanın yeri sim zamanına göre saniyede 15 kez alınır, farklarla yazılır (~60 bayt/sn) ve ana kayıttan ayrı `kuyu.hayalet` anahtarında durur. Test: `node tools/hayalet-test.js`.
+
+## Görsellik ve yeni oynanış (v0.47)
+- **Çıra artık bir kor:** içi parlak, kenarı isli kabuk; ışıyan çatlaklar, nabız gibi atan sıcak noktalar, tepede titreyen alev ucu, çevresinde hale ve ara ara yükselen kıvılcımlar. Dolap'taki gövde rengi korun tonunu verir. Oyun, menü, Dolap ve bölge finalleri aynı çizimi kullanır (`game.js` → `korCiz`).
+- **Paneller ve açılır pencereler:** hepsi aynı aileden; koyu taş zemin, üst kenarda ince kor çizgisi, sıcak iç parıltı, yumuşak giriş, arkası bulanık. Ana düğmeler kor gradyanlı ve basılınca çöker. Hareket azaltma açıksa animasyon yok.
+- **Hayalet ve rekor (dikkat dağıtmasın):** hayalet koşunun ilk 3 saniyesinde görünüp söner; sonra yalnızca sana dikeyde yakınken soluk belirir; ekran kenarı işareti kalktı. Bölümde geçince bir kez "hayaletini geçtin". Sonsuz/Günlük'te rekor yüksekliğine 25 m kala ince kesikli bir rekor çizgisi belirir; geçince bir kez "YENİ REKOR!". Ayarlar → Hayalet ve rekor ile kapanır.
+- **Ateşböceği zinciri (Sonsuz/Günlük):** ~her 150 m'de art arda üç adımın kanca hattında sıralı, numaralı üç altın ateşböceği. Tek tek alınanlar sayılmaz (herkes ip sarılırken geçer); üçü akış kopmadan alınırsa "ZİNCİR!" ve +3 ateşböceği. Ölçüm: akış oyuncusu 6 koşuda 7, ortalama 3, spam 1 zincir; günlük kazanç değişmedi (~102).
+- **TAM kova (bölümler):** kovaya akış sürerken ve son bırakış TAM iken tutunmak "TAM KOVA!" ve ödüle +50. Ölçüm (40 bölüm): akış oyuncusu 26, spam 7, ortalama 0.
 
 ## Nişan kuralı (v0.45)
 Temel kural: **yukarısı belirli şartlarda önceliklidir; şartlar sağlanmazsa aşağıdaki seçilir.** Kademeler: bu taraftaki dik yukarı hedef → yandaki sığ hedef (v0.17) → aşağıdaki. Bütün yeni mekanikler bu kurala uymalı; `tools/nisan.js` her değişiklikten sonra "kurala aykırı aşağı atış" sayar (0 olmalı).

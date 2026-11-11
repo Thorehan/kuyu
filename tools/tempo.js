@@ -1,3 +1,5 @@
+// NOT (v0.48): Sonsuz Kuyu artık takip eden su kullanıyor (zamanla yükselmez); bu araç eski zamanlı su modelini ölçer.
+// Sonsuz için: node tools/hata.js (hata yapan oyuncu modelleri, ne kadar dayandıkları ve neden yandıkları).
 // Sonsuz Kuyu temposu: üç sanal oyuncu suya ne zaman yakalanıyor?
 //   ortalama: her halkada tam asılır, sonra 0,9 sn düşünür (gerçek bir oyuncunun tepkisi)
 //   iyi:      tam asılır, 0,35 sn sonra atar

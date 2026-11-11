@@ -526,9 +526,14 @@
     var st = { hp: { x: 180, y: startY }, prevKind: null, nodes: [], frontier: startY, segs: [], anchors: [], prevHp: null, prevT: null, lastFF: -9, altPrev: true, lastGate: -9, lastYay: -9, prevRing: null, hist: [], lastPortal: -9, portalN: 0, lastSw: -9, lastDal: -99 };
     var def = {
       id: 'sonsuz', name: 'Sonsuz Kuyu', endless: true, seed: seed, kural: kural ? kural.id : null,
-      hint: 'Su durmadan yükselir. Sağa ya da sola dokunarak tırman; ipi erken bırakıp zincirlersen ekstra puan.',
+      hint: 'Su altında bekler, yalnız düşersen yakalar. Sağa ya da sola dokunarak tırman; ipi erken bırakıp zincirlersen ekstra puan.',
       start: [180, startY - 20], rects: [[WL, startY, W - 2 * WL, 60, 's']], rings: [], fireflies: [],
-      grip: 1.6, waterStart: 380,
+      grip: Infinity, waterStart: 380, kurtarmaYok: true, bosBirak: true, bosKilit: 0.4,
+      // Takip eden su (İstişare 2, 2026-11-12): zaman değil yanlış karar yakalatır. Su, tutunduğun en yüksek noktanın
+      // 'bas' metre altında bekler; tırmandıkça mesafe 'daralma' metrede 'son'a iner. Yalnız düşersen yakalar.
+      // Bir yerde 'bekle' saniyeden uzun asılı kalırsan su 'surunme' birim/sn ile yukarı sürünür ('bekle' de yükseklikle
+      // 'bekleSon'a kısalır). El kayması yok, kurtarma kancası yok (düşüş gerçek). Eski zamanlı su: waterSpeed.
+      suTakip: { bas: 15, son: 8, daralma: 1500, bekle: 4, bekleSon: 2, surunme: 70, hiz: 220 },
       // Su önce çok yavaş, tırmandıkça hızlanır: koşu erken bitmez, bekleyen oyuncuyu ancak yüksekte yakalar.
       // Su hızı = taban + metre × perM + (su başladıktan sonraki saniye) × perS, en çok cap (birim/sn).
       // Değerler v0.7 ile aynı (karar 2026-11-09: tempo şimdilik değişmeyecek). Denemek için: node tools/tempo.js taban perM perS cap

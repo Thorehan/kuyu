@@ -901,10 +901,24 @@
     ctx.fillStyle = '#ffd36a'; ctx.fillText(String(f.sira), x + 10, y - 9);
   }
 
+  var surunmeDuyuruldu = false;
   function drawWater(t) {
     if (sim.water == null) return;
-    var wy = sim.water;
-    if (wy > cam + viewH / K + 20) return;
+    var wy = sim.water, alt = cam + viewH / K;
+    // takip eden su (Sonsuz) ekranın altındaysa: alt kenarda yakınlığa göre güçlenen mavi parıltı
+    if (sim.def.suTakip && wy > alt - 4) {
+      var yak = Math.max(0, Math.min(1, 1 - (wy - alt) / 260)), nab = sim.surunuyor ? 0.75 + 0.25 * Math.sin(t / 160) : 1;
+      if (yak > 0.02) {
+        var eg = ctx.createLinearGradient(0, alt, 0, alt - 70);
+        eg.addColorStop(0, 'rgba(95,195,201,' + (0.45 * yak * nab).toFixed(3) + ')'); eg.addColorStop(1, 'rgba(95,195,201,0)');
+        ctx.fillStyle = eg; ctx.fillRect(0, alt - 70, CFG.W, 70);
+      }
+    }
+    if (sim.def.suTakip) {
+      if (sim.surunuyor && !surunmeDuyuruldu) { surunmeDuyuruldu = true; floatText(sim.p.x, sim.p.y + 40, 'su yükseliyor', COL.suAcik, 13); }
+      if (!sim.surunuyor) surunmeDuyuruldu = false;
+    }
+    if (wy > alt + 20) return;
     var g = ctx.createLinearGradient(0, wy, 0, wy + 300);
     g.addColorStop(0, 'rgba(28,106,114,0.88)'); g.addColorStop(1, 'rgba(8,30,34,0.97)');
     ctx.fillStyle = g;
@@ -1598,7 +1612,7 @@
       i: '<svg viewBox="0 0 64 64"><rect x="8" y="10" width="14" height="44" fill="#26312f"/><rect x="22" y="14" width="9" height="36" rx="2" fill="#a2693a" stroke="#6e4223" stroke-width="2"/><path d="M22 24h9M22 34h9M22 44h9" stroke="#6e4223" stroke-width="1.6"/><path d="M56 50L31 30" stroke="#eadfc4" stroke-width="2.5"/><circle cx="56" cy="50" r="6" fill="#f26a3a"/></svg>' },
     kutu: { t: 'Kutu ve düğme', m: 'Kanca hafif şeyleri sana çeker. Kutuyu kendine çek ve düğmenin üstüne düşür; kapak açılır.',
       i: '<svg viewBox="0 0 64 64"><rect x="20" y="14" width="24" height="24" rx="2" fill="#a2693a" stroke="#6e4223" stroke-width="2.5"/><path d="M22 16l20 20M42 16L22 36" stroke="#6e4223" stroke-width="2.5"/><rect x="14" y="48" width="36" height="5" rx="2" fill="#d08a45"/><rect x="10" y="53" width="44" height="5" fill="#7a4b22"/></svg>' },
-    su: { t: 'Su yükseliyor', m: 'İlk halkaya tutununca su aşağıdan yükselmeye başlar. Asılı beklemek yerine tırmanmaya devam et.',
+    su: { t: 'Su', m: 'Sonsuz Kuyu\'da su altında bekler; yalnız düşersen yakalar, uzun asılı kalırsan yavaşça yükselir. Bölümlerde su sürekli yükselir: asılı bekleme, tırman.',
       i: '<svg viewBox="0 0 64 64"><circle cx="32" cy="18" r="7" fill="#f26a3a"/><path d="M4 40c6-5 10-5 14 0s10 5 14 0 10-5 14 0 10 5 14 0V60H4z" fill="#1c6a72"/><path d="M4 40c6-5 10-5 14 0s10 5 14 0 10-5 14 0 10 5 14 0" fill="none" stroke="#5fc3c9" stroke-width="3"/><path d="M32 34v-6" stroke="#5fc3c9" stroke-width="3" stroke-linecap="round"/><path d="M28 31l4-4 4 4" fill="none" stroke="#5fc3c9" stroke-width="3" stroke-linecap="round"/></svg>' },
     akis: { t: 'Akış!', m: 'İpi halkaya varmak üzereyken bırakıp havadayken sıradakine tutundun. Zincir uzadıkça Akış madalyası ve puan gelir. Çok erken bırakmak, uzun asılı kalmak ve boş atış zinciri bitirir.',
       i: '<svg viewBox="0 0 64 64"><path d="M6 40C14 22 22 22 30 40S46 58 58 30" fill="none" stroke="#e8f27c" stroke-width="5" stroke-linecap="round"/><text x="40" y="22" fill="#e8f27c" font-family="Baloo 2, sans-serif" font-weight="800" font-size="16">x2</text></svg>' },

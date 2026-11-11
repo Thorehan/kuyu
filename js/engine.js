@@ -252,7 +252,8 @@
         s.events.push({ type: 'tam', x: s.p.x, y: s.p.y, seri: s.tamSeri });
       } else if (why !== 'repress') s.tamSeri = 0;
       s.sonTam = tamOldu;
-      s.lastAnchor = rp; s.lastAnchorT = s.t;
+      // boş atışla (yanlış taraf) bırakılan halka yok sayılmaz: hızlı davranan aynı halkayı yeniden yakalar
+      if (why !== 'bos') { s.lastAnchor = rp; s.lastAnchorT = s.t; }
       s.chain = s.hang < CFG.EARLY && why !== 'slip';
       // Çok erken bırakış: ip daha halkaya varmadan, uzaktayken bırakmak akış sayılmaz (kör ritim akış kuramasın)
       if (s.chain && (why === 'release' || why === 'repress') && rp.len0 != null && rp.len > CFG.MIN_LEN + CFG.AKIS_PENCERE) {
@@ -441,6 +442,7 @@
     // Bu tarafta hedef yok. Diğer tarafta varsa ya da tutunuyorsan: kanca bu yöne boşa gider, ip bırakılmaz.
     if (holding || anyReach) return missAt;
     // İki tarafta da menzilde hiç hedef yok (dipte tıkanma): kurtarma kancası en yakın yukarıdaki hedefe uzanır.
+    if (s.def.kurtarmaYok) return missAt; // Sonsuz: düşüş gerçek (İstişare 2); bölümlerde kurtarma kancası kalır
     var far = candidates(s, CFG.RESCUE_MAX).filter(function (cc) { return cc.ref !== ignore && cc.y < p.y - 12; })
       .sort(function (u, v) { return u.d - v.d; });
     for (i = 0; i < far.length; i++) {
@@ -462,8 +464,13 @@
     if (d < 4) { dx = 0; dy = -1; d = 1; }
     var rescue = !!(opts && opts.rescue);
     // Boş atışın bedeli: kanca geri dönene kadar yeni atış yok, akış biter (yanlış tarafa basmak bedava olmasın)
-    if (s.hook && s.hook.keep) { s.events.push({ type: 'kilit' }); return; }
-    if (keep && !rescue) { s.tamSeri = 0; breakCombo(s, 'boş atış'); }
+    if ((s.hook && s.hook.keep) || (s.kilitSon && s.t < s.kilitSon)) { s.events.push({ type: 'kilit' }); return; }
+    if (keep && !rescue) {
+      s.tamSeri = 0; breakCombo(s, 'boş atış');
+      // Sonsuz (İstişare 2): yanlış taraf ipi bırakır; düşüş gerçek. Bölümlerde ip kalır (öğretici).
+      if (s.def.bosBirak && s.rope) { detach(s, 'bos'); s.chain = false; }
+      if (s.def.bosKilit) s.kilitSon = s.t + s.def.bosKilit; // Sonsuz: boş atıştan sonra kısa kilit (spam düşüşü birikir)
+    }
     s.hook = { x: s.p.x, y: s.p.y, ox: s.p.x, oy: s.p.y, dx: dx / d, dy: dy / d, state: 'fly', ignore: ignore,
       max: rescue ? CFG.RESCUE_MAX : CFG.HOOK_MAX, rescue: rescue, keep: keep, yakin: yakinHalkalar(s) };
     s.shots++;
@@ -644,7 +651,8 @@
     }
     if (s.water != null) {
       // Su ilk halkaya tutununca tetiklenir (oyuncu başlamadan beklerken yükselmez), kısa bir payla başlar.
-      if (s.waterFrom != null && s.t - s.waterFrom > CFG.WATER_GRACE) {
+      if (s.def.suTakip && s.waterFrom != null) suTakip(s, dt);
+      else if (s.waterFrom != null && s.t - s.waterFrom > CFG.WATER_GRACE) {
         var speed = s.def.waterSpeed ? s.def.waterSpeed(s) : s.def.water;
         s.water -= speed * dt;
         // sonsuz modda su çok geride kalmasın
@@ -653,6 +661,22 @@
       if (p.y + CFG.R * 0.5 > s.water) return die(s, 'su');
     }
     if (!s.endless && p.y > s.H + 220) return die(s, 'düşüş');
+  }
+
+  // Takip eden su: hedef = tutunduğun en yüksek nokta + mesafe (yükseldikçe daralır); su yalnız yukarı, en çok 'hiz'
+  // ile yaklaşır. 'bekle' saniye yükselmezsen (asılı bekleme ya da bir yerde dönüp durma) su 'surunme' ile sürünür.
+  function suTakip(s, dt) {
+    var T = s.def.suTakip, p = s.p, m = meters(s), k = Math.min(1, m / T.daralma);
+    var asili = s.rope && s.rope.kind === 'anchor';
+    if (asili && (s.tutTop == null || p.y < s.tutTop - 1)) { s.tutTop = p.y; s.ilerlemeT = s.t; }
+    if (s.ilerlemeT == null) s.ilerlemeT = s.t;
+    var mesafe = (T.bas + (T.son - T.bas) * k) * 20;
+    var hedef = (s.tutTop != null ? s.tutTop : s.startY) + mesafe;
+    var bekle = T.bekle + (T.bekleSon - T.bekle) * k;
+    s.surunuyor = s.t - s.ilerlemeT > bekle; // bir süre yükselmezsen (asılı bekleme ya da döngü) su sürünür
+    if (s.surunuyor) hedef = Math.min(hedef, s.water - T.surunme * dt);
+    if (s.water > hedef) s.water = Math.max(hedef, s.water - T.hiz * dt);
+    s.suMesafe = s.water - p.y;
   }
 
   function usePortal(s, g) {

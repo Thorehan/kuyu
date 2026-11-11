@@ -1,6 +1,6 @@
 # Kuyu
 
-**Funday Morning Games** · 2D mobil oyun · prototip v0.47
+**Funday Morning Games** · 2D mobil oyun · prototip v0.48
 
 Derin bir kuyunun dibindesin. Telefonu tek elle tut: ekranın soluna ya da sağına dokun, kanca o taraftaki hedefe fırlasın; basılı tut, ipe sarıl; bırak, savrul. Halkadan halkaya, ahşaptan ahşaba tırmanıp kuyudan çık.
 
@@ -90,6 +90,17 @@ Yolun üstünde, bir halkadan sıradakine giden hatta duran yatay şerit (112 bi
 En iyi koşunun soluk bir kopyası seninle aynı zamanlamayla tırmanır: bölümde en kısa süreli geçişin, Sonsuz Kuyu'da rekor koşun, Günlük Kuyu'da günün en iyisi. Sonsuz her koşuda farklı olduğundan orada bir yükseklik yarışıdır. Hayalet ekranın dışındaysa üst ya da alt kenarda küçük bir işaret görünür. Yalnızca görüntüdür; nişan, puan ve fizik etkilenmez. Ayarlar → Hayalet ile kapatılır.
 
 Kayıt `js/hayalet.js`: kahramanın yeri sim zamanına göre saniyede 15 kez alınır, farklarla yazılır (~60 bayt/sn) ve ana kayıttan ayrı `kuyu.hayalet` anahtarında durur. Test: `node tools/hayalet-test.js`.
+
+## Takip eden su (v0.48, İstişare 2)
+Sonsuz Kuyu'da yanmak zamandan değil yanlış karardan gelir. Su artık zamanla yükselmez:
+- Tutunduğun en yüksek noktanın **15 m** altında bekler; tırmandıkça bu mesafe 1500 m'de **8 m**'ye daralır (`suTakip` → `bas`, `son`, `daralma`). Yalnız düşersen yakalar.
+- **4 sn** (1500 m'de 2 sn) yükselmezsen (asılı bekleme ya da bir yerde dönüp durma) su yavaşça sürünür; ekranda "su yükseliyor" çıkar.
+- El kayması yok (asılı kalınca ani düşüş olmaz); kurtarma kancası yok (düşüş gerçek).
+- Asılıyken yanlış tarafa (× gösteren yana) basmak ipi bırakır; bırakılan halka hemen yeniden yakalanabilir. Boş atıştan sonra kanca 0,4 sn kilitli (sürekli yanlış basan düşüşleri biriktirir).
+- Su ekranın altındaysa alt kenarda yakınlığa göre güçlenen mavi parıltı görünür.
+- Bölümlerde su eskisi gibi (zamanla yükselir), kurtarma kancası ve boş atışta ip kalır (öğretici).
+
+Ölçüm (`node tools/hata.js`, 6 dk): hatasız temkinli ve akış oyuncusu hiç yanmaz (temkinli ~4,6 km, akış ~15 km); %10 hata yapan temkinli oyuncu 6'da 4 koşuda ~2,5 dk'da yanar; akış oyuncusu havadaki hataları toparlar. Sıralı sol-sağ spam ~5,8 km'de yanar (düşünen 16 km), rastgele basan ~50 sn'de. Günlük kazanç aynı (~96). Eski `tools/tempo.js` zamanlı su içindir.
 
 ## Görsellik ve yeni oynanış (v0.47)
 - **Çıra artık bir kor:** içi parlak, kenarı isli kabuk; ışıyan çatlaklar, nabız gibi atan sıcak noktalar, tepede titreyen alev ucu, çevresinde hale ve ara ara yükselen kıvılcımlar. Dolap'taki gövde rengi korun tonunu verir. Oyun, menü, Dolap ve bölge finalleri aynı çizimi kullanır (`game.js` → `korCiz`).

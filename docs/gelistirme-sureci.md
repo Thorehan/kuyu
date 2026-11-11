@@ -15,6 +15,7 @@ Bir aşamadaki işler bitmeden sonrakine geçilmez; yeni bulunan oynanış sorun
 ## Geri dönüş noktaları
 - `geri-donus-v0.17` (2026-11-10): oyun başarılı, halka türleri ve mağaza öncesi. En eski nokta.
 - `geri-donus-v0.45` (2026-11-11): hikâye, alevlenme, karar ve zamanlama, fırlatma yolu, nişan kuralı; istişare iyileştirmeleri öncesi.
+- `geri-donus-v0.47` (2026-11-12): kor karakter, panel teması, zincir, TAM kova; İstişare 2 (takip eden su vb.) öncesi.
 
 İkisi de GitHub'da etiket olarak duruyor; dönmek gerekirse istenen noktadan yeni bir dal açılır (main'e zorla push yok).
 
@@ -42,6 +43,8 @@ Kalan işler geliştirme sırasına göre. Bekleyenler senden bir karar ya da te
 9. [x] Nişan kuralı (v0.45): yukarısı şartlı öncelikli, şartlar sağlanmazsa aşağısı. Bekleme (yukarı hedef 0,35 sn içinde menzile girecekse), hattı kesen yukarı halka, değilen halka engel değil. `tools/nisan.js` kurala aykırı aşağı atışı sayar (0).
 10. [x] İstişare iyileştirmeleri (v0.46): fırlatma yolu ateşböceği yalnız akışla (spam 29–35 → 22–30/54, bilerek seçen 42/54); çarpana ustalık payı (TAM başına +0,05, en çok x2,00; akış oyuncusu x1,50 → x1,96); Sonsuz Kuyu'ya fırlatma yolu (~her 180 m, motorla denenmiş). Tempo 1:17, günlük kazanç ~100 → ~102.
 12. [x] Görsellik ve oynanış (v0.47): kor karakter, panel/popup kor teması, hayalet ve rekor koşullu ve sade, ateşböceği zinciri (Sonsuz), TAM kova (bölümler).
+14. [x] Takip eden su (v0.48, İstişare 2 adım 1): su en yüksek tutunma noktasının 15 → 8 m altında bekler, yalnız düşüş yakalatır; ilerlemezsen sürünür; Sonsuz'da el kayması ve kurtarma kancası yok, yanlış taraf ipi bırakır (yeniden yakalanabilir), boş atış kilidi 0,4 sn. Ölçüm `tools/hata.js`.
+15. [ ] İstişare 2 sırası: devam hakkı → güçlendirmeler (fener, kanat, kalkan) → dokun ve başla → görsel akıcılık → 24 uzun bölüm.
 13. [ ] Sırada: döner çark ve kor halka (istişare), Dolap'ta yeni türler (başlık, alev rengi), iki para birimi kararı.
 11. [ ] Telefonda denenecek ayarlar: akış penceresi, boş atış kilidi, nişan beklemesi. Karar bekleyenler: istişare belgesi.
 
@@ -126,6 +129,7 @@ Kullanıcı hikâyeye online'dan önce geçti; online (5) sonra.
 ## Yapılanlar
 - 2026-11-11 · v0.34 · Hikâye: Çıra (önsöz, bölge kartları, Çıra'nın yolu, metinler); oyun ekranı gizliyken döngü çizim yapmaz.
 - 2026-11-11 · v0.35 · Bekçinin notları: 12 not, ateşböceği yolunda; Çıra'nın yolu'nda okunur.
+- 2026-11-12 · v0.48 · Takip eden su: Sonsuz'da yanmak yanlış karardan; geri dönüş noktası `geri-donus-v0.47`.
 - 2026-11-12 · v0.47 · Görsellik ve oynanış: kor karakter, panel teması, sade hayalet + rekor çizgisi, ateşböceği zinciri, TAM kova.
 - 2026-11-11 · v0.46 · İstişare iyileştirmeleri: fırlatma yolu ateşböceği yalnız akışla, çarpana ustalık payı, Sonsuz Kuyu'da fırlatma yolu. Geri dönüş noktası `geri-donus-v0.45`.
 - 2026-11-11 · v0.45 · Nişan kuralı: yükselirken aşağıya atılma düzeltildi (bekleme, hattı kesen yukarı halka, değilen halka engel değil); nişan testine kural denetimi.

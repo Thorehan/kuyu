@@ -10,7 +10,7 @@
 
 ## Son durum (v0.55)
 
-- **Yayında hâlâ v0.51.** v0.52–v0.55 yerelde commit'lendi, push edilmedi (Mustafa'nın onayı bekleniyor).
+- **Yayında v0.55** (12/11/2026'da Mustafa'nın onayıyla push edildi; v0.52–v0.55 birlikte çıktı).
 - Bu dönemde yapılanlar (ayrıntı `docs/yol-haritasi.md`, `README.md`):
   - v0.52: bölge suyu (Hikâye'de zorluk eğrisi, 17. bölümden başlar)
   - v0.53: ekonomi dengesi, Dolap 47 görünüm, Alev rengi, ışık yolu 20 seviye
@@ -22,9 +22,8 @@
 ## Sıradaki iş
 
 1. **Telefonda deneme**, özellikle bölge suyu mesafeleri ve Haftalık Kuyu.
-2. **Push kararı** (Mustafa) ve Pages'te sürüm doğrulaması.
-3. **Skor tablosunu açmak:** Supabase hesabı + iki değer (`docs/online-kurulum.md`).
-4. İstişare 2'nin kalanı: görsel akıcılık → 24 uzun bölüm (Törehan ile planlanır).
+2. **Skor tablosunu açmak:** Supabase hesabı + iki değer (`docs/online-kurulum.md`).
+3. İstişare 2'nin kalanı: görsel akıcılık → 24 uzun bölüm (Törehan ile planlanır).
 
 ## Açık sorular (Törehan'a)
 
